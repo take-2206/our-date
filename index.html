@@ -365,7 +365,7 @@
         flex-direction: column;
         align-items: center;
         gap: 4px;
-        min-width: 72px;
+        min-width: 60px;
         min-height: 44px;
         color: var(--pk2);
         font-size: 11px;
@@ -1265,6 +1265,196 @@
           bottom: 40px;
         }
       }
+      /* ===== ALBUM ẢNH: chip lọc album, lưới ảnh, xem phóng to ===== */
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      .ab-act {
+        margin-bottom: 14px;
+      }
+      .ab-bar {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 2px 2px 12px;
+        scrollbar-width: none;
+      }
+      .ab-bar::-webkit-scrollbar {
+        display: none;
+      }
+      .ab-chip {
+        flex: none;
+        min-height: 36px;
+        padding: 0 14px;
+        border-radius: 99px;
+        border: 1.5px solid #4a3340;
+        background: var(--card);
+        color: var(--pk2);
+        font:
+          700 12px 'JetBrains Mono',
+          monospace;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: box-shadow 0.2s;
+      }
+      .ab-chip:hover {
+        box-shadow: 0 0 12px rgba(255, 105, 180, 0.45);
+      }
+      .ab-chip.on {
+        background: var(--pk);
+        border-color: var(--pk);
+        color: #0d0d0d;
+        box-shadow: 0 0 14px rgba(255, 105, 180, 0.5);
+      }
+      .ab-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+        gap: 8px;
+      }
+      .ab-ph {
+        position: relative;
+        aspect-ratio: 1;
+        padding: 0;
+        overflow: hidden;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: var(--card);
+        cursor: pointer;
+        transition:
+          box-shadow 0.2s,
+          border-color 0.2s,
+          transform 0.1s;
+      }
+      .ab-ph img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .ab-ph:hover {
+        border-color: var(--pk);
+        box-shadow: 0 0 18px rgba(255, 105, 180, 0.45);
+      }
+      .ab-ph:active {
+        transform: scale(0.97);
+      }
+      .ab-ph span {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 18px 8px 6px;
+        font-size: 11px;
+        text-align: left;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+      }
+      .ab-empty {
+        display: grid;
+        justify-items: center;
+        gap: 10px;
+        padding: 40px 20px;
+        text-align: center;
+      }
+      .ab-empty svg {
+        width: 44px;
+        height: 44px;
+        color: var(--pk);
+        filter: drop-shadow(0 0 8px var(--pk));
+      }
+      .ab-prog {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        margin-bottom: 14px;
+        font-size: 13px;
+      }
+      .ab-meter {
+        flex: 1;
+        height: 6px;
+        border-radius: 3px;
+        background: var(--line);
+        overflow: hidden;
+      }
+      .ab-meter i {
+        display: block;
+        height: 100%;
+        background: var(--pk);
+        box-shadow: 0 0 8px var(--pk);
+        transition: width 0.2s;
+      }
+      .ab-prev {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 16px;
+      }
+      .ab-prev img {
+        width: 64px;
+        height: 64px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+      }
+      .ab-prev b {
+        color: var(--pk2);
+        font-size: 13px;
+      }
+      .pv {
+        position: fixed;
+        inset: 0;
+        z-index: 9;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background: rgba(0, 0, 0, 0.94);
+        padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+      }
+      .pv-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+      }
+      .pv-img {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+        display: grid;
+        place-items: center;
+      }
+      .pv-img img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        border-radius: 12px;
+        box-shadow: 0 0 30px rgba(255, 105, 180, 0.35);
+      }
+      .ib.pv-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(26, 26, 26, 0.85);
+      }
+      .pv-foot {
+        display: grid;
+        gap: 8px;
+        width: min(560px, 100%);
+        margin: 0 auto;
+      }
+      @media (min-width: 900px) {
+        .ab-grid {
+          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+          gap: 12px;
+        }
+        .pv {
+          padding-left: 108px;
+        }
+      }
       /* ===== LÁ THƯ: phong bì đóng/mở, giấy thư, chữ viết trên giấy, hiệu ứng ===== */
       .lt {
         position: fixed;
@@ -1485,6 +1675,25 @@
           dragNote: 'Kéo một tờ giấy màu bạn thích xuống bảng',
           dropNote: 'Thả ghi chú ở bất kỳ đâu trên bảng',
           noteSetup: 'Bảng ghi chú chưa được thiết lập. Hãy chạy tệp supabase-notes.sql trong Supabase.',
+          album: 'Album',
+          albumSub: 'album_ảnh_chung',
+          phAdd: 'Thêm ảnh',
+          phAll: 'Tất cả',
+          phNone: 'Chưa có ảnh nào',
+          phNoneH: 'Thêm bức ảnh đầu tiên của hai bạn nhé',
+          phAlbum: 'Album',
+          phAlbumPh: 'Ví dụ: Đà Lạt 2026 (có thể để trống)',
+          phCap: 'Chú thích',
+          phCapPh: 'Viết vài chữ cho kỷ niệm này…',
+          phN: 'Đã chọn {n} ảnh',
+          phBusy: 'Đang tải ảnh lên…',
+          phFail: '{n} ảnh tải lên không thành công',
+          phDelQ: 'Xoá ảnh này cho cả hai người?',
+          phDel: 'Xoá ảnh',
+          phSetup: 'Album chưa được thiết lập. Hãy chạy tệp supabase-album.sql trong Supabase.',
+          phPrev: 'Ảnh trước',
+          phNext: 'Ảnh sau',
+          phClose: 'Đóng',
           efFail: 'Không lưu được. Hãy kiểm tra quyền UPDATE của bảng events trên Supabase.',
           empN: 'Không có thông báo mới',
           code: 'Mã mời cặp đôi',
@@ -1599,6 +1808,25 @@
           dragNote: 'Drag a sheet from your favorite color pile',
           dropNote: 'Drop notes anywhere on the board',
           noteSetup: 'The note board is not set up yet. Run supabase-notes.sql in Supabase.',
+          album: 'Album',
+          albumSub: 'shared_photo_album',
+          phAdd: 'Add photos',
+          phAll: 'All',
+          phNone: 'No photos yet',
+          phNoneH: 'Add the first photo of the two of you',
+          phAlbum: 'Album',
+          phAlbumPh: 'e.g. Da Lat 2026 (optional)',
+          phCap: 'Caption',
+          phCapPh: 'Write a few words about this memory…',
+          phN: '{n} photo(s) selected',
+          phBusy: 'Uploading photos…',
+          phFail: '{n} photo(s) failed to upload',
+          phDelQ: 'Delete this photo for both of you?',
+          phDel: 'Delete photo',
+          phSetup: 'The album is not set up yet. Run supabase-album.sql in Supabase.',
+          phPrev: 'Previous photo',
+          phNext: 'Next photo',
+          phClose: 'Close',
           efFail: 'Could not save. Check the UPDATE policy on the events table in Supabase.',
           empN: 'No new notifications',
           code: 'Couple invite code',
@@ -1682,7 +1910,7 @@
       // S = cài đặt trên máy (ngôn ngữ, công tắc thông báo, người đang đăng nhập)
       // C = dữ liệu của cặp đôi (ev = buổi hẹn, nt = thông báo, notes = ghi chú chung)
       let S = {},
-        C = { ev: [], nt: [], notes: [] };
+        C = { ev: [], nt: [], notes: [], photos: [] };
       try {
         S = JSON.parse(localStorage.getItem('ls')) || {};
       } catch (e) {}
@@ -1715,7 +1943,13 @@
         noteEdit = null,
         noteError = '',
         noteDraft = null,
-        noteDrag = null;
+        noteDrag = null,
+        albumSel = '',
+        pv = null,
+        umod = null,
+        upBusy = null,
+        photoError = '',
+        PU = {};
       cur.setDate(1);
       // t("khoá") lấy chữ theo ngôn ngữ; tx() cho phép nội dung dạng {k:"khoá"}; esc() chống chèn HTML
       const t = (k) => D[S.lang][k],
@@ -1761,6 +1995,10 @@
         ),
         bell: sv('<path d="M6 9a6 6 0 0112 0c0 6 2 7 2 7H4s2-1 2-7"/><path d="M10 20a2 2 0 004 0"/>'),
         back: sv('<path d="M15 5l-7 7 7 7"/>'),
+        fwd: sv('<path d="M9 5l7 7-7 7"/>'),
+        x: sv('<path d="M6 6l12 12M18 6L6 18"/>'),
+        trash: sv('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>'),
+        photo: sv('<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/>'),
       };
       // Ngày giờ theo ngôn ngữ: fmt() định dạng, rel() = "3 ngày nữa", up() = danh sách buổi hẹn sắp tới
       const loc = () => (S.lang == 'vi' ? 'vi-VN' : 'en-US');
@@ -1827,6 +2065,7 @@
           ['cal', I.cal],
           ['det', ic('hr')],
           ['notes', I.note],
+          ['album', I.photo],
           ['set', I.set],
         ]
           .map(
@@ -1974,6 +2213,54 @@
           )
           .join('')}</fieldset><div class="row2"><button type="button" class="btn b2" data-a="pclose">${t('cancel')}</button><button class="btn b1">${t('save')}</button></div></form></div>`;
       }
+      /* ===== ALBUM ẢNH: danh sách, form tải ảnh, xem phóng to ===== */
+      // phs() = ảnh đang hiển thị (theo album được chọn), albums() = tên các album, pu() = link ảnh đã ký
+      const phs = () => C.photos.filter((p) => !albumSel || p.album == albumSel);
+      const albums = () =>
+        [...new Set(C.photos.map((p) => p.album).filter(Boolean))].sort((a, b) => a.localeCompare(b, loc()));
+      const pu = (p) => (PU[p.path] || {}).url || '';
+      function vAlbum() {
+        const h = head(t('album'), t('albumSub'));
+        if (photoError) return `<div class="main">${h}<div class="card note-error">${t('phSetup')}</div></div>`;
+        if (albumSel && !albums().includes(albumSel)) albumSel = '';
+        const list = phs(),
+          chips = `<div class="ab-bar" role="group" aria-label="${t('album')}">${['', ...albums()]
+            .map((a) => {
+              const n = a ? C.photos.filter((p) => p.album == a).length : C.photos.length;
+              return `<button class="ab-chip${albumSel == a ? ' on' : ''}" data-a="albumSel" data-al="${esc(a)}" aria-pressed="${albumSel == a}">${a ? esc(a) : t('phAll')} · ${n}</button>`;
+            })
+            .join('')}</div>`,
+          prog = upBusy
+            ? `<div class="card ab-prog" role="status"><span>${t('phBusy')}</span><div class="ab-meter"><i style="width:${Math.round((upBusy.n / upBusy.total) * 100)}%"></i></div><span class="mono">${upBusy.n}/${upBusy.total}</span></div>`
+            : '',
+          grid = list.length
+            ? `<div class="ab-grid">${list
+                .map((p) => {
+                  const u = pu(p);
+                  return `<button class="ab-ph" data-a="pv" data-id="${p.id}" aria-label="${esc(p.cap || t('album'))}">${u ? `<img src="${esc(u)}" alt="${esc(p.cap)}" loading="lazy" decoding="async">` : ''}${p.cap ? `<span>${esc(p.cap)}</span>` : ''}</button>`;
+                })
+                .join('')}</div>`
+            : `<div class="card ab-empty">${I.photo}<h2 style="font-size:16px;font-weight:800">${t('phNone')}</h2><p class="sub" style="font-size:13px">${t('phNoneH')}</p></div>`;
+        return `<div class="main">${h}<div class="ab-act"><button class="btn b1" data-a="pick"${upBusy ? ' disabled' : ''}>${I.photo} ${t('phAdd')}</button></div>${prog}${C.photos.length ? chips : ''}${grid}</div>`;
+      }
+      // Form chọn album + chú thích trước khi tải ảnh lên
+      function vUp() {
+        const n = umod.files.length;
+        return `<div class="mod" data-a="uclose"><form class="card" data-f="photo" role="dialog" aria-label="${t('phAdd')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:6px">${t('phAdd')}</h2><p class="sub" style="font-size:12px;margin-bottom:14px">${t('phN').replace('{n}', n)}</p><div class="ab-prev">${umod.urls.map((u) => `<img src="${u}" alt="">`).join('')}${n > umod.urls.length ? `<b>+${n - umod.urls.length}</b>` : ''}</div><div class="fl"><label class="lb" for="pa">${t('phAlbum')}</label><input class="in" id="pa" name="album" list="ab-list" maxlength="30" autocomplete="off" value="${esc(albumSel)}" placeholder="${t('phAlbumPh')}"><datalist id="ab-list">${albums()
+          .map((a) => `<option value="${esc(a)}"></option>`)
+          .join('')}</datalist></div>${n == 1 ? `<div class="fl"><label class="lb" for="pc">${t('phCap')}</label><input class="in" id="pc" name="caption" maxlength="120" placeholder="${t('phCapPh')}"></div>` : ''}<div class="row2"><button type="button" class="btn b2" data-a="uclose">${t('cancel')}</button><button class="btn b1">${t('save')}</button></div></form></div>`;
+      }
+      // Xem ảnh toàn màn hình: mũi tên / vuốt để chuyển ảnh, sửa chú thích, xoá
+      function vPv() {
+        const list = phs(),
+          i = list.findIndex((p) => p.id == pv);
+        if (i < 0) return '';
+        const p = list[i],
+          u = pu(p),
+          who = (P[p.by] || {}).name || '',
+          day = new Date(p.ts).toLocaleDateString(loc(), { day: 'numeric', month: 'short', year: 'numeric' });
+        return `<div class="pv" role="dialog" aria-modal="true" aria-label="${t('album')}"><div class="pv-top"><span class="mono sub" style="font-size:12px">${i + 1} / ${list.length}${p.album ? ' · ' + esc(p.album) : ''}</span><div style="display:flex;gap:8px"><button class="ib" data-a="phDel" data-id="${p.id}" aria-label="${t('phDel')}">${I.trash}</button><button class="ib" data-a="pvClose" aria-label="${t('phClose')}">${I.x}</button></div></div><div class="pv-img">${u ? `<img src="${esc(u)}" alt="${esc(p.cap)}">` : ''}${i > 0 ? `<button class="ib pv-nav" style="left:4px" data-a="pvGo" data-d="-1" aria-label="${t('phPrev')}">${I.back}</button>` : ''}${i < list.length - 1 ? `<button class="ib pv-nav" style="right:4px" data-a="pvGo" data-d="1" aria-label="${t('phNext')}">${I.fwd}</button>` : ''}</div><div class="pv-foot"><input class="in" data-photo-cap data-id="${p.id}" maxlength="120" value="${esc(p.cap)}" placeholder="${t('phCapPh')}" aria-label="${t('phCap')}"><p class="sub mono" style="font-size:11px;text-align:center">${esc(who)}${who ? ' · ' : ''}${day}</p></div></div>`;
+      }
       // Vẽ lại toàn bộ màn hình theo trạng thái hiện tại
       function render() {
         document.documentElement.lang = S.lang;
@@ -1982,10 +2269,12 @@
             ? '<div class="auth"><p class="mono sub">…</p></div>'
             : view == 'auth'
               ? vAuth()
-              : `<div class="shell">${{ cal: vCal, det: vDet, notes: vNotes, set: vSet }[view]()}${nav()}</div>` +
+              : `<div class="shell">${{ cal: vCal, det: vDet, notes: vNotes, album: vAlbum, set: vSet }[view]()}${nav()}</div>` +
                 (modal ? vMod() : '') +
                 (pmod ? vProf() : '') +
                 (smod ? vSince() : '') +
+                (umod ? vUp() : '') +
+                (pv != null ? vPv() : '') +
                 (toast && view != 'auth'
                   ? `<div class="toast card" role="status">${av(pr(), 32)}<span>${esc(toast)}</span></div>`
                   : '');
@@ -2091,6 +2380,7 @@
         if (a == 'lclose' && el.classList.contains('lt') && event.target !== el) return;
         if (a == 'pclose' && el.classList.contains('mod') && event.target !== el) return;
         if (a == 'sclose' && el.classList.contains('mod') && event.target !== el) return;
+        if (a == 'uclose' && el.classList.contains('mod') && event.target !== el) return;
         if (a == 'go') {
           view = d.v;
           bell = false;
@@ -2149,6 +2439,42 @@
             .eq('id', n.id)
             .then(({ error }) => (error ? say(error.message) : refresh()));
         }
+        else if (a == 'pick') {
+          pin.value = '';
+          pin.click();
+          return;
+        } else if (a == 'albumSel') albumSel = d.al || '';
+        else if (a == 'pv') pv = Number(d.id);
+        else if (a == 'pvClose') pv = null;
+        else if (a == 'pvGo') {
+          const l = phs(),
+            i = l.findIndex((p) => p.id == pv),
+            nx = l[i + Number(d.d)];
+          if (nx) pv = nx.id;
+        } else if (a == 'uclose') closeUp();
+        else if (a == 'phDel') {
+          const p = C.photos.find((x) => String(x.id) == String(d.id));
+          if (!p || !confirm(t('phDelQ'))) return;
+          const l = phs(),
+            i = l.findIndex((x) => x.id == p.id),
+            nx = l[i + 1] || l[i - 1];
+          C.photos = C.photos.filter((x) => x.id != p.id);
+          pv = nx ? nx.id : null;
+          sb.from('photos')
+            .delete()
+            .eq('id', p.id)
+            .then(({ error }) => {
+              if (error) {
+                say(error.message);
+                refresh();
+                return;
+              }
+              sb.storage
+                .from('photos')
+                .remove([p.path])
+                .then(() => refresh());
+            });
+        }
         else if (a == 'new') modal = 'new';
         else if (a == 'edit') modal = 'edit';
         else if (a == 'todoEdit') todoEdit = Number(d.i);
@@ -2169,8 +2495,12 @@
             if (CH) sb.removeChannel(CH);
           }
           S.user = null;
-          C = { ev: [], nt: [], notes: [] };
+          C = { ev: [], nt: [], notes: [], photos: [] };
           P = {};
+          PU = {};
+          pv = null;
+          albumSel = '';
+          closeUp();
           view = 'auth';
           msg = '';
         } else if (a == 'del') {
@@ -2292,6 +2622,17 @@
       });
       document.addEventListener('change', (e) => {
         if (e.target.matches('input[data-a]')) act(e.target.dataset.a, e.target.dataset, e.target);
+        if (e.target.matches('[data-photo-cap]')) {
+          const p = C.photos.find((x) => String(x.id) == String(e.target.dataset.id)),
+            cap = e.target.value.trim();
+          if (!p) return;
+          p.cap = cap;
+          sb.from('photos')
+            .update({ caption: cap })
+            .eq('id', p.id)
+            .then(({ error }) => (error ? say(error.message) : refresh()));
+          return;
+        }
         if (e.target.matches('[data-note-body]')) {
           const n = C.notes.find((x) => String(x.id) == String(e.target.dataset.id)),
             body = e.target.value.trim();
@@ -2422,6 +2763,14 @@
               C.notes.unshift(toNote(data));
               render();
             });
+        } else if (k == 'photo') {
+          const files = umod ? umod.files : [];
+          if (!files.length) return;
+          const al = (v.album || '').trim().slice(0, 30),
+            cap = (v.caption || '').trim();
+          closeUp();
+          albumSel = al;
+          upPhotos(files, al, cap);
         } else if (k == 'noteedit') {
           const n = C.notes.find((x) => String(x.id) == String(f.dataset.id)),
             body = (v.body || '').trim(),
@@ -2456,6 +2805,44 @@
         save();
         render();
       });
+      // Ô chọn ảnh ẩn (đặt ngoài #app để không bị vẽ lại khi hộp thoại chọn file đang mở)
+      const pin = document.createElement('input');
+      pin.type = 'file';
+      pin.accept = 'image/*';
+      pin.multiple = true;
+      pin.hidden = true;
+      document.body.append(pin);
+      pin.addEventListener('change', () => {
+        const fs = [...pin.files].filter((f) => /^image\//.test(f.type) || /\.(heic|heif)$/i.test(f.name)).slice(0, 20);
+        pin.value = '';
+        if (!fs.length) return;
+        closeUp();
+        umod = { files: fs, urls: fs.slice(0, 4).map((f) => URL.createObjectURL(f)) };
+        render();
+      });
+      function closeUp() {
+        if (umod) umod.urls.forEach((u) => URL.revokeObjectURL(u));
+        umod = null;
+      }
+      // Vuốt trái / phải khi xem ảnh
+      let swX = null;
+      document.addEventListener(
+        'touchstart',
+        (e) => {
+          swX = pv != null && e.touches.length == 1 ? e.touches[0].clientX : null;
+        },
+        { passive: true },
+      );
+      document.addEventListener(
+        'touchend',
+        (e) => {
+          if (swX == null || pv == null) return;
+          const dx = e.changedTouches[0].clientX - swX;
+          swX = null;
+          if (Math.abs(dx) > 60) act('pvGo', { d: dx < 0 ? 1 : -1 }, document.body);
+        },
+        { passive: true },
+      );
       // Phím Esc đóng mọi bảng đang mở
       document.addEventListener('keydown', (e) => {
         if (pickerInput(e.target)) {
@@ -2463,6 +2850,10 @@
           e.preventDefault();
           if ((e.key == 'Enter' || e.key == ' ') && e.target.showPicker) e.target.showPicker();
           return;
+        }
+        if (pv != null && !e.target.matches('input,textarea')) {
+          if (e.key == 'ArrowLeft') return act('pvGo', { d: -1 }, document.body);
+          if (e.key == 'ArrowRight') return act('pvGo', { d: 1 }, document.body);
         }
         if (e.key == 'Escape') {
           modal = false;
@@ -2472,6 +2863,8 @@
           noteDraft = null;
           bell = false;
           closeLT();
+          closeUp();
+          pv = null;
           render();
         }
       });
@@ -2515,6 +2908,79 @@
         y: n.pos_y == null ? null : Number(n.pos_y),
         updated: Date.parse(n.updated_at || n.created_at) || Date.now(),
       });
+      // Ảnh trong album: toPhoto đổi dòng database, shrink thu nhỏ ảnh, upPhotos tải lên Storage + ghi bảng photos
+      const toPhoto = (p) => ({
+        id: p.id,
+        path: p.path,
+        cap: p.caption || '',
+        album: p.album || '',
+        by: p.created_by,
+        ts: Date.parse(p.created_at) || Date.now(),
+      });
+      // Bucket "photos" là riêng tư nên mỗi ảnh cần link ký sẵn (hiệu lực 1 giờ, tự làm mới khi sắp hết hạn)
+      async function signPhotos() {
+        const now = Date.now(),
+          need = C.photos.filter((p) => !PU[p.path] || PU[p.path].exp < now + 300000).map((p) => p.path);
+        if (!need.length) return;
+        try {
+          const { data } = await sb.storage.from('photos').createSignedUrls(need, 3600);
+          (data || []).forEach((x) => {
+            if (x.signedUrl) PU[x.path] = { url: x.signedUrl, exp: now + 3600000 };
+          });
+        } catch (x) {}
+      }
+      // Thu nhỏ ảnh về tối đa 1600px, nén JPEG ~82% để tiết kiệm dung lượng
+      const shrink = (file, max = 1600, q = 0.82) =>
+        new Promise((ok, no) => {
+          const url = URL.createObjectURL(file),
+            img = new Image();
+          img.onload = () => {
+            const r = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight)),
+              c = document.createElement('canvas'),
+              g = c.getContext('2d');
+            c.width = Math.max(1, Math.round(img.naturalWidth * r));
+            c.height = Math.max(1, Math.round(img.naturalHeight * r));
+            g.fillStyle = '#fff';
+            g.fillRect(0, 0, c.width, c.height);
+            g.drawImage(img, 0, 0, c.width, c.height);
+            URL.revokeObjectURL(url);
+            c.toBlob((b) => (b ? ok(b) : no(new Error('toBlob'))), 'image/jpeg', q);
+          };
+          img.onerror = () => {
+            URL.revokeObjectURL(url);
+            no(new Error('decode'));
+          };
+          img.src = url;
+        });
+      async function upPhotos(files, album, caption) {
+        upBusy = { n: 0, total: files.length };
+        render();
+        let fail = 0,
+          why = '';
+        for (const f of files) {
+          try {
+            const blob = await shrink(f),
+              path = S.user.couple_id + '/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.jpg',
+              up = await sb.storage.from('photos').upload(path, blob, { contentType: 'image/jpeg', cacheControl: '31536000' });
+            if (up.error) throw up.error;
+            const ins = await sb
+              .from('photos')
+              .insert({ couple_id: S.user.couple_id, path, album, caption: files.length == 1 ? caption : '' });
+            if (ins.error) {
+              sb.storage.from('photos').remove([path]);
+              throw ins.error;
+            }
+          } catch (x) {
+            fail++;
+            why = x.message || String(x);
+          }
+          upBusy.n++;
+          render();
+        }
+        upBusy = null;
+        await refresh();
+        if (fail) say(t('phFail').replace('{n}', fail) + (why ? ' (' + why + ')' : ''));
+      }
       // Đánh dấu thông báo đã đọc (ghi vào mảng read_by)
       const markRead = (n) => {
         if (!isR(n)) {
@@ -2552,12 +3018,13 @@
                   : m;
       // Tải buổi hẹn, thông báo, hồ sơ và ghi chú của cặp đôi (RLS tự lọc đúng cặp đôi của mình)
       async function loadC() {
-        const [ev, nt, pf, cp, notes] = await Promise.all([
+        const [ev, nt, pf, cp, notes, ph] = await Promise.all([
           sb.from('events').select('*').order('date'),
           sb.from('notifs').select('*').order('created_at', { ascending: false }).limit(50),
           sb.from('profiles').select('id,name,gender'),
           sb.from('couples').select('start_date').eq('id', S.user.couple_id).maybeSingle(),
           sb.from('notes').select('*').order('updated_at', { ascending: false }),
+          sb.from('photos').select('*').order('created_at', { ascending: false }),
         ]);
         let ls = '';
         try {
@@ -2570,6 +3037,9 @@
         C.nt = (nt.data || []).map(toN);
         C.notes = (notes.data || []).map(toNote);
         noteError = notes.error ? notes.error.message : '';
+        photoError = ph.error ? ph.error.message : '';
+        C.photos = (ph.data || []).map(toPhoto);
+        await signPhotos();
       }
       // Tải lại dữ liệu rồi vẽ lại màn hình
       async function refresh() {
@@ -2598,6 +3068,9 @@
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notes', filter: f }, refresh)
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notes', filter: f }, refresh)
           .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'notes' }, refresh)
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'photos', filter: f }, refresh)
+          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'photos', filter: f }, refresh)
+          .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'photos' }, refresh)
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifs', filter: f }, (x) =>
             onNotif(x.new),
           )
