@@ -694,6 +694,176 @@
         min-width: 0;
         height: 40px;
       }
+      /* ----- Bảng ghi chú chung ----- */
+      .note-compose {
+        padding: 16px;
+        margin-bottom: 20px;
+      }
+      .note-text {
+        display: block;
+        height: auto;
+        min-height: 92px;
+        padding: 12px 14px;
+        resize: vertical;
+        line-height: 1.45;
+      }
+      .note-compose-foot,
+      .note-edit-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 12px;
+      }
+      .note-colors {
+        display: flex;
+        gap: 8px;
+        padding: 0;
+        margin: 0;
+        border: 0;
+      }
+      .note-colors legend {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+      }
+      .note-color {
+        position: relative;
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        cursor: pointer;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+      }
+      .note-color input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+      }
+      .note-color:has(input:checked) {
+        outline: 2px solid var(--pk);
+        outline-offset: 3px;
+        box-shadow: 0 0 10px var(--pk);
+      }
+      .note-color[data-c='yellow'] {
+        background: #ffe38d;
+      }
+      .note-color[data-c='pink'] {
+        background: #ffb6d9;
+      }
+      .note-color[data-c='cyan'] {
+        background: #a9f8fb;
+      }
+      .note-color[data-c='lilac'] {
+        background: #d9c2ff;
+      }
+      .note-compose .btn {
+        width: auto;
+        min-height: 42px;
+        padding: 0 18px;
+      }
+      .note-board {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        gap: 22px;
+        padding: 8px 4px 28px;
+      }
+      .sticky {
+        --paper: #ffb6d9;
+        position: relative;
+        min-height: 190px;
+        padding: 22px 18px 14px;
+        display: flex;
+        flex-direction: column;
+        color: #24131d;
+        background: var(--paper);
+        border: 0;
+        border-radius: 5px 5px 18px 5px;
+        transform: rotate(var(--tilt));
+        box-shadow:
+          0 12px 24px rgba(0, 0, 0, 0.32),
+          0 0 15px color-mix(in srgb, var(--paper) 50%, transparent);
+        transition:
+          transform 0.18s,
+          box-shadow 0.18s;
+      }
+      .sticky::before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        left: 50%;
+        width: 54px;
+        height: 18px;
+        transform: translateX(-50%) rotate(-2deg);
+        background: rgba(255, 255, 255, 0.42);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+      }
+      .sticky:hover,
+      .sticky:focus-within {
+        z-index: 2;
+        transform: rotate(0) translateY(-4px);
+        box-shadow:
+          0 18px 30px rgba(0, 0, 0, 0.42),
+          0 0 22px color-mix(in srgb, var(--paper) 65%, transparent);
+      }
+      .sticky.yellow {
+        --paper: #ffe38d;
+      }
+      .sticky.pink {
+        --paper: #ffb6d9;
+      }
+      .sticky.cyan {
+        --paper: #a9f8fb;
+      }
+      .sticky.lilac {
+        --paper: #d9c2ff;
+      }
+      .sticky-body {
+        flex: 1;
+        margin: 0 0 16px;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        font-size: 16px;
+        line-height: 1.5;
+      }
+      .sticky-foot {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding-top: 10px;
+        border-top: 1px dashed rgba(36, 19, 29, 0.25);
+      }
+      .sticky-foot .who {
+        flex: 1;
+        min-width: 0;
+        font-size: 11px;
+        opacity: 0.72;
+      }
+      .sticky .mini {
+        min-height: 30px;
+        padding: 0 8px;
+        color: #24131d;
+        background: rgba(255, 255, 255, 0.3);
+        border-color: rgba(36, 19, 29, 0.22);
+      }
+      .sticky-edit {
+        transform: none;
+      }
+      .sticky-edit .note-text {
+        flex: 1;
+        min-height: 110px;
+        color: #24131d;
+        background: rgba(255, 255, 255, 0.28);
+        border-color: rgba(36, 19, 29, 0.3);
+      }
+      .note-error {
+        padding: 16px;
+        color: var(--pk2);
+        border-color: var(--pk);
+      }
       /* ----- Bảng thông báo của chuông ----- */
       .pop {
         position: absolute;
@@ -891,6 +1061,18 @@
           font-size: 16px;
         }
       }
+      @media (max-width: 480px) {
+        .note-compose-foot,
+        .note-edit-foot {
+          flex-wrap: wrap;
+        }
+        .note-compose .btn {
+          width: 100%;
+        }
+        .sticky {
+          transform: none;
+        }
+      }
       /* Màn hình máy tính */
       @media (min-width: 900px) {
         .shell {
@@ -1079,6 +1261,7 @@
         vi: {
           cal: 'Lịch',
           det: 'Buổi hẹn',
+          notes: 'Ghi chú',
           set: 'Cài đặt',
           in: 'Đăng nhập',
           up: 'Đăng ký',
@@ -1128,6 +1311,17 @@
           dcNext: 'còn {n} ngày nữa đến ngày thứ {m}',
           dcTtl: 'Ngày bắt đầu yêu',
           dcLocal: 'Mới lưu trên máy này. Để cả hai cùng thấy, cần thêm cột start_date vào bảng couples trên Supabase.',
+          eedit: 'Sửa thời gian & địa điểm',
+          del1: 'Xóa việc này',
+          board: 'bảng_ghi_chú_chung',
+          addNote: 'Dán ghi chú',
+          notePlaceholder: 'Viết điều gì đó cho hai bạn…',
+          noNotes: 'Chưa có ghi chú. Hãy dán ghi chú đầu tiên!',
+          editNote: 'Sửa ghi chú',
+          deleteNote: 'Xóa ghi chú',
+          noteColor: 'Màu ghi chú',
+          noteSetup: 'Bảng ghi chú chưa được thiết lập. Hãy chạy tệp supabase-notes.sql trong Supabase.',
+          efFail: 'Không lưu được. Hãy kiểm tra quyền UPDATE của bảng events trên Supabase.',
           empN: 'Không có thông báo mới',
           code: 'Mã mời cặp đôi',
           back: 'Quay lại',
@@ -1179,6 +1373,7 @@
         en: {
           cal: 'Calendar',
           det: 'Dates',
+          notes: 'Notes',
           set: 'Settings',
           in: 'Log in',
           up: 'Sign up',
@@ -1228,6 +1423,17 @@
           dcNext: '{n} days until day {m}',
           dcTtl: 'Start date',
           dcLocal: 'Saved on this device only. To share it, add a start_date column to the couples table in Supabase.',
+          eedit: 'Edit time & place',
+          del1: 'Remove this item',
+          board: 'shared_note_board',
+          addNote: 'Post note',
+          notePlaceholder: 'Write something for the two of you…',
+          noNotes: 'No notes yet. Post the first one!',
+          editNote: 'Edit note',
+          deleteNote: 'Delete note',
+          noteColor: 'Note color',
+          noteSetup: 'The note board is not set up yet. Run supabase-notes.sql in Supabase.',
+          efFail: 'Could not save. Check the UPDATE policy on the events table in Supabase.',
           empN: 'No new notifications',
           code: 'Couple invite code',
           back: 'Back',
@@ -1308,9 +1514,9 @@
       const CFG = !/YOUR-/.test(SB_URL + SB_KEY) && typeof supabase != 'undefined',
         sb = CFG ? supabase.createClient(SB_URL, SB_KEY) : null;
       // S = cài đặt trên máy (ngôn ngữ, công tắc thông báo, người đang đăng nhập)
-      // C = dữ liệu của cặp đôi (ev = buổi hẹn, nt = thông báo)
+      // C = dữ liệu của cặp đôi (ev = buổi hẹn, nt = thông báo, notes = ghi chú chung)
       let S = {},
-        C = { ev: [], nt: [] };
+        C = { ev: [], nt: [], notes: [] };
       try {
         S = JSON.parse(localStorage.getItem('ls')) || {};
       } catch (e) {}
@@ -1339,7 +1545,9 @@
         modal = false,
         pmod = false,
         smod = false,
-        todoEdit = null;
+        todoEdit = null,
+        noteEdit = null,
+        noteError = '';
       cur.setDate(1);
       // t("khoá") lấy chữ theo ngôn ngữ; tx() cho phép nội dung dạng {k:"khoá"}; esc() chống chèn HTML
       const t = (k) => D[S.lang][k],
@@ -1379,6 +1587,7 @@
         `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
       const I = {
         cal: sv('<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 11h18"/>'),
+        note: sv('<path d="M5 3h14a2 2 0 012 2v10l-6 6H5a2 2 0 01-2-2V5a2 2 0 012-2z"/><path d="M15 21v-5a1 1 0 011-1h5M7 8h10M7 12h7"/>'),
         set: sv(
           '<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
         ),
@@ -1449,6 +1658,7 @@
         `<nav class="tb">${[
           ['cal', I.cal],
           ['det', ic('hr')],
+          ['notes', I.note],
           ['set', I.set],
         ]
           .map(
@@ -1537,6 +1747,31 @@
         if (!e) return `<div class="main">${h}<div class="card empty">${t('pick')}</div></div>`;
         return `<div class="main">${h}<button class="btn b2" data-a="go" data-v="cal" style="width:auto;padding:0 16px;min-height:40px;margin-bottom:12px">${I.back} ${t('back')}</button><div class="card hero"><div><span class="chip">${fmt(e.date, { weekday: 'short', day: 'numeric', month: 'numeric' })}</span><h2>${esc(tx(e.title))}</h2><p class="mono sub" style="font-size:12px">${rel(e.date)} ${ic('hr')}</p></div>${av(me(), 92)}</div><div class="card" style="margin-top:12px"><div class="rw"><span class="sub">${t('tm')}</span><span>${e.time}</span></div><div class="rw"><span class="sub">${t('pl')}</span><span>${esc(tx(e.place))}</span></div></div><div class="card sec"><p class="mono sub" style="font-size:12px;margin-bottom:4px">// ${t('prep')}</p>${todoRows(e)}<form class="todo-add" data-f="todo"><input class="in" name="t" placeholder="${t('todo')}" aria-label="${t('todo')}"><button class="btn b1">${t('addTodo')}</button></form></div><div class="card sec" style="display:flex;align-items:center;gap:12px"><div class="pair">${av(me(), 36)}${av(pr(), 36)}</div><p style="flex:1">${t('both')}</p><span class="chip">OK</span></div><div class="row2"><button class="btn b2" data-a="del">${t('del')}</button><button class="btn b1" data-a="edit">${t('edit')}</button></div></div>`;
       }
+      const noteColors = (selected = 'pink') =>
+        `<fieldset class="note-colors"><legend>${t('noteColor')}</legend>${['yellow', 'pink', 'cyan', 'lilac']
+          .map(
+            (c) =>
+              `<label class="note-color" data-c="${c}" aria-label="${c}"><input type="radio" name="color" value="${c}" ${c == selected ? 'checked' : ''}></label>`,
+          )
+          .join('')}</fieldset>`;
+      const noteCard = (n, i) => {
+        const color = ['yellow', 'pink', 'cyan', 'lilac'].includes(n.color) ? n.color : 'pink',
+          tilt = [-1.4, 1.1, -0.7, 1.5][i % 4],
+          author = P[n.by] || {};
+        if (String(noteEdit) == String(n.id))
+          return `<form class="sticky sticky-edit ${color}" style="--tilt:0deg" data-f="noteedit" data-id="${n.id}"><textarea class="in note-text" name="body" maxlength="500" required>${esc(n.body)}</textarea><div class="note-edit-foot">${noteColors(color)}<div class="todo-actions"><button type="button" class="mini" data-a="noteCancel">${t('cancel')}</button><button class="mini">${t('save')}</button></div></div></form>`;
+        return `<article class="sticky ${color}" style="--tilt:${tilt}deg"><p class="sticky-body">${esc(n.body)}</p><footer class="sticky-foot">${av(author.gender || 'f', 28)}<span class="who"><b>${esc(author.name || t('you'))}</b><br>${new Date(n.updated).toLocaleDateString(loc(), { month: 'short', day: 'numeric' })}</span><button class="mini" data-a="noteEdit" data-id="${n.id}" aria-label="${t('editNote')}">✎</button><button class="mini" data-a="noteDel" data-id="${n.id}" aria-label="${t('deleteNote')}">×</button></footer></article>`;
+      };
+      // Bảng ghi chú được đồng bộ theo thời gian thực cho cả hai người
+      function vNotes() {
+        const h = head(t('notes'), t('board'));
+        if (noteError) return `<div class="main">${h}<div class="card note-error">${t('noteSetup')}</div></div>`;
+        const compose = `<form class="card note-compose" data-f="note"><textarea class="in note-text" name="body" maxlength="500" required placeholder="${t('notePlaceholder')}"></textarea><div class="note-compose-foot">${noteColors()}<button class="btn b1">${t('addNote')}</button></div></form>`,
+          board = C.notes.length
+            ? `<div class="note-board">${C.notes.map(noteCard).join('')}</div>`
+            : `<div class="card empty">${t('noNotes')}</div>`;
+        return `<div class="main">${h}${compose}${board}</div>`;
+      }
       // Màn cài đặt: hồ sơ, tài khoản, công tắc thông báo, đăng xuất
       function vSet() {
         const n = S.n;
@@ -1574,7 +1809,7 @@
             ? '<div class="auth"><p class="mono sub">…</p></div>'
             : view == 'auth'
               ? vAuth()
-              : `<div class="shell">${{ cal: vCal, det: vDet, set: vSet }[view]()}${nav()}</div>` +
+              : `<div class="shell">${{ cal: vCal, det: vDet, notes: vNotes, set: vSet }[view]()}${nav()}</div>` +
                 (modal ? vMod() : '') +
                 (pmod ? vProf() : '') +
                 (smod ? vSince() : '') +
@@ -1686,6 +1921,7 @@
         if (a == 'go') {
           view = d.v;
           bell = false;
+          if (view != 'notes') noteEdit = null;
           if (view == 'det' && !C.ev.some((e) => e.id == open)) open = (up()[0] || {}).id;
         } else if (a == 'lang') {
           S.lang = d.l;
@@ -1724,6 +1960,18 @@
         else if (a == 'sclose') smod = false;
         else if (a == 'pedit') pmod = true;
         else if (a == 'pclose') pmod = false;
+        else if (a == 'noteEdit') noteEdit = d.id;
+        else if (a == 'noteCancel') noteEdit = null;
+        else if (a == 'noteDel') {
+          const n = C.notes.find((x) => String(x.id) == String(d.id));
+          if (!n) return;
+          C.notes = C.notes.filter((x) => String(x.id) != String(d.id));
+          noteEdit = null;
+          sb.from('notes')
+            .delete()
+            .eq('id', n.id)
+            .then(({ error }) => (error ? say(error.message) : refresh()));
+        }
         else if (a == 'new') modal = 'new';
         else if (a == 'edit') modal = 'edit';
         else if (a == 'todoEdit') todoEdit = Number(d.i);
@@ -1744,7 +1992,7 @@
             if (CH) sb.removeChannel(CH);
           }
           S.user = null;
-          C = { ev: [], nt: [] };
+          C = { ev: [], nt: [], notes: [] };
           P = {};
           view = 'auth';
           msg = '';
@@ -1887,6 +2135,30 @@
               await refresh();
               if (error || !data || !data.length) say(error ? error.message : t('pfFail'));
             });
+        } else if (k == 'note') {
+          const body = (v.body || '').trim(),
+            color = ['yellow', 'pink', 'cyan', 'lilac'].includes(v.color) ? v.color : 'pink';
+          if (!body) return;
+          sb.from('notes')
+            .insert({ couple_id: S.user.couple_id, body, color })
+            .select()
+            .single()
+            .then(({ data, error }) => {
+              if (error) return say(error.message);
+              C.notes.unshift(toNote(data));
+              render();
+            });
+        } else if (k == 'noteedit') {
+          const n = C.notes.find((x) => String(x.id) == String(f.dataset.id)),
+            body = (v.body || '').trim(),
+            color = ['yellow', 'pink', 'cyan', 'lilac'].includes(v.color) ? v.color : 'pink';
+          if (!n || !body) return;
+          Object.assign(n, { body, color, updated: Date.now() });
+          noteEdit = null;
+          sb.from('notes')
+            .update({ body, color, updated_at: new Date().toISOString() })
+            .eq('id', n.id)
+            .then(({ error }) => (error ? say(error.message) : refresh()));
         } else if (k == 'todoedit') {
           if (!v.t.trim()) return;
           const e = C.ev.find((x) => x.id == open),
@@ -1922,6 +2194,7 @@
           modal = false;
           pmod = false;
           smod = false;
+          noteEdit = null;
           bell = false;
           closeLT();
           render();
@@ -1958,6 +2231,13 @@
         r: n.read_by || [],
         ts: Date.parse(n.created_at),
       });
+      const toNote = (n) => ({
+        id: n.id,
+        body: n.body || '',
+        color: n.color || 'pink',
+        by: n.created_by,
+        updated: Date.parse(n.updated_at || n.created_at) || Date.now(),
+      });
       // Đánh dấu thông báo đã đọc (ghi vào mảng read_by)
       const markRead = (n) => {
         if (!isR(n)) {
@@ -1993,13 +2273,14 @@
                 : /already registered/i.test(m)
                   ? t('dup')
                   : m;
-      // Tải buổi hẹn, thông báo, hồ sơ của cặp đôi (RLS tự lọc đúng cặp đôi của mình)
+      // Tải buổi hẹn, thông báo, hồ sơ và ghi chú của cặp đôi (RLS tự lọc đúng cặp đôi của mình)
       async function loadC() {
-        const [ev, nt, pf, cp] = await Promise.all([
+        const [ev, nt, pf, cp, notes] = await Promise.all([
           sb.from('events').select('*').order('date'),
           sb.from('notifs').select('*').order('created_at', { ascending: false }).limit(50),
           sb.from('profiles').select('id,name,gender'),
           sb.from('couples').select('start_date').eq('id', S.user.couple_id).maybeSingle(),
+          sb.from('notes').select('*').order('updated_at', { ascending: false }),
         ]);
         let ls = '';
         try {
@@ -2010,6 +2291,8 @@
         (pf.data || []).forEach((x) => (P[x.id] = x));
         C.ev = (ev.data || []).map(toE);
         C.nt = (nt.data || []).map(toN);
+        C.notes = (notes.data || []).map(toNote);
+        noteError = notes.error ? notes.error.message : '';
       }
       // Tải lại dữ liệu rồi vẽ lại màn hình
       async function refresh() {
@@ -2035,6 +2318,9 @@
           .channel('c-' + S.user.couple_id)
           .on('postgres_changes', { event: '*', schema: 'public', table: 'events', filter: f }, refresh)
           .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'events' }, refresh)
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notes', filter: f }, refresh)
+          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notes', filter: f }, refresh)
+          .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'notes' }, refresh)
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifs', filter: f }, (x) =>
             onNotif(x.new),
           )
