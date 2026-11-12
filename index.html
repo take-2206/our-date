@@ -44,6 +44,10 @@
       * {
         box-sizing: border-box;
       }
+      html {
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+      }
       body {
         margin: 0;
         background: var(--bg);
@@ -888,6 +892,12 @@
       }
       .fab:active {
         transform: scale(0.94);
+      }
+      /* iOS zooms focused form controls whose text is smaller than 16px. */
+      @media (max-width: 899px) {
+        .in {
+          font-size: 16px;
+        }
       }
       /* Màn hình máy tính */
       @media (min-width: 900px) {
