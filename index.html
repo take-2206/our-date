@@ -1176,6 +1176,15 @@
         flex: 1;
         min-width: 0;
       }
+      .dc .dc-name {
+        margin-bottom: 3px;
+        overflow: hidden;
+        color: #fff;
+        font-size: 16px;
+        font-weight: 800;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
       .dc .dcv {
         display: flex;
         align-items: baseline;
@@ -1662,7 +1671,9 @@
           dcFrom: 'từ',
           dcNext: 'còn {n} ngày nữa đến ngày thứ {m}',
           dcTtl: 'Ngày bắt đầu yêu',
-          dcLocal: 'Mới lưu trên máy này. Để cả hai cùng thấy, cần thêm cột start_date vào bảng couples trên Supabase.',
+          coupleName: 'Tên của hai bạn',
+          coupleNamePh: 'vd: Yan ♡ Min',
+          dcLocal: 'Mới lưu trên máy này. Để cả hai cùng thấy, hãy chạy tệp supabase-couple.sql trong Supabase.',
           eedit: 'Sửa thời gian & địa điểm',
           del1: 'Xóa việc này',
           board: 'bảng_ghi_chú_chung',
@@ -1795,7 +1806,9 @@
           dcFrom: 'since',
           dcNext: '{n} days until day {m}',
           dcTtl: 'Start date',
-          dcLocal: 'Saved on this device only. To share it, add a start_date column to the couples table in Supabase.',
+          coupleName: 'Couple name',
+          coupleNamePh: 'e.g. Yan ♡ Min',
+          dcLocal: 'Saved on this device only. To share it, run supabase-couple.sql in Supabase.',
           eedit: 'Edit time & place',
           del1: 'Remove this item',
           board: 'shared_note_board',
@@ -1956,6 +1969,14 @@
         tx = (v) => (typeof v == 'object' ? t(v.k) : v);
       const esc = (s) =>
         String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+      const coupleNameFromUsers = () => {
+        const other = typeof partner === 'function' ? partner() : null;
+        const names = [S.user && S.user.name, other && other.name]
+          .filter(Boolean)
+          .map((n) => String(n).trim())
+          .filter(Boolean);
+        return names.length ? names.join(' & ') : '';
+      };
       // Avatar: AVF = ảnh nữ (img/girl.png), AVM = ảnh nam (img/boy.png), AVF0 = ảnh nữ nhúng sẵn dùng khi thiếu file
       // IMG = 3 ảnh lá thư nhúng base64: e0 = phong bì đóng, e1 = phong bì mở, pp = giấy thư
       const AVF0 = 'data:image/jpeg;base64,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';
@@ -2098,16 +2119,17 @@
       // Đếm ngày bên nhau: ngày bắt đầu = ngày thứ 1; mốc kế tiếp = 100, 200, 300, 365, 500... rồi mỗi năm
       const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
       function dayCard() {
-        const sn = C.since;
+        const sn = C.since,
+          cn = C.coupleName || coupleNameFromUsers();
         if (!sn)
-          return `<div class="card dc"><div class="pair">${av(me(), 44)}${av(pr(), 44)}</div><div class="dcb"><button class="btn b1" data-a="sedit" style="min-height:44px">${t('dcSet')}</button></div></div>`;
+          return `<div class="card dc"><div class="pair">${av(me(), 44)}${av(pr(), 44)}</div><div class="dcb">${cn ? `<p class="dc-name">${esc(cn)}</p>` : ''}<button class="btn b1" data-a="sedit" style="min-height:44px">${t('dcSet')}</button></div></div>`;
         const n = Math.round((today0() - parse(sn)) / 864e5) + 1,
           nx = MS.find((x) => x > n) || Math.ceil((n + 1) / 365) * 365,
           sub = `${t('dcFrom')} ${fmt(sn, { day: 'numeric', month: 'numeric', year: 'numeric' })}${n > 0 ? ' · ' + t('dcNext').replace('{n}', nx - n).replace('{m}', nx) : ''}`;
-        return `<div class="card dc"><div class="pair">${av(me(), 44)}${av(pr(), 44)}</div><div class="dcb"><div class="dcv"><b class="px">${Math.max(n, 0)}</b><span>${t('dc')}</span></div><p class="sub mono" style="font-size:12px;margin-top:2px">${sub}</p></div><button class="ib" data-a="sedit" aria-label="${t('dcTtl')}">${sv('<path d="M4 20h4L19 9l-4-4L4 16v4z"/>')}</button></div>`;
+        return `<div class="card dc"><div class="pair">${av(me(), 44)}${av(pr(), 44)}</div><div class="dcb">${cn ? `<p class="dc-name">${esc(cn)}</p>` : ''}<div class="dcv"><b class="px">${Math.max(n, 0)}</b><span>${t('dc')}</span></div><p class="sub mono" style="font-size:12px;margin-top:2px">${sub}</p></div><button class="ib" data-a="sedit" aria-label="${t('dcTtl')}">${sv('<path d="M4 20h4L19 9l-4-4L4 16v4z"/>')}</button></div>`;
       }
       function vSince() {
-        return `<div class="mod" data-a="sclose"><form class="card" data-f="since" role="dialog" aria-label="${t('dcTtl')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:16px">${t('dcTtl')}</h2><div class="fl"><label class="lb" for="sd">${t('dt')}</label><input class="in" id="sd" name="since" type="date" required max="${key(new Date())}" value="${esc(C.since || '')}"></div><div class="row2"><button type="button" class="btn b2" data-a="sclose">${t('cancel')}</button><button class="btn b1">${t('save')}</button></div></form></div>`;
+        return `<div class="mod" data-a="sclose"><form class="card" data-f="since" role="dialog" aria-label="${t('dcTtl')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:16px">${t('dcTtl')}</h2><div class="fl"><label class="lb" for="sd">${t('dt')}</label><input class="in" id="sd" name="since" type="date" data-calendar inputmode="none" required max="${key(new Date())}" value="${esc(C.since || '')}"></div><div class="row2"><button type="button" class="btn b2" data-a="sclose">${t('cancel')}</button><button class="btn b1">${t('save')}</button></div></form></div>`;
       }
       function vCal() {
         const y = cur.getFullYear(),
@@ -2722,14 +2744,17 @@
           cur = new Date(parse(v.date).getFullYear(), parse(v.date).getMonth(), 1);
           modal = false;
         } else if (k == 'since') {
-          if (!v.since) return;
+          const coupleName = coupleNameFromUsers();
+          if (!v.since || !coupleName) return;
           C.since = v.since;
+          C.coupleName = coupleName;
           smod = false;
           try {
             localStorage.setItem('ls_since_' + S.user.couple_id, v.since);
+            localStorage.setItem('ls_couple_name_' + S.user.couple_id, coupleName);
           } catch (x) {}
           sb.from('couples')
-            .update({ start_date: v.since })
+            .update({ start_date: v.since, couple_name: coupleName })
             .eq('id', S.user.couple_id)
             .select('id')
             .then(({ data, error }) => {
@@ -3034,15 +3059,18 @@
           sb.from('events').select('*').order('date'),
           sb.from('notifs').select('*').order('created_at', { ascending: false }).limit(50),
           sb.from('profiles').select('id,name,gender'),
-          sb.from('couples').select('start_date').eq('id', S.user.couple_id).maybeSingle(),
+          sb.from('couples').select('*').eq('id', S.user.couple_id).maybeSingle(),
           sb.from('notes').select('*').order('updated_at', { ascending: false }),
           sb.from('photos').select('*').order('created_at', { ascending: false }),
         ]);
-        let ls = '';
+        let ls = '',
+          ln = '';
         try {
           ls = localStorage.getItem('ls_since_' + S.user.couple_id) || '';
+          ln = localStorage.getItem('ls_couple_name_' + S.user.couple_id) || '';
         } catch (x) {}
         C.since = (!cp.error && cp.data && cp.data.start_date) || ls || '';
+        C.coupleName = (!cp.error && cp.data && cp.data.couple_name) || ln || coupleNameFromUsers() || '';
         P = {};
         (pf.data || []).forEach((x) => (P[x.id] = x));
         C.ev = (ev.data || []).map(toE);
@@ -3077,6 +3105,11 @@
           .channel('c-' + S.user.couple_id)
           .on('postgres_changes', { event: '*', schema: 'public', table: 'events', filter: f }, refresh)
           .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'events' }, refresh)
+          .on(
+            'postgres_changes',
+            { event: 'UPDATE', schema: 'public', table: 'couples', filter: 'id=eq.' + S.user.couple_id },
+            refresh,
+          )
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notes', filter: f }, refresh)
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notes', filter: f }, refresh)
           .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'notes' }, refresh)
