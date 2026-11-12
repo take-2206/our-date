@@ -40,14 +40,39 @@
         --pk2: #ffb6d9;
         --cy: #7df9ff;
         --mut: #a98598;
+        scrollbar-color: rgba(255, 105, 180, 0.8) rgba(13, 13, 13, 0.9);
+      }
+      html {
+        background: var(--bg);
+        overflow-x: hidden;
+        scrollbar-gutter: stable;
+        scrollbar-color: rgba(255, 105, 180, 0.8) rgba(13, 13, 13, 0.9);
       }
       * {
         box-sizing: border-box;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 105, 180, 0.8) rgba(13, 13, 13, 0.9);
+      }
+      *::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+      *::-webkit-scrollbar-track {
+        background: rgba(13, 13, 13, 0.9);
+      }
+      *::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, rgba(255, 105, 180, 0.9), rgba(125, 249, 255, 0.7));
+        border: 2px solid rgba(13, 13, 13, 0.9);
+        border-radius: 999px;
+      }
+      *::-webkit-scrollbar-corner {
+        background: transparent;
       }
       body {
         margin: 0;
         background: var(--bg);
         color: #fff;
+        overflow-x: hidden;
         font:
           600 15px/1.4 'Nunito',
           sans-serif;
@@ -774,7 +799,9 @@
       .sticky {
         --paper: #ffb6d9;
         position: relative;
+        min-width: 180px;
         min-height: 190px;
+        width: min(220px, calc(100% - 24px));
         padding: 22px 18px 14px;
         display: flex;
         flex-direction: column;
@@ -783,6 +810,12 @@
         border: 0;
         border-radius: 5px 5px 18px 5px;
         transform: rotate(var(--tilt));
+        transform-origin: center center;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        contain: layout paint;
+        resize: both;
+        overflow: auto;
         box-shadow:
           0 12px 24px rgba(0, 0, 0, 0.32),
           0 0 15px color-mix(in srgb, var(--paper) 50%, transparent);
@@ -962,7 +995,12 @@
         width: min(220px, calc(100% - 24px));
         height: 190px;
         min-height: 0;
+        resize: both;
+        overflow: auto;
         transform: translate(-50%, -50%) rotate(var(--tilt));
+        transform-origin: center center;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
       }
       .note-board .sticky:hover,
       .note-board .sticky:focus-within {
@@ -992,13 +1030,29 @@
         width: 100%;
         flex: 1;
         min-height: 0;
-        padding: 4px 0;
+        padding: 4px 0 4px 2px;
         resize: none;
         border: 0;
         outline: 0;
         color: #24131d;
         background: transparent;
+        overflow: auto;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(36, 19, 29, 0.42) transparent;
+        -webkit-overflow-scrolling: touch;
         font: 700 16px/1.5 'Nunito', sans-serif;
+      }
+      .sticky-inline::-webkit-scrollbar {
+        width: 8px;
+      }
+      .sticky-inline::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .sticky-inline::-webkit-scrollbar-thumb {
+        background: rgba(36, 19, 29, 0.42);
+        border: 2px solid transparent;
+        border-radius: 999px;
+        background-clip: padding-box;
       }
       .sticky-inline::placeholder {
         color: rgba(36, 19, 29, 0.5);
