@@ -2243,8 +2243,10 @@
           author = P[n.by] || {},
           cols = innerWidth < 600 ? 1 : innerWidth < 900 ? 2 : 4,
           x = Number.isFinite(n.x) ? n.x : (i % cols + 0.5) / cols,
-          y = Number.isFinite(n.y) ? n.y : Math.min(0.18 + Math.floor(i / cols) * 0.32, 0.82);
-        return `<article class="sticky ${color}" style="--x:${x * 100}%;--y:${y * 100}%;--tilt:${tilt}deg" data-note-id="${n.id}"><button class="note-drag" type="button" data-note-drag="${n.id}" aria-label="${t('dropNote')}"></button><textarea class="sticky-inline" data-note-body data-id="${n.id}" maxlength="500" aria-label="${t('editNote')}">${esc(n.body)}</textarea><footer class="sticky-foot">${av(author.gender || 'f', 28)}<span class="who"><b>${esc(author.name || t('you'))}</b><br>${new Date(n.updated).toLocaleDateString(loc(), { month: 'short', day: 'numeric' })}</span><button class="mini" data-a="noteDel" data-id="${n.id}" aria-label="${t('deleteNote')}">×</button></footer></article>`;
+          y = Number.isFinite(n.y) ? n.y : Math.min(0.18 + Math.floor(i / cols) * 0.32, 0.82),
+          w = n.w || '220px',
+          h = n.h || '190px';
+        return `<article class="sticky ${color}" style="--x:${x * 100}%;--y:${y * 100}%;--tilt:${tilt}deg;width:${w};height:${h}" data-note-id="${n.id}"><button class="note-drag" type="button" data-note-drag="${n.id}" aria-label="${t('dropNote')}"></button><textarea class="sticky-inline" data-note-body data-id="${n.id}" maxlength="500" aria-label="${t('editNote')}">${esc(n.body)}</textarea><footer class="sticky-foot">${av(author.gender || 'f', 28)}<span class="who"><b>${esc(author.name || t('you'))}</b><br>${new Date(n.updated).toLocaleDateString(loc(), { month: 'short', day: 'numeric' })}</span><button class="mini" data-a="noteDel" data-id="${n.id}" aria-label="${t('deleteNote')}">×</button></footer></article>`;
       };
       // Bảng ghi chú được đồng bộ theo thời gian thực cho cả hai người
       function vNotes() {
@@ -2663,13 +2665,20 @@
           x = clamp((centerX - r.left) / r.width, padX, 1 - padX),
           y = clamp((centerY - r.top) / r.height, padY, 1 - padY);
         if (drag.kind == 'new') {
-          noteDraft = { color: drag.color, x, y };
+          noteDraft = { color: drag.color, x, y, w: "220px", h: "190px" };
           render();
           requestAnimationFrame(() => document.querySelector('.sticky-draft textarea')?.focus());
         } else {
+          const liveCard = document.querySelector('[data-note-id="' + String(drag.note.id) + '"]');
           Object.assign(drag.note, { x, y });
+          if (liveCard) {
+            const cardW = Math.max(180, Math.round(liveCard.offsetWidth));
+            const cardH = Math.max(190, Math.round(liveCard.offsetHeight));
+            drag.note.w = `${cardW}px`;
+            drag.note.h = `${cardH}px`;
+          }
           sb.from('notes')
-            .update({ pos_x: x, pos_y: y })
+            .update({ pos_x: x, pos_y: y, width: drag.note.w || '220px', height: drag.note.h || '190px' })
             .eq('id', drag.note.id)
             .then(({ error }) => (error ? say(error.message) : refresh()));
           render();
@@ -2694,6 +2703,20 @@
       );
       document.addEventListener('pointerup', finishNoteDrag);
       document.addEventListener('pointercancel', finishNoteDrag);
+      document.addEventListener('resize', (e) => {
+        const el = e.target;
+        if (!(el instanceof HTMLElement) || !el.matches('.sticky[data-note-id]')) return;
+        const note = C.notes.find((n) => String(n.id) == String(el.dataset.noteId));
+        if (!note) return;
+        note.w = `${Math.max(180, Math.round(el.offsetWidth))}px`;
+        note.h = `${Math.max(190, Math.round(el.offsetHeight))}px`;
+        sb.from('notes')
+          .update({ width: note.w, height: note.h })
+          .eq('id', note.id)
+          .then(({ error }) => {
+            if (error) say(error.message);
+          });
+      });
       document.addEventListener('click', (e) => {
         if (pickerInput(e.target)) {
           if (e.target.showPicker) e.preventDefault();
@@ -2842,6 +2865,8 @@
               color: draft.color,
               pos_x: draft.x,
               pos_y: draft.y,
+              width: draft.w || '220px',
+              height: draft.h || '190px',
             })
             .select()
             .single()
@@ -2870,7 +2895,7 @@
           Object.assign(n, { body, color, updated: Date.now() });
           noteEdit = null;
           sb.from('notes')
-            .update({ body, color, updated_at: new Date().toISOString() })
+            .update({ body, color, width: n.w || '220px', height: n.h || '190px', updated_at: new Date().toISOString() })
             .eq('id', n.id)
             .then(({ error }) => (error ? say(error.message) : refresh()));
         } else if (k == 'todoedit') {
@@ -2997,6 +3022,8 @@
         by: n.created_by,
         x: n.pos_x == null ? null : Number(n.pos_x),
         y: n.pos_y == null ? null : Number(n.pos_y),
+        w: n.width || n.w || '220px',
+        h: n.height || n.h || '190px',
         updated: Date.parse(n.updated_at || n.created_at) || Date.now(),
       });
       // Ảnh trong album: toPhoto đổi dòng database, shrink thu nhỏ ảnh, upPhotos tải lên Storage + ghi bảng photos
