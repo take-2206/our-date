@@ -652,11 +652,46 @@
         place-items: center;
         padding: 20px;
       }
+      .mod {
+        display: flex;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
+      }
       .mod form {
+        margin: auto;
+        box-sizing: border-box;
+        max-width: 100%;
         width: min(420px, 100%);
         padding: 20px;
         border-color: var(--pk);
         box-shadow: 0 0 30px rgba(255, 105, 180, 0.4);
+      }
+      .mod .fl {
+        min-width: 0;
+      }
+      .mod .dr {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 12px;
+      }
+      .mod .in {
+        display: block;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
+        -webkit-appearance: none;
+        appearance: none;
+      }
+      .mod input[type='date'].in,
+      .mod input[type='time'].in {
+        text-align: left;
+        padding-right: 8px;
+        line-height: 48px;
+      }
+      .mod input::-webkit-date-and-time-value {
+        text-align: left;
+        min-width: 0;
       }
       .fab {
         position: fixed;
@@ -903,6 +938,9 @@
           ptNoneH: 'Gửi mã kết nối cho người ấy để bắt đầu',
           ptOn: 'đã kết nối',
           ptOff: 'đang chờ',
+          edit: 'Sửa thông tin cá nhân',
+          dn: 'Tên hiển thị',
+          pfFail: 'Không lưu được. Hãy kiểm tra quyền UPDATE của bảng profiles trên Supabase.',
           empN: 'Không có thông báo mới',
           code: 'Mã mời cặp đôi',
           back: 'Quay lại',
@@ -987,6 +1025,9 @@
           ptNoneH: 'Send them your connection code to get started',
           ptOn: 'connected',
           ptOff: 'pending',
+          edit: 'Edit profile',
+          dn: 'Display name',
+          pfFail: 'Could not save. Check the UPDATE policy on the profiles table in Supabase.',
           empN: 'No new notifications',
           code: 'Couple invite code',
           back: 'Back',
@@ -1095,7 +1136,8 @@
         sel = key(new Date()),
         open = null,
         bell = false,
-        modal = false;
+        modal = false,
+        pmod = false;
       cur.setDate(1);
       // t("khoá") lấy chữ theo ngôn ngữ; tx() cho phép nội dung dạng {k:"khoá"}; esc() chống chèn HTML
       const t = (k) => D[S.lang][k],
@@ -1231,7 +1273,7 @@
       /* ===== 3. CÁC MÀN HÌNH (mỗi hàm trả về chuỗi HTML) ===== */
       // Màn đăng nhập / đăng ký
       function vAuth() {
-        return `<div class="auth">${lang()}<span class="deco" style="top:40px;left:28px">${ic('hr')}</span><span class="deco" style="top:110px;right:40px">${ic('st', 14, 14)}</span><span class="deco" style="bottom:60px;left:36px">${ic('st', 14, 14)}</span><div class="box">${av('f', 124)}<h1 class="px" style="font-size:32px;margin:6px 0 4px;color:var(--pk);text-shadow:0 0 16px var(--pk)">LoveSync</h1><p class="mono sub" style="font-size:12px;margin-bottom:22px">&gt; sync_hearts(you, me);</p><div class="seg" style="width:100%">${['in', 'up'].map((m) => `<button class="btn${mode == m ? ' on' : ''}" data-a="mode" data-m="${m}">${t(m)}</button>`).join('')}</div><form data-f="auth" style="width:100%">${mode == 'up' ? reg() : ''}${mode == 'in' ? `<div class="fl"><label class="lb" for="e">${t('un')}</label><input class="in" id="e" type="text" required maxlength="24" autocomplete="username" placeholder="${t('unph')}"></div>` : ''}<div class="fl"><label class="lb" for="p">${t('pw')}</label><input class="in" id="p" type="password" required minlength="6" placeholder="••••••••"></div><p style="text-align:right;margin-bottom:18px"><a href="#" style="color:var(--pk);font-size:13px">${t('forgot')}</a></p>${msg ? `<p role="alert" class="hint" style="color:var(--pk);margin:-6px 0 12px">${esc(msg)}</p>` : ''}${CFG ? '' : `<p class="hint" style="margin:-6px 0 12px">${t('cfg')}</p>`}<button class="btn b1" style="margin-bottom:12px">${t(mode)} ${ic('hr')}</button>${mode == 'in' ? `<button type="button" class="btn b2" data-a="mode" data-m="up">${t('invite')}</button>` : ''}</form></div></div>`;
+        return `<div class="auth">${lang()}<span class="deco" style="top:40px;left:28px">${ic('hr')}</span><span class="deco" style="top:110px;right:40px">${ic('st', 14, 14)}</span><span class="deco" style="bottom:60px;left:36px">${ic('st', 14, 14)}</span><div class="box"><h1 class="px" style="font-size:32px;margin:0 0 4px;color:var(--pk);text-shadow:0 0 16px var(--pk)">LoveSync</h1><p class="mono sub" style="font-size:12px;margin-bottom:22px">&gt; sync_hearts(you, me);</p><div class="seg" style="width:100%">${['in', 'up'].map((m) => `<button class="btn${mode == m ? ' on' : ''}" data-a="mode" data-m="${m}">${t(m)}</button>`).join('')}</div><form data-f="auth" style="width:100%">${mode == 'up' ? reg() : ''}${mode == 'in' ? `<div class="fl"><label class="lb" for="e">${t('un')}</label><input class="in" id="e" type="text" required maxlength="24" autocomplete="username" placeholder="${t('unph')}"></div>` : ''}<div class="fl"><label class="lb" for="p">${t('pw')}</label><input class="in" id="p" type="password" required minlength="6" placeholder="••••••••"></div><p style="text-align:right;margin-bottom:18px"><a href="#" style="color:var(--pk);font-size:13px">${t('forgot')}</a></p>${msg ? `<p role="alert" class="hint" style="color:var(--pk);margin:-6px 0 12px">${esc(msg)}</p>` : ''}${CFG ? '' : `<p class="hint" style="margin:-6px 0 12px">${t('cfg')}</p>`}<button class="btn b1" style="margin-bottom:12px">${t(mode)} ${ic('hr')}</button>${mode == 'in' ? `<button type="button" class="btn b2" data-a="mode" data-m="up">${t('invite')}</button>` : ''}</form></div></div>`;
       }
       // Màn lịch: lưới 6 tuần x 7 ngày + danh sách buổi hẹn của ngày được chọn
       function vCal() {
@@ -1269,7 +1311,7 @@
       // Màn cài đặt: hồ sơ, tài khoản, công tắc thông báo, đăng xuất
       function vSet() {
         const n = S.n;
-        return `<div class="main" style="max-width:560px">${head(t('set'), 'settings.cfg')}<div class="card sec" style="display:flex;align-items:center;gap:14px;margin:0">${av(me(), 64)}<div style="flex:1"><h2 style="font-size:17px">${esc((S.user && S.user.name) || t('you'))}</h2><p class="sub" style="font-size:12px;margin-bottom:6px">${esc(((S.user && S.user.email) || '').split('@')[0])}</p><span class="chip">${t('linked')}</span></div></div><p class="mono sub h2" style="margin-top:18px">// ${t('pt')}</p>${(() => {
+        return `<div class="main" style="max-width:560px">${head(t('set'), 'settings.cfg')}<div class="card sec" style="display:flex;align-items:center;gap:14px;margin:0">${av(me(), 64)}<div style="flex:1"><h2 style="font-size:17px">${esc((S.user && S.user.name) || t('you'))}</h2><p class="sub" style="font-size:12px;margin-bottom:6px">${esc(((S.user && S.user.email) || '').split('@')[0])}</p><span class="chip">${t('linked')}</span><div><button class="btn b2" data-a="pedit" style="width:auto;min-height:36px;padding:0 14px;margin-top:10px;font-size:13px">${t('edit')}</button></div></div></div><p class="mono sub h2" style="margin-top:18px">// ${t('pt')}</p>${(() => {
           const o = partner();
           return o
             ? `<div class="card sec" style="display:flex;align-items:center;gap:14px;margin:0">${av(o.gender, 52)}<div style="flex:1"><h2 style="font-size:16px">${esc(o.name || '')}</h2><p class="sub" style="font-size:12px;margin-bottom:6px">${t('gd')}: ${o.gender == 'm' ? t('gm') : t('gf')}</p><span class="chip">${t('ptOn')}</span></div></div>`
@@ -1278,7 +1320,20 @@
       }
       // Form thêm buổi hẹn (có ô "Gửi thông báo cho người ấy")
       function vMod() {
-        return `<div class="mod" data-a="close"><form class="card" data-f="ev" role="dialog" aria-label="${t('add')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:16px">${t('add')}</h2><div class="fl"><label class="lb" for="mt">${t('ttl')}</label><input class="in" id="mt" name="title" required></div><div style="display:flex;gap:12px"><div class="fl" style="flex:1"><label class="lb" for="md">${t('dt')}</label><input class="in" id="md" name="date" type="date" required value="${sel}"></div><div class="fl" style="flex:1"><label class="lb" for="mm">${t('tm')}</label><input class="in" id="mm" name="time" type="time" value="19:00"></div></div><div class="fl"><label class="lb" for="mp">${t('pl')}</label><input class="in" id="mp" name="place"></div><label class="chk"><input type="checkbox" name="send" checked><span>${t('send')}</span></label><div class="row2"><button type="button" class="btn b2" data-a="close">${t('cancel')}</button><button class="btn b1">${t('save')}</button></div></form></div>`;
+        return `<div class="mod" data-a="close"><form class="card" data-f="ev" role="dialog" aria-label="${t('add')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:16px">${t('add')}</h2><div class="fl"><label class="lb" for="mt">${t('ttl')}</label><input class="in" id="mt" name="title" required></div><div class="dr"><div class="fl"><label class="lb" for="md">${t('dt')}</label><input class="in" id="md" name="date" type="date" required value="${sel}"></div><div class="fl"><label class="lb" for="mm">${t('tm')}</label><input class="in" id="mm" name="time" type="time" value="19:00"></div></div><div class="fl"><label class="lb" for="mp">${t('pl')}</label><input class="in" id="mp" name="place"></div><label class="chk"><input type="checkbox" name="send" checked><span>${t('send')}</span></label><div class="row2"><button type="button" class="btn b2" data-a="close">${t('cancel')}</button><button class="btn b1">${t('save')}</button></div></form></div>`;
+      }
+      // Form sửa thông tin cá nhân (tên hiển thị + giới tính/avatar)
+      function vProf() {
+        const g = me();
+        return `<div class="mod" data-a="pclose"><form class="card" data-f="prof" role="dialog" aria-label="${t('edit')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:16px">${t('edit')}</h2><div class="fl"><label class="lb" for="pn">${t('dn')}</label><input class="in" id="pn" name="name" required maxlength="24" value="${esc((S.user && S.user.name) || '')}"></div><fieldset class="gd"><legend class="lb">${t('gd')}</legend>${[
+          ['f', 'gf'],
+          ['m', 'gm'],
+        ]
+          .map(
+            ([x, k]) =>
+              `<label class="gb"><input type="radio" name="gender" value="${x}" ${x == g ? 'checked' : ''}>${av(x, 56)}<span>${t(k)}</span></label>`,
+          )
+          .join('')}</fieldset><div class="row2"><button type="button" class="btn b2" data-a="pclose">${t('cancel')}</button><button class="btn b1">${t('save')}</button></div></form></div>`;
       }
       // Vẽ lại toàn bộ màn hình theo trạng thái hiện tại
       function render() {
@@ -1290,6 +1345,7 @@
               ? vAuth()
               : `<div class="shell">${{ cal: vCal, det: vDet, set: vSet }[view]()}${nav()}</div>` +
                 (modal ? vMod() : '') +
+                (pmod ? vProf() : '') +
                 (toast && view != 'auth'
                   ? `<div class="toast card" role="status">${av(pr(), 32)}<span>${esc(toast)}</span></div>`
                   : '');
@@ -1393,6 +1449,7 @@
       function act(a, d, el) {
         if (a == 'close' && el.classList.contains('mod') && event.target !== el) return;
         if (a == 'lclose' && el.classList.contains('lt') && event.target !== el) return;
+        if (a == 'pclose' && el.classList.contains('mod') && event.target !== el) return;
         if (a == 'go') {
           view = d.v;
           bell = false;
@@ -1429,7 +1486,9 @@
         else if (a == 'lclose') closeLT();
         else if (a == 'read') {
           mine().forEach((n) => markRead(n));
-        } else if (a == 'new') modal = true;
+        } else if (a == 'pedit') pmod = true;
+        else if (a == 'pclose') pmod = false;
+        else if (a == 'new') modal = true;
         else if (a == 'close') modal = false;
         else if (a == 'out') {
           if (sb) {
@@ -1467,9 +1526,13 @@
       }
       /* ===== 6. SỰ KIỆN: dùng "uỷ quyền" — chỉ cần một bộ lắng nghe cho cả trang ===== */
       document.addEventListener('click', (e) => {
-        const el = e.target.closest('[data-a]');
-        if (!el || el.matches('input')) return;
+        const el = e.target.closest('[data-a]'),
+          wasBell = bell;
         if (bell && !e.target.closest('.pop,[data-a=bell]')) bell = false;
+        if (!el || el.matches('input')) {
+          if (wasBell && !bell) render();
+          return;
+        }
         act(el.dataset.a, el.dataset, el);
       });
       document.addEventListener('change', (e) => {
@@ -1514,6 +1577,22 @@
           sel = v.date;
           cur = new Date(parse(v.date).getFullYear(), parse(v.date).getMonth(), 1);
           modal = false;
+        } else if (k == 'prof') {
+          const nm = (v.name || '').trim(),
+            g = v.gender == 'm' ? 'm' : 'f';
+          if (!nm) return;
+          S.user.name = nm;
+          S.user.gender = g;
+          if (P[S.user.id]) P[S.user.id] = { ...P[S.user.id], name: nm, gender: g };
+          pmod = false;
+          sb.from('profiles')
+            .update({ name: nm, gender: g })
+            .eq('id', S.user.id)
+            .select('id')
+            .then(async ({ data, error }) => {
+              await refresh();
+              if (error || !data || !data.length) say(error ? error.message : t('pfFail'));
+            });
         } else if (k == 'todo') {
           if (!v.t.trim()) return;
           const e = C.ev.find((x) => x.id == open);
@@ -1530,6 +1609,7 @@
       document.addEventListener('keydown', (e) => {
         if (e.key == 'Escape') {
           modal = false;
+          pmod = false;
           bell = false;
           closeLT();
           render();
