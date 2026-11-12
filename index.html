@@ -864,6 +864,164 @@
         color: var(--pk2);
         border-color: var(--pk);
       }
+      .note-tray {
+        padding: 16px 18px 20px;
+        margin-bottom: 18px;
+      }
+      .note-tray-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 18px;
+        font-size: 12px;
+      }
+      .note-piles {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(64px, 1fr));
+        gap: 18px;
+      }
+      .note-stack {
+        --paper: #ffb6d9;
+        position: relative;
+        height: 82px;
+        border: 0;
+        background: none;
+        cursor: grab;
+        touch-action: none;
+      }
+      .note-stack:active {
+        cursor: grabbing;
+      }
+      .note-stack i {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 72px;
+        height: 64px;
+        border-radius: 5px 5px 13px 5px;
+        background: var(--paper);
+        box-shadow: 0 7px 14px rgba(0, 0, 0, 0.28);
+        transform: translate(-50%, -50%) rotate(-3deg);
+      }
+      .note-stack i:nth-child(2) {
+        transform: translate(calc(-50% + 3px), calc(-50% - 4px)) rotate(2deg);
+      }
+      .note-stack i:nth-child(3) {
+        transform: translate(calc(-50% - 2px), calc(-50% - 8px)) rotate(-1deg);
+      }
+      .note-stack.yellow {
+        --paper: #ffe38d;
+      }
+      .note-stack.pink {
+        --paper: #ffb6d9;
+      }
+      .note-stack.cyan {
+        --paper: #a9f8fb;
+      }
+      .note-stack.lilac {
+        --paper: #d9c2ff;
+      }
+      .note-stack span {
+        position: absolute;
+        z-index: 2;
+        left: 50%;
+        bottom: -3px;
+        transform: translateX(-50%);
+        color: var(--pk2);
+        font: 700 10px 'JetBrains Mono', monospace;
+        text-transform: uppercase;
+      }
+      .note-board {
+        position: relative;
+        display: block;
+        min-height: 560px;
+        padding: 0;
+        border: 1px dashed #4a3340;
+        border-radius: 20px;
+        background:
+          radial-gradient(circle at 1px 1px, rgba(255, 105, 180, 0.2) 1px, transparent 0) 0 0 / 24px 24px,
+          rgba(255, 255, 255, 0.015);
+      }
+      .note-board::before {
+        content: attr(data-hint);
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        color: var(--mut);
+        font: 700 12px 'JetBrains Mono', monospace;
+        pointer-events: none;
+      }
+      .note-board:has(.sticky)::before {
+        display: none;
+      }
+      .note-board .sticky {
+        position: absolute;
+        left: var(--x);
+        top: var(--y);
+        width: min(220px, calc(100% - 24px));
+        height: 190px;
+        min-height: 0;
+        transform: translate(-50%, -50%) rotate(var(--tilt));
+      }
+      .note-board .sticky:hover,
+      .note-board .sticky:focus-within {
+        transform: translate(-50%, -50%) rotate(0deg) scale(1.02);
+      }
+      .note-drag {
+        position: absolute;
+        z-index: 3;
+        top: -8px;
+        left: 50%;
+        width: 58px;
+        height: 20px;
+        transform: translateX(-50%) rotate(-2deg);
+        border: 0;
+        background: rgba(255, 255, 255, 0.48);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.14);
+        cursor: grab;
+        touch-action: none;
+      }
+      .note-drag:active {
+        cursor: grabbing;
+      }
+      .note-board .sticky::before {
+        display: none;
+      }
+      .sticky-inline {
+        width: 100%;
+        flex: 1;
+        min-height: 0;
+        padding: 4px 0;
+        resize: none;
+        border: 0;
+        outline: 0;
+        color: #24131d;
+        background: transparent;
+        font: 700 16px/1.5 'Nunito', sans-serif;
+      }
+      .sticky-inline::placeholder {
+        color: rgba(36, 19, 29, 0.5);
+      }
+      .sticky-draft .sticky-foot {
+        justify-content: flex-end;
+      }
+      .drag-ghost {
+        position: fixed !important;
+        z-index: 100;
+        left: 0 !important;
+        top: 0 !important;
+        width: 190px !important;
+        height: 165px !important;
+        min-height: 0;
+        transform: translate(-50%, -50%) rotate(-4deg) !important;
+        pointer-events: none;
+        opacity: 0.9;
+      }
+      body.note-dragging {
+        user-select: none;
+        -webkit-user-select: none;
+      }
       /* ----- Bảng thông báo của chuông ----- */
       .pop {
         position: absolute;
@@ -1069,8 +1227,12 @@
         .note-compose .btn {
           width: 100%;
         }
-        .sticky {
-          transform: none;
+        .note-piles {
+          gap: 6px;
+        }
+        .note-stack i {
+          width: 58px;
+          height: 54px;
         }
       }
       /* Màn hình máy tính */
@@ -1320,6 +1482,8 @@
           editNote: 'Sửa ghi chú',
           deleteNote: 'Xóa ghi chú',
           noteColor: 'Màu ghi chú',
+          dragNote: 'Kéo một tờ giấy màu bạn thích xuống bảng',
+          dropNote: 'Thả ghi chú ở bất kỳ đâu trên bảng',
           noteSetup: 'Bảng ghi chú chưa được thiết lập. Hãy chạy tệp supabase-notes.sql trong Supabase.',
           efFail: 'Không lưu được. Hãy kiểm tra quyền UPDATE của bảng events trên Supabase.',
           empN: 'Không có thông báo mới',
@@ -1432,6 +1596,8 @@
           editNote: 'Edit note',
           deleteNote: 'Delete note',
           noteColor: 'Note color',
+          dragNote: 'Drag a sheet from your favorite color pile',
+          dropNote: 'Drop notes anywhere on the board',
           noteSetup: 'The note board is not set up yet. Run supabase-notes.sql in Supabase.',
           efFail: 'Could not save. Check the UPDATE policy on the events table in Supabase.',
           empN: 'No new notifications',
@@ -1547,7 +1713,9 @@
         smod = false,
         todoEdit = null,
         noteEdit = null,
-        noteError = '';
+        noteError = '',
+        noteDraft = null,
+        noteDrag = null;
       cur.setDate(1);
       // t("khoá") lấy chữ theo ngôn ngữ; tx() cho phép nội dung dạng {k:"khoá"}; esc() chống chèn HTML
       const t = (k) => D[S.lang][k],
@@ -1757,20 +1925,25 @@
       const noteCard = (n, i) => {
         const color = ['yellow', 'pink', 'cyan', 'lilac'].includes(n.color) ? n.color : 'pink',
           tilt = [-1.4, 1.1, -0.7, 1.5][i % 4],
-          author = P[n.by] || {};
-        if (String(noteEdit) == String(n.id))
-          return `<form class="sticky sticky-edit ${color}" style="--tilt:0deg" data-f="noteedit" data-id="${n.id}"><textarea class="in note-text" name="body" maxlength="500" required>${esc(n.body)}</textarea><div class="note-edit-foot">${noteColors(color)}<div class="todo-actions"><button type="button" class="mini" data-a="noteCancel">${t('cancel')}</button><button class="mini">${t('save')}</button></div></div></form>`;
-        return `<article class="sticky ${color}" style="--tilt:${tilt}deg"><p class="sticky-body">${esc(n.body)}</p><footer class="sticky-foot">${av(author.gender || 'f', 28)}<span class="who"><b>${esc(author.name || t('you'))}</b><br>${new Date(n.updated).toLocaleDateString(loc(), { month: 'short', day: 'numeric' })}</span><button class="mini" data-a="noteEdit" data-id="${n.id}" aria-label="${t('editNote')}">✎</button><button class="mini" data-a="noteDel" data-id="${n.id}" aria-label="${t('deleteNote')}">×</button></footer></article>`;
+          author = P[n.by] || {},
+          cols = innerWidth < 600 ? 1 : innerWidth < 900 ? 2 : 4,
+          x = Number.isFinite(n.x) ? n.x : (i % cols + 0.5) / cols,
+          y = Number.isFinite(n.y) ? n.y : Math.min(0.18 + Math.floor(i / cols) * 0.32, 0.82);
+        return `<article class="sticky ${color}" style="--x:${x * 100}%;--y:${y * 100}%;--tilt:${tilt}deg" data-note-id="${n.id}"><button class="note-drag" type="button" data-note-drag="${n.id}" aria-label="${t('dropNote')}"></button><textarea class="sticky-inline" data-note-body data-id="${n.id}" maxlength="500" aria-label="${t('editNote')}">${esc(n.body)}</textarea><footer class="sticky-foot">${av(author.gender || 'f', 28)}<span class="who"><b>${esc(author.name || t('you'))}</b><br>${new Date(n.updated).toLocaleDateString(loc(), { month: 'short', day: 'numeric' })}</span><button class="mini" data-a="noteDel" data-id="${n.id}" aria-label="${t('deleteNote')}">×</button></footer></article>`;
       };
       // Bảng ghi chú được đồng bộ theo thời gian thực cho cả hai người
       function vNotes() {
         const h = head(t('notes'), t('board'));
         if (noteError) return `<div class="main">${h}<div class="card note-error">${t('noteSetup')}</div></div>`;
-        const compose = `<form class="card note-compose" data-f="note"><textarea class="in note-text" name="body" maxlength="500" required placeholder="${t('notePlaceholder')}"></textarea><div class="note-compose-foot">${noteColors()}<button class="btn b1">${t('addNote')}</button></div></form>`,
-          board = C.notes.length
-            ? `<div class="note-board">${C.notes.map(noteCard).join('')}</div>`
-            : `<div class="card empty">${t('noNotes')}</div>`;
-        return `<div class="main">${h}${compose}${board}</div>`;
+        const colors = ['yellow', 'pink', 'cyan', 'lilac'],
+          piles = `<section class="card note-tray"><div class="note-tray-head"><b>${t('dragNote')}</b><span class="sub mono">// drag + drop</span></div><div class="note-piles">${colors.map((c) => `<button class="note-stack ${c}" type="button" data-note-color="${c}" aria-label="${t('addNote')}: ${c}"><i></i><i></i><i></i><span>${c}</span></button>`).join('')}</div></section>`,
+          cols = innerWidth < 600 ? 1 : innerWidth < 900 ? 2 : 4,
+          rows = Math.max(2, Math.ceil((C.notes.length + (noteDraft ? 1 : 0)) / cols)),
+          draft = noteDraft
+            ? `<form class="sticky sticky-draft ${noteDraft.color}" style="--x:${noteDraft.x * 100}%;--y:${noteDraft.y * 100}%;--tilt:0deg" data-f="note"><textarea class="sticky-inline" name="body" maxlength="500" required placeholder="${t('notePlaceholder')}"></textarea><footer class="sticky-foot"><button type="button" class="mini" data-a="noteDraftCancel">${t('cancel')}</button><button class="mini">${t('save')}</button></footer></form>`
+            : '',
+          board = `<div class="note-board" data-note-board data-hint="${t('dropNote')}" style="min-height:${Math.max(560, rows * 230)}px">${C.notes.map(noteCard).join('')}${draft}</div>`;
+        return `<div class="main">${h}${piles}${board}</div>`;
       }
       // Màn cài đặt: hồ sơ, tài khoản, công tắc thông báo, đăng xuất
       function vSet() {
@@ -1921,7 +2094,10 @@
         if (a == 'go') {
           view = d.v;
           bell = false;
-          if (view != 'notes') noteEdit = null;
+          if (view != 'notes') {
+            noteEdit = null;
+            noteDraft = null;
+          }
           if (view == 'det' && !C.ev.some((e) => e.id == open)) open = (up()[0] || {}).id;
         } else if (a == 'lang') {
           S.lang = d.l;
@@ -1962,6 +2138,7 @@
         else if (a == 'pclose') pmod = false;
         else if (a == 'noteEdit') noteEdit = d.id;
         else if (a == 'noteCancel') noteEdit = null;
+        else if (a == 'noteDraftCancel') noteDraft = null;
         else if (a == 'noteDel') {
           const n = C.notes.find((x) => String(x.id) == String(d.id));
           if (!n) return;
@@ -2021,13 +2198,84 @@
         render();
       }
       /* ===== 6. SỰ KIỆN: dùng "uỷ quyền" — chỉ cần một bộ lắng nghe cho cả trang ===== */
+      const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+      function noteGhost(color, body = '') {
+        const ghost = document.createElement('div');
+        ghost.className = `sticky drag-ghost ${color}`;
+        ghost.innerHTML = `<p class="sticky-body">${esc(body)}</p>`;
+        document.body.append(ghost);
+        return ghost;
+      }
+      function moveNoteGhost(e) {
+        if (!noteDrag) return;
+        noteDrag.ghost.style.left = e.clientX + 'px';
+        noteDrag.ghost.style.top = e.clientY + 'px';
+        if (e.clientY > innerHeight - 70) scrollBy(0, 14);
+        else if (e.clientY < 70) scrollBy(0, -14);
+      }
+      function startNoteDrag(e) {
+        const pile = e.target.closest('[data-note-color]'),
+          handle = e.target.closest('[data-note-drag]');
+        if (!pile && !handle) return false;
+        e.preventDefault();
+        if (pile) {
+          const color = pile.dataset.noteColor;
+          noteDrag = { kind: 'new', color, ghost: noteGhost(color) };
+        } else {
+          const n = C.notes.find((x) => String(x.id) == String(handle.dataset.noteDrag));
+          if (!n) return false;
+          noteDrag = { kind: 'move', note: n, ghost: noteGhost(n.color, n.body) };
+        }
+        document.body.classList.add('note-dragging');
+        moveNoteGhost(e);
+        return true;
+      }
+      function finishNoteDrag(e) {
+        if (!noteDrag) return;
+        const drag = noteDrag,
+          board = document.querySelector('[data-note-board]');
+        noteDrag = null;
+        drag.ghost.remove();
+        document.body.classList.remove('note-dragging');
+        if (!board) return;
+        const r = board.getBoundingClientRect();
+        if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
+        const padX = Math.min(110 / r.width, 0.45),
+          padY = Math.min(95 / r.height, 0.45),
+          x = clamp((e.clientX - r.left) / r.width, padX, 1 - padX),
+          y = clamp((e.clientY - r.top) / r.height, padY, 1 - padY);
+        if (drag.kind == 'new') {
+          noteDraft = { color: drag.color, x, y };
+          render();
+          requestAnimationFrame(() => document.querySelector('.sticky-draft textarea')?.focus());
+        } else {
+          Object.assign(drag.note, { x, y });
+          sb.from('notes')
+            .update({ pos_x: x, pos_y: y })
+            .eq('id', drag.note.id)
+            .then(({ error }) => (error ? say(error.message) : refresh()));
+          render();
+        }
+      }
       const pickerInput = (el) =>
         el.matches('input[type="date"][data-calendar], input[type="time"][data-clock]');
       document.addEventListener('pointerdown', (e) => {
+        if (startNoteDrag(e)) return;
         if (!pickerInput(e.target) || !e.target.showPicker) return;
         e.preventDefault();
         e.target.showPicker();
       });
+      document.addEventListener(
+        'pointermove',
+        (e) => {
+          if (!noteDrag) return;
+          e.preventDefault();
+          moveNoteGhost(e);
+        },
+        { passive: false },
+      );
+      document.addEventListener('pointerup', finishNoteDrag);
+      document.addEventListener('pointercancel', finishNoteDrag);
       document.addEventListener('click', (e) => {
         if (pickerInput(e.target)) {
           if (e.target.showPicker) e.preventDefault();
@@ -2044,6 +2292,21 @@
       });
       document.addEventListener('change', (e) => {
         if (e.target.matches('input[data-a]')) act(e.target.dataset.a, e.target.dataset, e.target);
+        if (e.target.matches('[data-note-body]')) {
+          const n = C.notes.find((x) => String(x.id) == String(e.target.dataset.id)),
+            body = e.target.value.trim();
+          if (!n) return;
+          if (!body) {
+            e.target.value = n.body;
+            return;
+          }
+          n.body = body;
+          n.updated = Date.now();
+          sb.from('notes')
+            .update({ body, updated_at: new Date().toISOString() })
+            .eq('id', n.id)
+            .then(({ error }) => (error ? say(error.message) : refresh()));
+        }
       });
       // Gửi form: auth = đăng nhập/đăng ký, ev = thêm buổi hẹn, todo = thêm việc cần làm
       document.addEventListener('submit', (e) => {
@@ -2137,14 +2400,25 @@
             });
         } else if (k == 'note') {
           const body = (v.body || '').trim(),
-            color = ['yellow', 'pink', 'cyan', 'lilac'].includes(v.color) ? v.color : 'pink';
-          if (!body) return;
+            draft = noteDraft;
+          if (!body || !draft) return;
+          noteDraft = null;
           sb.from('notes')
-            .insert({ couple_id: S.user.couple_id, body, color })
+            .insert({
+              couple_id: S.user.couple_id,
+              body,
+              color: draft.color,
+              pos_x: draft.x,
+              pos_y: draft.y,
+            })
             .select()
             .single()
             .then(({ data, error }) => {
-              if (error) return say(error.message);
+              if (error) {
+                noteDraft = draft;
+                say(error.message);
+                return;
+              }
               C.notes.unshift(toNote(data));
               render();
             });
@@ -2195,6 +2469,7 @@
           pmod = false;
           smod = false;
           noteEdit = null;
+          noteDraft = null;
           bell = false;
           closeLT();
           render();
@@ -2236,6 +2511,8 @@
         body: n.body || '',
         color: n.color || 'pink',
         by: n.created_by,
+        x: n.pos_x == null ? null : Number(n.pos_x),
+        y: n.pos_y == null ? null : Number(n.pos_y),
         updated: Date.parse(n.updated_at || n.created_at) || Date.now(),
       });
       // Đánh dấu thông báo đã đọc (ghi vào mảng read_by)
