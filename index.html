@@ -1009,10 +1009,10 @@
       .drag-ghost {
         position: fixed !important;
         z-index: 100;
-        left: 0 !important;
-        top: 0 !important;
-        width: 190px !important;
-        height: 165px !important;
+        left: 0;
+        top: 0;
+        width: 190px;
+        height: 165px;
         min-height: 0;
         transform: translate(-50%, -50%) rotate(-4deg) !important;
         pointer-events: none;
@@ -2199,17 +2199,19 @@
       }
       /* ===== 6. SỰ KIỆN: dùng "uỷ quyền" — chỉ cần một bộ lắng nghe cho cả trang ===== */
       const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
-      function noteGhost(color, body = '') {
+      function noteGhost(color, body = '', width = 190, height = 165) {
         const ghost = document.createElement('div');
         ghost.className = `sticky drag-ghost ${color}`;
         ghost.innerHTML = `<p class="sticky-body">${esc(body)}</p>`;
+        ghost.style.width = width + 'px';
+        ghost.style.height = height + 'px';
         document.body.append(ghost);
         return ghost;
       }
       function moveNoteGhost(e) {
         if (!noteDrag) return;
-        noteDrag.ghost.style.left = e.clientX + 'px';
-        noteDrag.ghost.style.top = e.clientY + 'px';
+        noteDrag.ghost.style.left = e.clientX - noteDrag.dx + 'px';
+        noteDrag.ghost.style.top = e.clientY - noteDrag.dy + 'px';
         if (e.clientY > innerHeight - 70) scrollBy(0, 14);
         else if (e.clientY < 70) scrollBy(0, -14);
       }
@@ -2220,11 +2222,19 @@
         e.preventDefault();
         if (pile) {
           const color = pile.dataset.noteColor;
-          noteDrag = { kind: 'new', color, ghost: noteGhost(color) };
+          noteDrag = { kind: 'new', color, ghost: noteGhost(color), dx: 0, dy: 0 };
         } else {
           const n = C.notes.find((x) => String(x.id) == String(handle.dataset.noteDrag));
           if (!n) return false;
-          noteDrag = { kind: 'move', note: n, ghost: noteGhost(n.color, n.body) };
+          const card = handle.closest('.sticky'),
+            r = card.getBoundingClientRect();
+          noteDrag = {
+            kind: 'move',
+            note: n,
+            ghost: noteGhost(n.color, n.body, r.width, r.height),
+            dx: e.clientX - (r.left + r.width / 2),
+            dy: e.clientY - (r.top + r.height / 2),
+          };
         }
         document.body.classList.add('note-dragging');
         moveNoteGhost(e);
@@ -2242,8 +2252,10 @@
         if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
         const padX = Math.min(110 / r.width, 0.45),
           padY = Math.min(95 / r.height, 0.45),
-          x = clamp((e.clientX - r.left) / r.width, padX, 1 - padX),
-          y = clamp((e.clientY - r.top) / r.height, padY, 1 - padY);
+          centerX = e.clientX - drag.dx,
+          centerY = e.clientY - drag.dy,
+          x = clamp((centerX - r.left) / r.width, padX, 1 - padX),
+          y = clamp((centerY - r.top) / r.height, padY, 1 - padY);
         if (drag.kind == 'new') {
           noteDraft = { color: drag.color, x, y };
           render();
