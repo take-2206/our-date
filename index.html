@@ -16,7 +16,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="theme-color" content="#0d0d0d" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="LoveSync" />
     <title>LoveSync</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./img/icons/app-icon-180.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="./img/icons/app-icon-192.png" />
     <!-- Thư viện Supabase (đăng nhập, database, realtime), đặt cùng thư mục với index.html -->
     <script src="./supabase.js"></script>
     <link
@@ -134,6 +141,12 @@
       }
       .in::placeholder {
         color: var(--mut);
+      }
+      .in[type='date'][data-calendar] {
+        cursor: pointer;
+      }
+      .in[type='time'][data-clock] {
+        cursor: pointer;
       }
       .lb {
         display: block;
@@ -395,6 +408,8 @@
         padding-bottom: 4px;
       }
       .cl {
+        position: relative;
+        isolation: isolate;
         height: 44px;
         display: flex;
         flex-direction: column;
@@ -423,22 +438,69 @@
         color: #0d0d0d;
         box-shadow: 0 0 16px var(--pk);
       }
-      .dt {
-        display: flex;
-        gap: 3px;
-        height: 5px;
+      .heart-light {
+        position: absolute;
+        width: 38px;
+        height: 34px;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
       }
-      .dt i {
-        width: 5px;
-        height: 5px;
+      .heart-light i {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 2.5px;
+        height: 2.5px;
         border-radius: 50%;
         background: var(--pk);
+        offset-path: path('M19 31C16 28 3 20 3 10C3 2 13 0 19 8C25 0 35 2 35 10C35 20 22 28 19 31Z');
+        offset-anchor: center;
+        offset-rotate: 0deg;
+        animation: heart-run 1.25s linear infinite;
+        box-shadow: 0 0 3px var(--pk);
       }
-      .dt i + i {
-        background: var(--cy);
+      .heart-light i:nth-child(1) {
+        width: 3.5px;
+        height: 3.5px;
+        z-index: 2;
+        background: #fff;
+        box-shadow:
+          0 0 2px #fff,
+          0 0 5px var(--pk),
+          0 0 8px var(--pk);
       }
-      .td .dt i {
-        background: #0d0d0d;
+      .heart-light i:nth-child(2) {
+        opacity: 0.78;
+        animation-delay: -1.21s;
+      }
+      .heart-light i:nth-child(3) {
+        opacity: 0.55;
+        animation-delay: -1.17s;
+      }
+      .heart-light i:nth-child(4) {
+        width: 2px;
+        height: 2px;
+        opacity: 0.34;
+        animation-delay: -1.13s;
+      }
+      .heart-light i:nth-child(5) {
+        width: 1.5px;
+        height: 1.5px;
+        opacity: 0.18;
+        animation-delay: -1.09s;
+      }
+      .heart-light i:nth-child(6) {
+        width: 1px;
+        height: 1px;
+        opacity: 0.08;
+        animation-delay: -1.05s;
+      }
+      @keyframes heart-run {
+        to {
+          offset-distance: 100%;
+        }
       }
       /* ----- Thẻ một buổi hẹn trong danh sách ----- */
       .ev {
@@ -534,8 +596,43 @@
       .chk input {
         width: 20px;
         height: 20px;
-        accent-color: var(--pk);
         margin: 0;
+        flex: none;
+        appearance: none;
+        display: grid;
+        place-content: center;
+        border: 2px solid var(--pk);
+        border-radius: 5px;
+        background: var(--bg);
+        cursor: pointer;
+        transition:
+          background 0.15s,
+          box-shadow 0.15s,
+          transform 0.1s;
+      }
+      .chk input::before {
+        content: '';
+        width: 9px;
+        height: 5px;
+        border-left: 2px solid var(--bg);
+        border-bottom: 2px solid var(--bg);
+        transform: translateY(-1px) rotate(-45deg) scale(0);
+        transition: transform 0.12s;
+      }
+      .chk input:checked {
+        background: var(--pk);
+        box-shadow:
+          0 0 5px var(--pk),
+          0 0 12px rgba(255, 105, 180, 0.65);
+      }
+      .chk input:checked::before {
+        transform: translateY(-1px) rotate(-45deg) scale(1);
+      }
+      .chk input:hover {
+        box-shadow: 0 0 10px rgba(255, 105, 180, 0.7);
+      }
+      .chk input:active {
+        transform: scale(0.9);
       }
       .tr {
         display: flex;
@@ -576,6 +673,53 @@
         display: flex;
         gap: 12px;
         margin-top: 16px;
+      }
+      .todo-add {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 8px;
+      }
+      .todo-add .in {
+        flex: 1;
+        min-width: 0;
+      }
+      .todo-add .btn {
+        width: auto;
+        min-height: 48px;
+        padding: 0 18px;
+      }
+      .todo-row,
+      .todo-edit {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 40px;
+      }
+      .todo-row .chk {
+        flex: 1;
+        min-width: 0;
+      }
+      .todo-actions {
+        display: flex;
+        gap: 6px;
+      }
+      .mini {
+        min-height: 32px;
+        padding: 0 10px;
+        border: 1px solid #4a3340;
+        border-radius: 9px;
+        background: var(--bg);
+        cursor: pointer;
+      }
+      .mini:hover {
+        border-color: var(--pk);
+        color: var(--pk2);
+      }
+      .todo-edit .in {
+        flex: 1;
+        min-width: 0;
+        height: 40px;
       }
       /* ----- Bảng thông báo của chuông ----- */
       .pop {
@@ -874,7 +1018,8 @@
           transition: none !important;
         }
         .ppr,
-        .env {
+        .env,
+        .heart-light i {
           animation: none !important;
         }
       }
@@ -940,6 +1085,7 @@
           forgot: 'Quên mật khẩu?',
           invite: 'Nhập mã mời của người ấy',
           soon: 'sắp tới',
+          noUpcoming: 'Không còn buổi hẹn sắp tới',
           none: 'Chưa có buổi hẹn nào',
           add: 'Thêm buổi hẹn',
           ttl: 'Tiêu đề',
@@ -947,9 +1093,15 @@
           tm: 'Giờ',
           pl: 'Địa điểm',
           save: 'Lưu',
+          edit: 'Chỉnh sửa',
+          saveChanges: 'Lưu thay đổi',
           cancel: 'Hủy',
           prep: 'cần chuẩn bị',
           todo: 'Thêm việc cần làm…',
+          addTodo: 'Thêm',
+          editTodo: 'Sửa',
+          deleteTodo: 'Xóa',
+          saveTodo: 'Lưu',
           both: 'Cả hai đã xác nhận',
           del: 'Xóa buổi hẹn',
           acc: 'tài khoản',
@@ -965,7 +1117,7 @@
           ptNoneH: 'Gửi mã kết nối cho người ấy để bắt đầu',
           ptOn: 'đã kết nối',
           ptOff: 'đang chờ',
-          edit: 'Sửa thông tin cá nhân',
+          editProfile: 'Sửa thông tin cá nhân',
           dn: 'Tên hiển thị',
           pfFail: 'Không lưu được. Hãy kiểm tra quyền UPDATE của bảng profiles trên Supabase.',
           eedit: 'Sửa thời gian & địa điểm',
@@ -1030,6 +1182,7 @@
           forgot: 'Forgot password?',
           invite: 'Enter your partner’s invite code',
           soon: 'upcoming',
+          noUpcoming: 'No more upcoming dates',
           none: 'No dates yet',
           add: 'Add a date',
           ttl: 'Title',
@@ -1037,9 +1190,15 @@
           tm: 'Time',
           pl: 'Place',
           save: 'Save',
+          edit: 'Edit',
+          saveChanges: 'Save changes',
           cancel: 'Cancel',
           prep: 'to prepare',
           todo: 'Add a to-do…',
+          addTodo: 'Add',
+          editTodo: 'Edit',
+          deleteTodo: 'Delete',
+          saveTodo: 'Save',
           both: 'Both of you confirmed',
           del: 'Delete date',
           acc: 'account',
@@ -1055,7 +1214,7 @@
           ptNoneH: 'Send them your connection code to get started',
           ptOn: 'connected',
           ptOff: 'pending',
-          edit: 'Edit profile',
+          editProfile: 'Edit profile',
           dn: 'Display name',
           pfFail: 'Could not save. Check the UPDATE policy on the profiles table in Supabase.',
           eedit: 'Edit time & place',
@@ -1171,7 +1330,7 @@
         bell = false,
         modal = false,
         pmod = false,
-        emod = false;
+        todoEdit = null;
       cur.setDate(1);
       // t("khoá") lấy chữ theo ngôn ngữ; tx() cho phép nội dung dạng {k:"khoá"}; esc() chống chèn HTML
       const t = (k) => D[S.lang][k],
@@ -1322,7 +1481,7 @@
           const k = key(d),
             es = EV().filter((e) => e.date == k);
           cells.push(
-            `<button class="cl${d.getMonth() != m ? ' o' : ''}${k == tk ? ' td' : ''}${k == sel ? ' sl' : ''}" data-a="day" data-k="${k}" aria-label="${fmt(k, { dateStyle: 'full' })}">${d.getDate()}<span class="dt">${es.length ? '<i></i>' : ''}${es.length > 1 ? '<i></i>' : ''}</span></button>`,
+            `<button class="cl${d.getMonth() != m ? ' o' : ''}${k == tk ? ' td' : ''}${k == sel ? ' sl' : ''}${es.length ? ' has-plan' : ''}" data-a="day" data-k="${k}" aria-label="${fmt(k, { dateStyle: 'full' })}${es.length ? `, ${es.length} ${t('det')}` : ''}"><span>${d.getDate()}</span>${es.length ? '<span class="heart-light" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>' : ''}</button>`,
           );
         }
         const wk = [...Array(7)]
@@ -1332,15 +1491,28 @@
           )
           .join('');
         const day = EV().filter((e) => e.date == sel),
-          list = day.length ? day : up().slice(0, 3);
-        return `<div class="main">${head(cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' }), t('shared'))}<div class="cg"><div class="card cal"><div class="cn"><button class="ib" data-a="mo" data-n="-1" aria-label="prev" style="width:40px;height:40px">${I.back}</button><b>${cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' })}</b><button class="ib" data-a="mo" data-n="1" aria-label="next" style="width:40px;height:40px;transform:scaleX(-1)">${I.back}</button></div><div class="g7 wk">${wk}</div><div class="g7">${cells.join('')}</div></div><div><p class="mono sub h2">// ${day.length ? fmt(sel, { day: 'numeric', month: 'long' }) : t('soon')}</p>${list.length ? list.map(evCard).join('') : `<div class="empty">${t('none')}</div>`}</div></div></div><button class="fab" data-a="new" aria-label="${t('add')}">+</button>`;
+          upcoming = up()
+            .filter((e) => e.date != sel)
+            .slice(0, 3),
+          side = day.length
+            ? `<p class="mono sub h2">// ${fmt(sel, { day: 'numeric', month: 'long' })}</p>${day.map(evCard).join('')}<p class="mono sub h2" style="margin-top:22px">// ${t('soon')}</p>${upcoming.length ? upcoming.map(evCard).join('') : `<div class="empty">${t('noUpcoming')}</div>`}`
+            : `<p class="mono sub h2">// ${t('soon')}</p>${up().slice(0, 3).map(evCard).join('') || `<div class="empty">${t('none')}</div>`}`;
+        return `<div class="main">${head(cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' }), t('shared'))}<div class="cg"><div class="card cal"><div class="cn"><button class="ib" data-a="mo" data-n="-1" aria-label="prev" style="width:40px;height:40px">${I.back}</button><b>${cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' })}</b><button class="ib" data-a="mo" data-n="1" aria-label="next" style="width:40px;height:40px;transform:scaleX(-1)">${I.back}</button></div><div class="g7 wk">${wk}</div><div class="g7">${cells.join('')}</div></div><div>${side}</div></div></div><button class="fab" data-a="new" aria-label="${t('add')}">+</button>`;
       }
+      const todoRows = (e) =>
+        e.todo
+          .map((o, i) =>
+            todoEdit == i
+              ? `<form class="todo-edit" data-f="todoedit" data-i="${i}"><input class="in" name="t" required value="${esc(tx(o.t))}" aria-label="${t('todo')}"><button class="mini">${t('saveTodo')}</button><button type="button" class="mini" data-a="todoCancel">${t('cancel')}</button></form>`
+              : `<div class="todo-row"><label class="chk"><input type="checkbox" data-a="chk" data-i="${i}" ${o.d ? 'checked' : ''}><span class="${o.d ? 'x' : ''}">${esc(tx(o.t))}</span></label><div class="todo-actions"><button class="mini" data-a="todoEdit" data-i="${i}">${t('editTodo')}</button><button class="mini" data-a="todoDel" data-i="${i}">${t('deleteTodo')}</button></div></div>`,
+          )
+          .join('');
       // Màn chi tiết buổi hẹn: giờ, địa điểm, checklist, xoá
       function vDet() {
         const e = C.ev.find((x) => x.id == open);
         const h = head(t('det'), 'date_details');
         if (!e) return `<div class="main">${h}<div class="card empty">${t('pick')}</div></div>`;
-        return `<div class="main">${h}<button class="btn b2" data-a="go" data-v="cal" style="width:auto;padding:0 16px;min-height:40px;margin-bottom:12px">${I.back} ${t('back')}</button><div class="card hero"><div><span class="chip">${fmt(e.date, { weekday: 'short', day: 'numeric', month: 'numeric' })}</span><h2>${esc(tx(e.title))}</h2><p class="mono sub" style="font-size:12px">${rel(e.date)} ${ic('hr')}</p></div>${av(me(), 92)}</div><div class="card" style="margin-top:12px"><div class="rw"><span class="sub">${t('tm')}</span><span>${e.time}</span></div><div class="rw"><span class="sub">${t('pl')}</span><span>${esc(tx(e.place))}</span></div><div class="rw"><button class="btn b2" data-a="eedit" style="width:100%;min-height:40px">✎ ${t('eedit')}</button></div></div><div class="card sec"><p class="mono sub" style="font-size:12px;margin-bottom:4px">// ${t('prep')}</p>${e.todo.map((o, i) => `<div class="tr"><label class="chk"><input type="checkbox" data-a="chk" data-i="${i}" ${o.d ? 'checked' : ''}><span class="${o.d ? 'x' : ''}">${esc(tx(o.t))}</span></label><button type="button" class="tdel" data-a="tdel" data-i="${i}" aria-label="${t('del1')}">${sv('<path d="M6 6l12 12M18 6L6 18"/>')}</button></div>`).join('')}<form data-f="todo"><input class="in" name="t" placeholder="${t('todo')}" aria-label="${t('todo')}" style="margin-top:8px"></form></div><div class="card sec" style="display:flex;align-items:center;gap:12px"><div class="pair">${av(me(), 36)}${av(pr(), 36)}</div><p style="flex:1">${t('both')}</p><span class="chip">OK</span></div><div class="row2"><button class="btn b2" data-a="del">${t('del')}</button></div></div>`;
+        return `<div class="main">${h}<button class="btn b2" data-a="go" data-v="cal" style="width:auto;padding:0 16px;min-height:40px;margin-bottom:12px">${I.back} ${t('back')}</button><div class="card hero"><div><span class="chip">${fmt(e.date, { weekday: 'short', day: 'numeric', month: 'numeric' })}</span><h2>${esc(tx(e.title))}</h2><p class="mono sub" style="font-size:12px">${rel(e.date)} ${ic('hr')}</p></div>${av(me(), 92)}</div><div class="card" style="margin-top:12px"><div class="rw"><span class="sub">${t('tm')}</span><span>${e.time}</span></div><div class="rw"><span class="sub">${t('pl')}</span><span>${esc(tx(e.place))}</span></div></div><div class="card sec"><p class="mono sub" style="font-size:12px;margin-bottom:4px">// ${t('prep')}</p>${todoRows(e)}<form class="todo-add" data-f="todo"><input class="in" name="t" placeholder="${t('todo')}" aria-label="${t('todo')}"><button class="btn b1">${t('addTodo')}</button></form></div><div class="card sec" style="display:flex;align-items:center;gap:12px"><div class="pair">${av(me(), 36)}${av(pr(), 36)}</div><p style="flex:1">${t('both')}</p><span class="chip">OK</span></div><div class="row2"><button class="btn b2" data-a="del">${t('del')}</button><button class="btn b1" data-a="edit">${t('edit')}</button></div></div>`;
       }
       // Màn cài đặt: hồ sơ, tài khoản, công tắc thông báo, đăng xuất
       function vSet() {
@@ -1354,14 +1526,9 @@
       }
       // Form thêm buổi hẹn (có ô "Gửi thông báo cho người ấy")
       function vMod() {
-        return `<div class="mod" data-a="close"><form class="card" data-f="ev" role="dialog" aria-label="${t('add')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:16px">${t('add')}</h2><div class="fl"><label class="lb" for="mt">${t('ttl')}</label><input class="in" id="mt" name="title" required></div><div class="dr"><div class="fl"><label class="lb" for="md">${t('dt')}</label><input class="in" id="md" name="date" type="date" required value="${sel}"></div><div class="fl"><label class="lb" for="mm">${t('tm')}</label><input class="in" id="mm" name="time" type="time" value="19:00"></div></div><div class="fl"><label class="lb" for="mp">${t('pl')}</label><input class="in" id="mp" name="place"></div><label class="chk"><input type="checkbox" name="send" checked><span>${t('send')}</span></label><div class="row2"><button type="button" class="btn b2" data-a="close">${t('cancel')}</button><button class="btn b1">${t('save')}</button></div></form></div>`;
-      }
-      // Form sửa ngày, giờ, địa điểm của buổi hẹn đang mở
-      function vEdit() {
-        const e = C.ev.find((x) => x.id == open);
-        if (!e) return '';
-        const pl = tx(e.place) == '—' ? '' : tx(e.place);
-        return `<div class="mod" data-a="eclose"><form class="card" data-f="eev" role="dialog" aria-label="${t('eedit')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:16px">${t('eedit')}</h2><div class="dr"><div class="fl"><label class="lb" for="ed">${t('dt')}</label><input class="in" id="ed" name="date" type="date" required value="${esc(e.date)}"></div><div class="fl"><label class="lb" for="et">${t('tm')}</label><input class="in" id="et" name="time" type="time" value="${esc(e.time || '19:00')}"></div></div><div class="fl"><label class="lb" for="ep">${t('pl')}</label><input class="in" id="ep" name="place" value="${esc(pl)}"></div><div class="row2"><button type="button" class="btn b2" data-a="eclose">${t('cancel')}</button><button class="btn b1">${t('save')}</button></div></form></div>`;
+        const e = modal == 'edit' ? C.ev.find((x) => x.id == open) : null,
+          editing = !!e;
+        return `<div class="mod" data-a="close"><form class="card" data-f="ev" role="dialog" aria-label="${t(editing ? 'edit' : 'add')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:16px">${t(editing ? 'edit' : 'add')}</h2><div class="fl"><label class="lb" for="mt">${t('ttl')}</label><input class="in" id="mt" name="title" required value="${editing ? esc(tx(e.title)) : ''}"></div><div style="display:flex;gap:12px"><div class="fl" style="flex:1"><label class="lb" for="md">${t('dt')}</label><input class="in" id="md" name="date" type="date" data-calendar inputmode="none" required value="${editing ? e.date : sel}"></div><div class="fl" style="flex:1"><label class="lb" for="mm">${t('tm')}</label><input class="in" id="mm" name="time" type="time" data-clock inputmode="none" value="${editing ? e.time : '19:00'}"></div></div><div class="fl"><label class="lb" for="mp">${t('pl')}</label><input class="in" id="mp" name="place" value="${editing ? esc(tx(e.place)) : ''}"></div>${editing ? '' : `<label class="chk"><input type="checkbox" name="send" checked><span>${t('send')}</span></label>`}<div class="row2"><button type="button" class="btn b2" data-a="close">${t('cancel')}</button><button class="btn b1">${t(editing ? 'saveChanges' : 'save')}</button></div></form></div>`;
       }
       // Form sửa thông tin cá nhân (tên hiển thị + giới tính/avatar)
       function vProf() {
@@ -1387,7 +1554,6 @@
               : `<div class="shell">${{ cal: vCal, det: vDet, set: vSet }[view]()}${nav()}</div>` +
                 (modal ? vMod() : '') +
                 (pmod ? vProf() : '') +
-                (emod ? vEdit() : '') +
                 (toast && view != 'auth'
                   ? `<div class="toast card" role="status">${av(pr(), 32)}<span>${esc(toast)}</span></div>`
                   : '');
@@ -1510,6 +1676,7 @@
         } else if (a == 'mo') cur = new Date(cur.getFullYear(), cur.getMonth() + Number(d.n), 1);
         else if (a == 'ev') {
           open = Number(d.id);
+          todoEdit = null;
           view = 'det';
         } else if (a == 'bell') bell = !bell;
         else if (a == 'nt') {
@@ -1529,12 +1696,22 @@
         else if (a == 'lclose') closeLT();
         else if (a == 'read') {
           mine().forEach((n) => markRead(n));
-        } else if (a == 'eedit') emod = true;
-        else if (a == 'eclose') emod = false;
-        else if (a == 'pedit') pmod = true;
+        } else if (a == 'pedit') pmod = true;
         else if (a == 'pclose') pmod = false;
-        else if (a == 'new') modal = true;
-        else if (a == 'close') modal = false;
+        else if (a == 'new') modal = 'new';
+        else if (a == 'edit') modal = 'edit';
+        else if (a == 'todoEdit') todoEdit = Number(d.i);
+        else if (a == 'todoCancel') todoEdit = null;
+        else if (a == 'todoDel') {
+          const e = C.ev.find((x) => x.id == open);
+          if (!e || !e.todo[d.i]) return;
+          e.todo.splice(Number(d.i), 1);
+          todoEdit = null;
+          sb.from('events')
+            .update({ todo: e.todo })
+            .eq('id', e.id)
+            .then(() => {});
+        } else if (a == 'close') modal = false;
         else if (a == 'out') {
           if (sb) {
             sb.auth.signOut();
@@ -1578,7 +1755,18 @@
         render();
       }
       /* ===== 6. SỰ KIỆN: dùng "uỷ quyền" — chỉ cần một bộ lắng nghe cho cả trang ===== */
+      const pickerInput = (el) =>
+        el.matches('input[type="date"][data-calendar], input[type="time"][data-clock]');
+      document.addEventListener('pointerdown', (e) => {
+        if (!pickerInput(e.target) || !e.target.showPicker) return;
+        e.preventDefault();
+        e.target.showPicker();
+      });
       document.addEventListener('click', (e) => {
+        if (pickerInput(e.target)) {
+          if (e.target.showPicker) e.preventDefault();
+          return;
+        }
         const el = e.target.closest('[data-a]'),
           wasBell = bell;
         if (bell && !e.target.closest('.pop,[data-a=bell]')) bell = false;
@@ -1601,6 +1789,27 @@
           doAuth(f, v);
           return;
         } else if (k == 'ev') {
+          if (modal == 'edit') {
+            const target = C.ev.find((x) => x.id == open),
+              changes = {
+                title: v.title.trim(),
+                date: v.date,
+                time: v.time || '00:00',
+                place: v.place.trim(),
+              };
+            if (!target) return;
+            Object.assign(target, changes);
+            sel = changes.date;
+            const p = parse(changes.date);
+            cur = new Date(p.getFullYear(), p.getMonth(), 1);
+            modal = false;
+            sb.from('events')
+              .update(changes)
+              .eq('id', target.id)
+              .then(({ error }) => (error ? say(error.message) : refresh()));
+            render();
+            return;
+          }
           const sd = !!v.send,
             row = {
               couple_id: S.user.couple_id,
@@ -1630,22 +1839,6 @@
           sel = v.date;
           cur = new Date(parse(v.date).getFullYear(), parse(v.date).getMonth(), 1);
           modal = false;
-        } else if (k == 'eev') {
-          const e = C.ev.find((x) => x.id == open);
-          if (!e) return;
-          const row = { date: v.date, time: v.time || '00:00', place: (v.place || '').trim() || '—' };
-          Object.assign(e, row);
-          sel = v.date;
-          cur = new Date(parse(v.date).getFullYear(), parse(v.date).getMonth(), 1);
-          emod = false;
-          sb.from('events')
-            .update(row)
-            .eq('id', e.id)
-            .select('id')
-            .then(async ({ data, error }) => {
-              await refresh();
-              if (error || !data || !data.length) say(error ? error.message : t('efFail'));
-            });
         } else if (k == 'prof') {
           const nm = (v.name || '').trim(),
             g = v.gender == 'm' ? 'm' : 'f';
@@ -1662,6 +1855,17 @@
               await refresh();
               if (error || !data || !data.length) say(error ? error.message : t('pfFail'));
             });
+        } else if (k == 'todoedit') {
+          if (!v.t.trim()) return;
+          const e = C.ev.find((x) => x.id == open),
+            i = Number(f.dataset.i);
+          if (!e || !e.todo[i]) return;
+          e.todo[i].t = v.t.trim();
+          todoEdit = null;
+          sb.from('events')
+            .update({ todo: e.todo })
+            .eq('id', e.id)
+            .then(() => {});
         } else if (k == 'todo') {
           if (!v.t.trim()) return;
           const e = C.ev.find((x) => x.id == open);
@@ -1676,10 +1880,15 @@
       });
       // Phím Esc đóng mọi bảng đang mở
       document.addEventListener('keydown', (e) => {
+        if (pickerInput(e.target)) {
+          if (e.key == 'Tab' || e.key == 'Escape') return;
+          e.preventDefault();
+          if ((e.key == 'Enter' || e.key == ' ') && e.target.showPicker) e.target.showPicker();
+          return;
+        }
         if (e.key == 'Escape') {
           modal = false;
           pmod = false;
-          emod = false;
           bell = false;
           closeLT();
           render();
@@ -1875,6 +2084,11 @@
         view = S.user ? 'cal' : 'auth';
         render();
       })();
+    </script>
+    <script>
+      if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+        addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
+      }
     </script>
   </body>
 </html>
