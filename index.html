@@ -898,6 +898,11 @@
           lang: 'Ngôn ngữ',
           out: 'Đăng xuất',
           linked: 'đã liên kết',
+          pt: 'người ấy',
+          ptNone: 'Người ấy chưa tham gia',
+          ptNoneH: 'Gửi mã kết nối cho người ấy để bắt đầu',
+          ptOn: 'đã kết nối',
+          ptOff: 'đang chờ',
           empN: 'Không có thông báo mới',
           code: 'Mã mời cặp đôi',
           back: 'Quay lại',
@@ -977,6 +982,11 @@
           lang: 'Language',
           out: 'Log out',
           linked: 'linked',
+          pt: 'partner',
+          ptNone: 'Your partner has not joined yet',
+          ptNoneH: 'Send them your connection code to get started',
+          ptOn: 'connected',
+          ptOff: 'pending',
           empN: 'No new notifications',
           code: 'Couple invite code',
           back: 'Back',
@@ -1108,6 +1118,7 @@
           const p = Object.values(P).find((x) => x.id != (S.user || {}).id);
           return p ? p.gender : me() == 'f' ? 'm' : 'f';
         },
+        partner = () => Object.values(P).find((x) => x.id != (S.user || {}).id) || null,
         genCode = () => 'LOVE-' + Math.random().toString(36).slice(2, 6).toUpperCase();
       const av = (g, z) =>
         `<span class="av" style="width:${z}px;height:${z}px"><img src="${g == 'm' ? AVM : AVF}" alt="" onerror="avFail(this,'${g}')"></span>`;
@@ -1258,7 +1269,12 @@
       // Màn cài đặt: hồ sơ, tài khoản, công tắc thông báo, đăng xuất
       function vSet() {
         const n = S.n;
-        return `<div class="main" style="max-width:560px">${head(t('set'), 'settings.cfg')}<div class="card sec" style="display:flex;align-items:center;gap:14px;margin:0">${av(me(), 64)}<div style="flex:1"><h2 style="font-size:17px">${esc((S.user && S.user.name) || t('you'))}</h2><p class="sub" style="font-size:12px;margin-bottom:6px">${esc(((S.user && S.user.email) || '').split('@')[0])}</p><span class="chip">${t('linked')}</span></div></div><p class="mono sub h2" style="margin-top:18px">// ${t('acc')}</p><div class="card"><div class="rw"><span>${t('un')}</span><span class="sub">${esc(((S.user && S.user.email) || '').split('@')[0])}</span></div><div class="rw"><span>${t('code')}</span><span class="mono" style="color:var(--cy)">${esc((S.user && S.user.code) || 'LOVE-XXXX')}</span></div><div class="rw"><span>${t('lang')}</span>${lang()}</div></div><p class="mono sub h2" style="margin-top:18px">// ${t('nt')}</p><div class="card">${['n1', 'n2', 'n3'].map((k, i) => `<div class="rw"><label for="${k}">${t(k)}</label><input class="tg" id="${k}" type="checkbox" data-a="tg" data-i="${i}" ${n[i] ? 'checked' : ''}></div>`).join('')}</div><div class="row2" style="margin-top:20px"><button class="btn b2" data-a="out">${t('out')}</button></div></div>`;
+        return `<div class="main" style="max-width:560px">${head(t('set'), 'settings.cfg')}<div class="card sec" style="display:flex;align-items:center;gap:14px;margin:0">${av(me(), 64)}<div style="flex:1"><h2 style="font-size:17px">${esc((S.user && S.user.name) || t('you'))}</h2><p class="sub" style="font-size:12px;margin-bottom:6px">${esc(((S.user && S.user.email) || '').split('@')[0])}</p><span class="chip">${t('linked')}</span></div></div><p class="mono sub h2" style="margin-top:18px">// ${t('pt')}</p>${(() => {
+          const o = partner();
+          return o
+            ? `<div class="card sec" style="display:flex;align-items:center;gap:14px;margin:0">${av(o.gender, 52)}<div style="flex:1"><h2 style="font-size:16px">${esc(o.name || '')}</h2><p class="sub" style="font-size:12px;margin-bottom:6px">${t('gd')}: ${o.gender == 'm' ? t('gm') : t('gf')}</p><span class="chip">${t('ptOn')}</span></div></div>`
+            : `<div class="card sec" style="display:flex;align-items:center;gap:14px;margin:0">${av(me() == 'f' ? 'm' : 'f', 52)}<div style="flex:1"><h2 style="font-size:16px">${t('ptNone')}</h2><p class="sub" style="font-size:12px;margin-bottom:6px">${t('ptNoneH')}</p><span class="chip">${t('ptOff')}</span></div></div>`;
+        })()}<p class="mono sub h2" style="margin-top:18px">// ${t('acc')}</p><div class="card"><div class="rw"><span>${t('un')}</span><span class="sub">${esc(((S.user && S.user.email) || '').split('@')[0])}</span></div><div class="rw"><span>${t('code')}</span><span class="mono" style="color:var(--cy)">${esc((S.user && S.user.code) || 'LOVE-XXXX')}</span></div><div class="rw"><span>${t('lang')}</span>${lang()}</div></div><p class="mono sub h2" style="margin-top:18px">// ${t('nt')}</p><div class="card">${['n1', 'n2', 'n3'].map((k, i) => `<div class="rw"><label for="${k}">${t(k)}</label><input class="tg" id="${k}" type="checkbox" data-a="tg" data-i="${i}" ${n[i] ? 'checked' : ''}></div>`).join('')}</div><div class="row2" style="margin-top:20px"><button class="btn b2" data-a="out">${t('out')}</button></div></div>`;
       }
       // Form thêm buổi hẹn (có ô "Gửi thông báo cho người ấy")
       function vMod() {
