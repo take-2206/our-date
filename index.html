@@ -3069,10 +3069,10 @@
           ls = localStorage.getItem('ls_since_' + S.user.couple_id) || '';
           ln = localStorage.getItem('ls_couple_name_' + S.user.couple_id) || '';
         } catch (x) {}
-        C.since = (!cp.error && cp.data && cp.data.start_date) || ls || '';
-        C.coupleName = (!cp.error && cp.data && cp.data.couple_name) || ln || coupleNameFromUsers() || '';
         P = {};
         (pf.data || []).forEach((x) => (P[x.id] = x));
+        C.since = (!cp.error && cp.data && cp.data.start_date) || ls || '';
+        C.coupleName = (!cp.error && cp.data && cp.data.couple_name) || ln || coupleNameFromUsers() || '';
         C.ev = (ev.data || []).map(toE);
         C.nt = (nt.data || []).map(toN);
         C.notes = (notes.data || []).map(toNote);
