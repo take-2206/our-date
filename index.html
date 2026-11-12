@@ -44,10 +44,6 @@
       * {
         box-sizing: border-box;
       }
-      html {
-        -webkit-text-size-adjust: 100%;
-        text-size-adjust: 100%;
-      }
       body {
         margin: 0;
         background: var(--bg);
@@ -638,33 +634,6 @@
       .chk input:active {
         transform: scale(0.9);
       }
-      .tr {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .tr .chk {
-        flex: 1;
-        min-width: 0;
-      }
-      .tdel {
-        flex: none;
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        border: 1.5px solid transparent;
-        background: none;
-        color: var(--mut);
-        display: grid;
-        place-items: center;
-        cursor: pointer;
-      }
-      .tdel:hover,
-      .tdel:focus-visible {
-        color: var(--pk);
-        border-color: var(--pk);
-        outline: none;
-      }
       .chk .x {
         text-decoration: line-through;
         color: var(--mut);
@@ -867,6 +836,29 @@
       .mod input::-webkit-date-and-time-value {
         text-align: left;
         min-width: 0;
+      }
+      .dc {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 16px;
+        margin-bottom: 12px;
+      }
+      .dc .dcb {
+        flex: 1;
+        min-width: 0;
+      }
+      .dc .dcv {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .dc .dcv b {
+        font-size: 34px;
+        line-height: 1.1;
+        color: var(--pk);
+        text-shadow: 0 0 16px var(--pk);
       }
       .fab {
         position: fixed;
@@ -1130,9 +1122,12 @@
           editProfile: 'Sửa thông tin cá nhân',
           dn: 'Tên hiển thị',
           pfFail: 'Không lưu được. Hãy kiểm tra quyền UPDATE của bảng profiles trên Supabase.',
-          eedit: 'Sửa thời gian & địa điểm',
-          del1: 'Xóa việc này',
-          efFail: 'Không lưu được. Hãy kiểm tra quyền UPDATE của bảng events trên Supabase.',
+          dc: 'ngày bên nhau',
+          dcSet: 'Đặt ngày bắt đầu yêu',
+          dcFrom: 'từ',
+          dcNext: 'còn {n} ngày nữa đến ngày thứ {m}',
+          dcTtl: 'Ngày bắt đầu yêu',
+          dcLocal: 'Mới lưu trên máy này. Để cả hai cùng thấy, cần thêm cột start_date vào bảng couples trên Supabase.',
           empN: 'Không có thông báo mới',
           code: 'Mã mời cặp đôi',
           back: 'Quay lại',
@@ -1227,9 +1222,12 @@
           editProfile: 'Edit profile',
           dn: 'Display name',
           pfFail: 'Could not save. Check the UPDATE policy on the profiles table in Supabase.',
-          eedit: 'Edit time & place',
-          del1: 'Remove this item',
-          efFail: 'Could not save. Check the UPDATE policy on the events table in Supabase.',
+          dc: 'days together',
+          dcSet: 'Set your start date',
+          dcFrom: 'since',
+          dcNext: '{n} days until day {m}',
+          dcTtl: 'Start date',
+          dcLocal: 'Saved on this device only. To share it, add a start_date column to the couples table in Supabase.',
           empN: 'No new notifications',
           code: 'Couple invite code',
           back: 'Back',
@@ -1340,6 +1338,7 @@
         bell = false,
         modal = false,
         pmod = false,
+        smod = false,
         todoEdit = null;
       cur.setDate(1);
       // t("khoá") lấy chữ theo ngôn ngữ; tx() cho phép nội dung dạng {k:"khoá"}; esc() chống chèn HTML
@@ -1479,6 +1478,20 @@
         return `<div class="auth">${lang()}<span class="deco" style="top:40px;left:28px">${ic('hr')}</span><span class="deco" style="top:110px;right:40px">${ic('st', 14, 14)}</span><span class="deco" style="bottom:60px;left:36px">${ic('st', 14, 14)}</span><div class="box"><h1 class="px" style="font-size:32px;margin:0 0 4px;color:var(--pk);text-shadow:0 0 16px var(--pk)">LoveSync</h1><p class="mono sub" style="font-size:12px;margin-bottom:22px">&gt; sync_hearts(you, me);</p><div class="seg" style="width:100%">${['in', 'up'].map((m) => `<button class="btn${mode == m ? ' on' : ''}" data-a="mode" data-m="${m}">${t(m)}</button>`).join('')}</div><form data-f="auth" style="width:100%">${mode == 'up' ? reg() : ''}${mode == 'in' ? `<div class="fl"><label class="lb" for="e">${t('un')}</label><input class="in" id="e" type="text" required maxlength="24" autocomplete="username" placeholder="${t('unph')}"></div>` : ''}<div class="fl"><label class="lb" for="p">${t('pw')}</label><input class="in" id="p" type="password" required minlength="6" placeholder="••••••••"></div><p style="text-align:right;margin-bottom:18px"><a href="#" style="color:var(--pk);font-size:13px">${t('forgot')}</a></p>${msg ? `<p role="alert" class="hint" style="color:var(--pk);margin:-6px 0 12px">${esc(msg)}</p>` : ''}${CFG ? '' : `<p class="hint" style="margin:-6px 0 12px">${t('cfg')}</p>`}<button class="btn b1" style="margin-bottom:12px">${t(mode)} ${ic('hr')}</button>${mode == 'in' ? `<button type="button" class="btn b2" data-a="mode" data-m="up">${t('invite')}</button>` : ''}</form></div></div>`;
       }
       // Màn lịch: lưới 6 tuần x 7 ngày + danh sách buổi hẹn của ngày được chọn
+      // Đếm ngày bên nhau: ngày bắt đầu = ngày thứ 1; mốc kế tiếp = 100, 200, 300, 365, 500... rồi mỗi năm
+      const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
+      function dayCard() {
+        const sn = C.since;
+        if (!sn)
+          return `<div class="card dc"><div class="pair">${av(me(), 44)}${av(pr(), 44)}</div><div class="dcb"><button class="btn b1" data-a="sedit" style="min-height:44px">${t('dcSet')}</button></div></div>`;
+        const n = Math.round((today0() - parse(sn)) / 864e5) + 1,
+          nx = MS.find((x) => x > n) || Math.ceil((n + 1) / 365) * 365,
+          sub = `${t('dcFrom')} ${fmt(sn, { day: 'numeric', month: 'numeric', year: 'numeric' })}${n > 0 ? ' · ' + t('dcNext').replace('{n}', nx - n).replace('{m}', nx) : ''}`;
+        return `<div class="card dc"><div class="pair">${av(me(), 44)}${av(pr(), 44)}</div><div class="dcb"><div class="dcv"><b class="px">${Math.max(n, 0)}</b><span>${t('dc')}</span></div><p class="sub mono" style="font-size:12px;margin-top:2px">${sub}</p></div><button class="ib" data-a="sedit" aria-label="${t('dcTtl')}">${sv('<path d="M4 20h4L19 9l-4-4L4 16v4z"/>')}</button></div>`;
+      }
+      function vSince() {
+        return `<div class="mod" data-a="sclose"><form class="card" data-f="since" role="dialog" aria-label="${t('dcTtl')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:16px">${t('dcTtl')}</h2><div class="fl"><label class="lb" for="sd">${t('dt')}</label><input class="in" id="sd" name="since" type="date" required max="${key(new Date())}" value="${esc(C.since || '')}"></div><div class="row2"><button type="button" class="btn b2" data-a="sclose">${t('cancel')}</button><button class="btn b1">${t('save')}</button></div></form></div>`;
+      }
       function vCal() {
         const y = cur.getFullYear(),
           m = cur.getMonth(),
@@ -1507,7 +1520,7 @@
           side = day.length
             ? `<p class="mono sub h2">// ${fmt(sel, { day: 'numeric', month: 'long' })}</p>${day.map(evCard).join('')}<p class="mono sub h2" style="margin-top:22px">// ${t('soon')}</p>${upcoming.length ? upcoming.map(evCard).join('') : `<div class="empty">${t('noUpcoming')}</div>`}`
             : `<p class="mono sub h2">// ${t('soon')}</p>${up().slice(0, 3).map(evCard).join('') || `<div class="empty">${t('none')}</div>`}`;
-        return `<div class="main">${head(cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' }), t('shared'))}<div class="cg"><div class="card cal"><div class="cn"><button class="ib" data-a="mo" data-n="-1" aria-label="prev" style="width:40px;height:40px">${I.back}</button><b>${cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' })}</b><button class="ib" data-a="mo" data-n="1" aria-label="next" style="width:40px;height:40px;transform:scaleX(-1)">${I.back}</button></div><div class="g7 wk">${wk}</div><div class="g7">${cells.join('')}</div></div><div>${side}</div></div></div><button class="fab" data-a="new" aria-label="${t('add')}">+</button>`;
+        return `<div class="main">${head(cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' }), t('shared'))}${dayCard()}<div class="cg"><div class="card cal"><div class="cn"><button class="ib" data-a="mo" data-n="-1" aria-label="prev" style="width:40px;height:40px">${I.back}</button><b>${cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' })}</b><button class="ib" data-a="mo" data-n="1" aria-label="next" style="width:40px;height:40px;transform:scaleX(-1)">${I.back}</button></div><div class="g7 wk">${wk}</div><div class="g7">${cells.join('')}</div></div><div>${side}</div></div></div><button class="fab" data-a="new" aria-label="${t('add')}">+</button>`;
       }
       const todoRows = (e) =>
         e.todo
@@ -1527,7 +1540,7 @@
       // Màn cài đặt: hồ sơ, tài khoản, công tắc thông báo, đăng xuất
       function vSet() {
         const n = S.n;
-        return `<div class="main" style="max-width:560px">${head(t('set'), 'settings.cfg')}<div class="card sec" style="display:flex;align-items:center;gap:14px;margin:0">${av(me(), 64)}<div style="flex:1"><h2 style="font-size:17px">${esc((S.user && S.user.name) || t('you'))}</h2><p class="sub" style="font-size:12px;margin-bottom:6px">${esc(((S.user && S.user.email) || '').split('@')[0])}</p><span class="chip">${t('linked')}</span><div><button class="btn b2" data-a="pedit" style="width:auto;min-height:36px;padding:0 14px;margin-top:10px;font-size:13px">${t('edit')}</button></div></div></div><p class="mono sub h2" style="margin-top:18px">// ${t('pt')}</p>${(() => {
+        return `<div class="main" style="max-width:560px">${head(t('set'), 'settings.cfg')}<div class="card sec" style="display:flex;align-items:center;gap:14px;margin:0">${av(me(), 64)}<div style="flex:1"><h2 style="font-size:17px">${esc((S.user && S.user.name) || t('you'))}</h2><p class="sub" style="font-size:12px;margin-bottom:6px">${esc(((S.user && S.user.email) || '').split('@')[0])}</p><span class="chip">${t('linked')}</span><div><button class="btn b2" data-a="pedit" style="width:auto;min-height:36px;padding:0 14px;margin-top:10px;font-size:13px">${t('editProfile')}</button></div></div></div><p class="mono sub h2" style="margin-top:18px">// ${t('pt')}</p>${(() => {
           const o = partner();
           return o
             ? `<div class="card sec" style="display:flex;align-items:center;gap:14px;margin:0">${av(o.gender, 52)}<div style="flex:1"><h2 style="font-size:16px">${esc(o.name || '')}</h2><p class="sub" style="font-size:12px;margin-bottom:6px">${t('gd')}: ${o.gender == 'm' ? t('gm') : t('gf')}</p><span class="chip">${t('ptOn')}</span></div></div>`
@@ -1543,7 +1556,7 @@
       // Form sửa thông tin cá nhân (tên hiển thị + giới tính/avatar)
       function vProf() {
         const g = me();
-        return `<div class="mod" data-a="pclose"><form class="card" data-f="prof" role="dialog" aria-label="${t('edit')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:16px">${t('edit')}</h2><div class="fl"><label class="lb" for="pn">${t('dn')}</label><input class="in" id="pn" name="name" required maxlength="24" value="${esc((S.user && S.user.name) || '')}"></div><fieldset class="gd"><legend class="lb">${t('gd')}</legend>${[
+        return `<div class="mod" data-a="pclose"><form class="card" data-f="prof" role="dialog" aria-label="${t('editProfile')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:16px">${t('editProfile')}</h2><div class="fl"><label class="lb" for="pn">${t('dn')}</label><input class="in" id="pn" name="name" required maxlength="24" value="${esc((S.user && S.user.name) || '')}"></div><fieldset class="gd"><legend class="lb">${t('gd')}</legend>${[
           ['f', 'gf'],
           ['m', 'gm'],
         ]
@@ -1564,6 +1577,7 @@
               : `<div class="shell">${{ cal: vCal, det: vDet, set: vSet }[view]()}${nav()}</div>` +
                 (modal ? vMod() : '') +
                 (pmod ? vProf() : '') +
+                (smod ? vSince() : '') +
                 (toast && view != 'auth'
                   ? `<div class="toast card" role="status">${av(pr(), 32)}<span>${esc(toast)}</span></div>`
                   : '');
@@ -1668,7 +1682,7 @@
         if (a == 'close' && el.classList.contains('mod') && event.target !== el) return;
         if (a == 'lclose' && el.classList.contains('lt') && event.target !== el) return;
         if (a == 'pclose' && el.classList.contains('mod') && event.target !== el) return;
-        if (a == 'eclose' && el.classList.contains('mod') && event.target !== el) return;
+        if (a == 'sclose' && el.classList.contains('mod') && event.target !== el) return;
         if (a == 'go') {
           view = d.v;
           bell = false;
@@ -1706,7 +1720,9 @@
         else if (a == 'lclose') closeLT();
         else if (a == 'read') {
           mine().forEach((n) => markRead(n));
-        } else if (a == 'pedit') pmod = true;
+        } else if (a == 'sedit') smod = true;
+        else if (a == 'sclose') smod = false;
+        else if (a == 'pedit') pmod = true;
         else if (a == 'pclose') pmod = false;
         else if (a == 'new') modal = 'new';
         else if (a == 'edit') modal = 'edit';
@@ -1745,14 +1761,6 @@
           S.n[d.i] = el.checked ? 1 : 0;
           save();
           return;
-        } else if (a == 'tdel') {
-          const e = C.ev.find((x) => x.id == open);
-          if (!e) return;
-          e.todo.splice(Number(d.i), 1);
-          sb.from('events')
-            .update({ todo: e.todo })
-            .eq('id', e.id)
-            .then(() => {});
         } else if (a == 'chk') {
           const e = C.ev.find((x) => x.id == open),
             o = e.todo[d.i];
@@ -1849,6 +1857,20 @@
           sel = v.date;
           cur = new Date(parse(v.date).getFullYear(), parse(v.date).getMonth(), 1);
           modal = false;
+        } else if (k == 'since') {
+          if (!v.since) return;
+          C.since = v.since;
+          smod = false;
+          try {
+            localStorage.setItem('ls_since_' + S.user.couple_id, v.since);
+          } catch (x) {}
+          sb.from('couples')
+            .update({ start_date: v.since })
+            .eq('id', S.user.couple_id)
+            .select('id')
+            .then(({ data, error }) => {
+              if (error || !data || !data.length) say(t('dcLocal'));
+            });
         } else if (k == 'prof') {
           const nm = (v.name || '').trim(),
             g = v.gender == 'm' ? 'm' : 'f';
@@ -1899,6 +1921,7 @@
         if (e.key == 'Escape') {
           modal = false;
           pmod = false;
+          smod = false;
           bell = false;
           closeLT();
           render();
@@ -1972,11 +1995,17 @@
                   : m;
       // Tải buổi hẹn, thông báo, hồ sơ của cặp đôi (RLS tự lọc đúng cặp đôi của mình)
       async function loadC() {
-        const [ev, nt, pf] = await Promise.all([
+        const [ev, nt, pf, cp] = await Promise.all([
           sb.from('events').select('*').order('date'),
           sb.from('notifs').select('*').order('created_at', { ascending: false }).limit(50),
           sb.from('profiles').select('id,name,gender'),
+          sb.from('couples').select('start_date').eq('id', S.user.couple_id).maybeSingle(),
         ]);
+        let ls = '';
+        try {
+          ls = localStorage.getItem('ls_since_' + S.user.couple_id) || '';
+        } catch (x) {}
+        C.since = (!cp.error && cp.data && cp.data.start_date) || ls || '';
         P = {};
         (pf.data || []).forEach((x) => (P[x.id] = x));
         C.ev = (ev.data || []).map(toE);
