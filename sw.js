@@ -1,4 +1,4 @@
-const CACHE = 'lovesync-v11';
+const CACHE = 'lovesync-v19';
 const APP_SHELL = [
   './',
   './index.html',
