@@ -923,17 +923,30 @@
         display: none;
       }
       .note-board .sticky {
+        --note-scale: 1;
+        --note-active-scale: 1.02;
         position: absolute;
         left: var(--x);
         top: var(--y);
+<<<<<<< HEAD
         width: min(220px, calc(100% - 24px));
         height: 190px;
         min-height: 0;
         transform: translate(-50%, -50%) rotate(var(--tilt));
+=======
+        width: min(var(--note-w, 220px), calc(100% - 24px));
+        height: var(--note-h, 190px);
+        min-width: 180px;
+        min-height: 150px;
+        max-width: calc(100% - 24px);
+        max-height: 420px;
+        transform: translate(-50%, -50%) rotate(var(--tilt)) scale(var(--note-scale));
+        backface-visibility: hidden;
+>>>>>>> main
       }
       .note-board .sticky:hover,
       .note-board .sticky:focus-within {
-        transform: translate(-50%, -50%) rotate(0deg) scale(1.02);
+        transform: translate(-50%, -50%) rotate(0deg) scale(var(--note-active-scale));
       }
       .note-drag {
         position: absolute;
@@ -966,6 +979,90 @@
         color: #24131d;
         background: transparent;
         font: 700 16px/1.5 'Nunito', sans-serif;
+<<<<<<< HEAD
+=======
+        scrollbar-color: transparent transparent;
+        scrollbar-width: thin;
+        scrollbar-gutter: stable;
+        contain: paint;
+      }
+      .note-board .sticky:hover .sticky-inline,
+      .note-board .sticky:focus-within .sticky-inline,
+      .note-board .sticky.is-resizing .sticky-inline {
+        scrollbar-color: color-mix(in srgb, var(--paper) 48%, #24131d) rgba(255, 255, 255, 0.3);
+      }
+      .sticky-inline::-webkit-scrollbar {
+        width: 10px;
+      }
+      .sticky-inline::-webkit-scrollbar-track {
+        background: transparent;
+        border-radius: 999px;
+      }
+      .sticky-inline::-webkit-scrollbar-thumb {
+        min-height: 28px;
+        border: 2px solid transparent;
+        border-radius: 999px;
+        background: transparent;
+        background-clip: padding-box;
+      }
+      .note-board .sticky:hover .sticky-inline::-webkit-scrollbar-track,
+      .note-board .sticky:focus-within .sticky-inline::-webkit-scrollbar-track,
+      .note-board .sticky.is-resizing .sticky-inline::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.28);
+      }
+      .note-board .sticky:hover .sticky-inline::-webkit-scrollbar-thumb,
+      .note-board .sticky:focus-within .sticky-inline::-webkit-scrollbar-thumb,
+      .note-board .sticky.is-resizing .sticky-inline::-webkit-scrollbar-thumb {
+        background: color-mix(in srgb, var(--paper) 48%, #24131d);
+        background-clip: padding-box;
+      }
+      .sticky-inline::-webkit-scrollbar-thumb:hover {
+        background: color-mix(in srgb, var(--paper) 34%, #24131d);
+        background-clip: padding-box;
+      }
+      .sticky-inline::-webkit-scrollbar-button {
+        display: none;
+      }
+      .note-resize {
+        position: absolute;
+        z-index: 4;
+        right: 0;
+        bottom: 0;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        border: 0;
+        border-radius: 0 0 12px 0;
+        background: transparent;
+        cursor: nwse-resize;
+        touch-action: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-user-select: none;
+      }
+      .note-resize::after {
+        content: '';
+        position: absolute;
+        right: 4px;
+        bottom: 4px;
+        width: 12px;
+        height: 12px;
+        border-radius: 0 0 8px 0;
+        background: repeating-linear-gradient(135deg, transparent 0 2px, rgba(36, 19, 29, 0.48) 2px 3px);
+        pointer-events: none;
+      }
+      .note-board .sticky[data-note-id] .sticky-foot {
+        padding-right: 28px;
+      }
+      .note-resize:focus-visible {
+        outline: 2px solid rgba(36, 19, 29, 0.7);
+        outline-offset: 1px;
+      }
+      .note-board .sticky.is-resizing {
+        z-index: 5;
+        transition: none;
+        transform: translate(-50%, -50%) rotate(0) scale(var(--note-scale));
+>>>>>>> main
       }
       .sticky-inline::placeholder {
         color: rgba(36, 19, 29, 0.5);
@@ -1166,6 +1263,69 @@
         color: var(--pk);
         text-shadow: 0 0 16px var(--pk);
       }
+      .trash-list {
+        display: grid;
+        gap: 10px;
+      }
+      .trash-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+      }
+      .trash-thumb,
+      .trash-icon {
+        width: 58px;
+        height: 58px;
+        flex: none;
+        border-radius: 12px;
+      }
+      .trash-thumb {
+        object-fit: cover;
+      }
+      .trash-icon {
+        display: grid;
+        place-items: center;
+        color: var(--pk);
+        background: var(--bg);
+      }
+      .trash-copy {
+        flex: 1;
+        min-width: 0;
+      }
+      .trash-copy h2 {
+        margin: 6px 0 3px;
+        overflow: hidden;
+        font-size: 14px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .trash-copy p {
+        font-size: 11px;
+      }
+      .trash-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .mini.danger {
+        color: #ff8aa8;
+        border-color: #9b3550;
+      }
+      @media (max-width: 480px) {
+        .trash-item {
+          align-items: flex-start;
+          flex-wrap: wrap;
+        }
+        .trash-copy {
+          min-width: calc(100% - 70px);
+        }
+        .trash-actions {
+          width: 100%;
+          flex-direction: row;
+          justify-content: flex-end;
+        }
+      }
       .fab {
         position: fixed;
         right: 20px;
@@ -1198,6 +1358,10 @@
         }
       }
       @media (max-width: 480px) {
+        .note-board .sticky {
+          --note-scale: 0.84;
+          --note-active-scale: 0.88;
+        }
         .note-compose-foot,
         .note-edit-foot {
           flex-wrap: wrap;

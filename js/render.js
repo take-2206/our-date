@@ -6,7 +6,7 @@ function render() {
             ? '<div class="auth"><p class="mono sub">…</p></div>'
             : view == 'auth'
               ? vAuth()
-              : `<div class="shell">${{ cal: vCal, det: vDet, notes: vNotes, album: vAlbum, set: vSet }[view]()}${nav()}</div>` +
+              : `<div class="shell">${{ cal: vCal, det: vDet, notes: vNotes, album: vAlbum, set: vSet, trash: vTrash }[view]()}${nav()}</div>` +
                 (modal ? vMod() : '') +
                 (pmod ? vProf() : '') +
                 (smod ? vSince() : '') +

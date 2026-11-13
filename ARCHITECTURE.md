@@ -11,6 +11,7 @@ The app remains a no-build static web app. JavaScript files are loaded as classi
 - `js/pages/calendar.js` — calendar and days-together card.
 - `js/pages/details.js` — date details and todo rendering.
 - `js/pages/notes.js` — sticky-note board.
+- `js/pages/trash.js` — 30-day recycle bin and restore controls.
 - `js/pages/settings.js` — settings and shared modal renderers.
 - `js/pages/album.js` — album, upload, and photo viewer pages.
 - `js/render.js` — root render routing.
