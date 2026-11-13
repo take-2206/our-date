@@ -211,9 +211,18 @@
       // Tải lại dữ liệu rồi vẽ lại màn hình
       async function refresh() {
         if (!S.user) return;
+        const ae = document.activeElement,
+          activeNote = ae && ae.matches && ae.matches('[data-note-body]')
+            ? { id: String(ae.dataset.id), body: ae.value }
+            : null;
         await loadC();
+        // Keep a live sticky-note editor in place. Replacing it here loses the cursor and unsaved text.
+        if (activeNote && ae.isConnected && document.activeElement === ae) {
+          const note = C.notes.find((item) => String(item.id) == activeNote.id);
+          if (note) note.body = activeNote.body;
+          return;
+        }
         // Đang nhập / chọn ngày giờ trong form: đã tải dữ liệu mới nhưng chưa vẽ lại để không làm đóng bộ chọn
-        const ae = document.activeElement;
         if (ae && ae.matches && ae.matches('.mod input, .mod textarea')) return;
         render();
         if (LT) drawLT();
@@ -227,12 +236,87 @@
           say(((P[n.from_id] || {}).name || '') + ' ' + ntx(x) + (e ? ': ' + tx(e.title) : ''));
         }
       }
+      function noteTypingText(noteId) {
+        const typer = noteTypers[String(noteId)];
+        return typer ? t('noteTyping').replace('{name}', typer.name || t('pt')) : '';
+      }
+      function paintNoteTyping(noteId) {
+        const id = String(noteId),
+          text = noteTypingText(id);
+        document.querySelectorAll('[data-note-typing]').forEach((el) => {
+          if (String(el.dataset.noteTyping) != id) return;
+          el.textContent = text;
+          el.hidden = !text;
+          el.closest('.sticky')?.classList.toggle('partner-typing', !!text);
+        });
+      }
+      function sendNoteTyping(noteId, typing) {
+        if (!CH || !S.user || noteId == null) return;
+        Promise.resolve(
+          CH.send({
+            type: 'broadcast',
+            event: 'note-typing',
+            payload: {
+              noteId: String(noteId),
+              userId: S.user.id,
+              name: S.user.name || t('you'),
+              typing: !!typing,
+            },
+          }),
+        ).catch(() => {});
+      }
+      function startLocalNoteTyping(noteId) {
+        const id = String(noteId),
+          now = Date.now();
+        if (localTypingNote && localTypingNote != id) sendNoteTyping(localTypingNote, false);
+        localTypingNote = id;
+        if (now - localTypingSentAt > 800) {
+          sendNoteTyping(id, true);
+          localTypingSentAt = now;
+        }
+        clearTimeout(localTypingTimer);
+        localTypingTimer = setTimeout(() => stopLocalNoteTyping(id), 1500);
+      }
+      function stopLocalNoteTyping(noteId = localTypingNote) {
+        if (noteId == null || String(noteId) != String(localTypingNote)) return;
+        clearTimeout(localTypingTimer);
+        sendNoteTyping(localTypingNote, false);
+        localTypingNote = null;
+        localTypingTimer = null;
+        localTypingSentAt = 0;
+      }
+      function onNoteTyping(message) {
+        const payload = (message && message.payload) || {},
+          id = payload.noteId == null ? '' : String(payload.noteId);
+        if (!id || !S.user || payload.userId == S.user.id) return;
+        clearTimeout(noteTypingTimers[id]);
+        if (!payload.typing) {
+          delete noteTypers[id];
+          delete noteTypingTimers[id];
+          return paintNoteTyping(id);
+        }
+        noteTypers[id] = { userId: payload.userId, name: String(payload.name || '').slice(0, 60) };
+        noteTypingTimers[id] = setTimeout(() => {
+          delete noteTypers[id];
+          delete noteTypingTimers[id];
+          paintNoteTyping(id);
+        }, 3000);
+        paintNoteTyping(id);
+      }
       // Realtime: nghe thay đổi của events / notifs để hai máy đồng bộ ngay
       function subscribe() {
+        clearTimeout(localTypingTimer);
+        Object.values(noteTypingTimers).forEach(clearTimeout);
+        noteTypers = {};
+        noteTypingTimers = {};
+        localTypingNote = null;
+        localTypingTimer = null;
+        localTypingSentAt = 0;
         if (CH) sb.removeChannel(CH);
         const f = 'couple_id=eq.' + S.user.couple_id;
         CH = sb
           .channel('c-' + S.user.couple_id)
+          .on('broadcast', { event: 'note-typing' }, onNoteTyping)
           .on('postgres_changes', { event: '*', schema: 'public', table: 'events', filter: f }, refresh)
           .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'events' }, refresh)
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notes', filter: f }, refresh)

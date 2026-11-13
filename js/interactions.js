@@ -87,6 +87,12 @@
       );
       document.addEventListener('pointerup', finishNoteDrag);
       document.addEventListener('pointercancel', finishNoteDrag);
+      document.addEventListener('input', (e) => {
+        if (e.target.matches('[data-note-body]')) startLocalNoteTyping(e.target.dataset.id);
+      });
+      document.addEventListener('focusout', (e) => {
+        if (e.target.matches('[data-note-body]')) stopLocalNoteTyping(e.target.dataset.id);
+      });
       document.addEventListener('click', (e) => {
         if (pickerInput(e.target)) return;
         const el = e.target.closest('[data-a]'),
@@ -141,7 +147,7 @@
           }
           n.body = body;
           n.updated = Date.now();
-          sb.from('notes')
+          pendingNoteSave = sb.from('notes')
             .update({ body, updated_at: new Date().toISOString() })
             .eq('id', n.id)
             .then(({ error }) => (error ? say(error.message) : refresh()));
