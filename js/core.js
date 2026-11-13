@@ -14,6 +14,7 @@
           invite: 'Nhập mã mời của người ấy',
           soon: 'sắp tới',
           noUpcoming: 'Không còn buổi hẹn sắp tới',
+          allDates: 'từ cũ nhất đến mới nhất',
           none: 'Chưa có buổi hẹn nào',
           add: 'Thêm buổi hẹn',
           ttl: 'Tiêu đề',
@@ -59,8 +60,12 @@
           dcSet: 'Đặt ngày bắt đầu yêu',
           dcFrom: 'từ',
           dcNext: 'còn {n} ngày nữa đến ngày thứ {m}',
+          dcAnnToday: 'Chúc mừng kỷ niệm {n} năm! ♥',
+          dcAnnNext: 'Còn {n} ngày đến kỷ niệm {y} năm',
           dcTtl: 'Ngày bắt đầu yêu',
           dcLocal: 'Mới lưu trên máy này. Để cả hai cùng thấy, cần thêm cột start_date vào bảng couples trên Supabase.',
+          map: 'Bản đồ',
+          route: 'Chỉ đường',
           eedit: 'Sửa thời gian & địa điểm',
           del1: 'Xóa việc này',
           board: 'bảng_ghi_chú_chung',
@@ -170,6 +175,7 @@
           invite: 'Enter your partner’s invite code',
           soon: 'upcoming',
           noUpcoming: 'No more upcoming dates',
+          allDates: 'oldest to newest',
           none: 'No dates yet',
           add: 'Add a date',
           ttl: 'Title',
@@ -215,8 +221,12 @@
           dcSet: 'Set your start date',
           dcFrom: 'since',
           dcNext: '{n} days until day {m}',
+          dcAnnToday: 'Happy {n}-year anniversary! ♥',
+          dcAnnNext: '{n} days until your {y}-year anniversary',
           dcTtl: 'Start date',
           dcLocal: 'Saved on this device only. To share it, add a start_date column to the couples table in Supabase.',
+          map: 'Map',
+          route: 'Directions',
           eedit: 'Edit time & place',
           del1: 'Remove this item',
           board: 'shared_note_board',
@@ -513,7 +523,7 @@
         ]
           .map(
             ([v, i]) =>
-              `<button class="t${view == v || (view == 'trash' && v == 'set') ? ' on' : ''}" data-a="go" data-v="${v}">${i}<span>${t(v)}</span></button>`,
+              `<button class="t${view == v || (view == 'trash' && v == 'set') ? ' on' : ''}" data-a="go" data-v="${v}"><span class="t-icon${v == 'det' ? ' heart' : ''}">${i}</span><span class="t-label">${t(v)}</span></button>`,
           )
           .join('')}</nav>`;
       // Nút VI / EN

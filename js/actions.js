@@ -19,7 +19,7 @@
             noteEdit = null;
             noteDraft = null;
           }
-          if (view == 'det' && !C.ev.some((e) => e.id == open)) open = (up()[0] || {}).id;
+          if (view == 'det') open = null;
         } else if (a == 'lang') {
           S.lang = d.l;
           save();
@@ -177,7 +177,7 @@
             .eq('id', id)
             .then(({ error }) => (error ? say(error.message) : refresh()));
           open = null;
-          view = 'cal';
+          view = 'det';
         } else if (a == 'pushTog') {
           if (el.checked) pushEnable();
           else pushDisable();

@@ -339,6 +339,25 @@
         font-weight: 700;
         cursor: pointer;
       }
+      .t-icon {
+        width: 24px;
+        height: 24px;
+        display: grid;
+        flex: none;
+        place-items: center;
+        line-height: 0;
+      }
+      .t-icon svg {
+        display: block;
+      }
+      .t-icon.heart svg {
+        width: 22px;
+        height: 18px;
+      }
+      .t-label {
+        min-height: 14px;
+        line-height: 14px;
+      }
       .t.on {
         color: var(--pk);
         filter: drop-shadow(0 0 6px var(--pk));
@@ -494,6 +513,90 @@
       }
       .ev .i {
         flex: 1;
+      }
+      .date-list {
+        display: grid;
+        gap: 10px;
+      }
+      .date-list-item {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 16px;
+        color: inherit;
+        text-align: left;
+        cursor: pointer;
+      }
+      .date-list-item.is-past {
+        opacity: 0.68;
+      }
+      .date-list-item .d {
+        min-width: 76px;
+        color: var(--pk);
+        font: 20px/1 'Silkscreen', monospace;
+        text-align: center;
+      }
+      .date-list-item .d small {
+        display: block;
+        margin-top: 4px;
+        font-size: 9px;
+      }
+      .date-list-item .i {
+        flex: 1;
+        min-width: 0;
+      }
+      .date-list-item h2 {
+        overflow: hidden;
+        font-size: 15px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .date-list-item .sub,
+      .date-rel {
+        font-size: 11px;
+      }
+      .date-rel {
+        color: var(--cy);
+        white-space: nowrap;
+      }
+      .route-card {
+        margin-top: 12px;
+        padding: 12px;
+        overflow: hidden;
+      }
+      .route-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+      .route-head h3 {
+        margin-top: 3px;
+        font-size: 14px;
+      }
+      .route-btn {
+        width: auto;
+        min-height: 40px;
+        padding: 0 14px;
+        flex: none;
+      }
+      .route-map {
+        display: block;
+        width: 100%;
+        height: clamp(220px, 36vw, 360px);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #111;
+      }
+      @media (max-width: 480px) {
+        .date-rel {
+          display: none;
+        }
+        .route-map {
+          height: 240px;
+        }
       }
       .h2 {
         font-size: 12px;
@@ -1253,6 +1356,12 @@
         color: var(--pk);
         text-shadow: 0 0 16px var(--pk);
       }
+      .dc-ann {
+        margin-top: 6px;
+        color: var(--pk);
+        font-size: 11px;
+        font-weight: 700;
+      }
       .trash-list {
         display: grid;
         gap: 10px;
@@ -1627,9 +1736,16 @@
         position: fixed;
         inset: 0;
         z-index: 9;
+        width: 100%;
+        height: 100vh;
+        height: 100dvh;
+        max-width: 100vw;
+        max-height: 100vh;
+        max-height: 100dvh;
         display: flex;
         flex-direction: column;
         gap: 10px;
+        overflow: hidden;
         background: rgba(0, 0, 0, 0.94);
         padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
       }
@@ -1642,16 +1758,29 @@
       .pv-img {
         position: relative;
         flex: 1;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
         min-height: 0;
         display: grid;
         place-items: center;
       }
       .pv-img img {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: contain;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        display: block;
+        width: auto;
+        height: auto;
+        max-width: none;
+        max-height: none;
+        opacity: 0;
+        transform: translate(-50%, -50%);
         border-radius: 12px;
-        box-shadow: 0 0 30px rgba(255, 105, 180, 0.35);
+        filter: drop-shadow(0 0 18px rgba(255, 105, 180, 0.35));
+      }
+      .pv-img img[data-fitted='true'] {
+        opacity: 1;
       }
       .ib.pv-nav {
         position: absolute;
