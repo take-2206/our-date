@@ -1,7 +1,7 @@
 // LoveSync interactions module. Classic scripts share state declared in js/core.js.
 /* ===== 6. SỰ KIỆN: dùng "uỷ quyền" — chỉ cần một bộ lắng nghe cho cả trang ===== */
       const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
-      function noteGhost(color, body = '', width = 190, height = 165) {
+      function noteGhost(color, body = '', width = 220, height = 190) {
         const ghost = document.createElement('div');
         ghost.className = `sticky drag-ghost ${color}`;
         ghost.innerHTML = `<p class="sticky-body">${esc(body)}</p>`;
@@ -34,6 +34,8 @@
             kind: 'move',
             note: n,
             ghost: noteGhost(n.color, n.body, r.width, r.height),
+            width: card.offsetWidth,
+            height: card.offsetHeight,
             dx: e.clientX - (r.left + r.width / 2),
             dy: e.clientY - (r.top + r.height / 2),
           };
@@ -52,8 +54,8 @@
         if (!board) return;
         const r = board.getBoundingClientRect();
         if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
-        const padX = Math.min(110 / r.width, 0.45),
-          padY = Math.min(95 / r.height, 0.45),
+        const padX = Math.min((drag.width || 220) / 2 / r.width, 0.45),
+          padY = Math.min((drag.height || 190) / 2 / r.height, 0.45),
           centerX = e.clientX - drag.dx,
           centerY = e.clientY - drag.dy,
           x = clamp((centerX - r.left) / r.width, padX, 1 - padX),
@@ -71,22 +73,91 @@
           render();
         }
       }
+      function startNoteResize(e) {
+        const handle = e.target.closest('[data-note-resize]');
+        if (!handle) return false;
+        const note = C.notes.find((n) => String(n.id) == String(handle.dataset.noteResize)),
+          card = handle.closest('.sticky'),
+          board = card && card.closest('[data-note-board]');
+        if (!note || !card || !board) return false;
+        e.preventDefault();
+        card.classList.add('is-resizing');
+        document.body.classList.add('note-resizing');
+        card.style.width = card.offsetWidth + 'px';
+        card.style.height = card.offsetHeight + 'px';
+        noteResize = {
+          pointerId: e.pointerId,
+          note,
+          card,
+          handle,
+          board,
+          startX: e.clientX,
+          startY: e.clientY,
+          startWidth: card.offsetWidth,
+          startHeight: card.offsetHeight,
+          startCenterX: card.offsetLeft,
+          startCenterY: card.offsetTop,
+        };
+        return true;
+      }
+      function moveNoteResize(e) {
+        if (!noteResize || e.pointerId != noteResize.pointerId) return;
+        e.preventDefault();
+        const z = noteResize,
+          maxWidth = Math.min(480, z.board.clientWidth - 24),
+          maxHeight = Math.min(420, z.board.clientHeight - 24),
+          width = clamp(z.startWidth + e.clientX - z.startX, Math.min(180, maxWidth), maxWidth),
+          height = clamp(z.startHeight + e.clientY - z.startY, Math.min(150, maxHeight), maxHeight),
+          centerX = clamp(z.startCenterX + (width - z.startWidth) / 2, width / 2 + 12, z.board.clientWidth - width / 2 - 12),
+          centerY = clamp(z.startCenterY + (height - z.startHeight) / 2, height / 2 + 12, z.board.clientHeight - height / 2 - 12);
+        z.card.style.width = width + 'px';
+        z.card.style.height = height + 'px';
+        z.card.style.left = centerX + 'px';
+        z.card.style.top = centerY + 'px';
+      }
+      function finishNoteResize(e) {
+        if (!noteResize || (e && e.pointerId != noteResize.pointerId)) return;
+        const z = noteResize,
+          width = Math.round(z.card.offsetWidth),
+          height = Math.round(z.card.offsetHeight),
+          x = z.card.offsetLeft / z.board.clientWidth,
+          y = z.card.offsetTop / z.board.clientHeight;
+        noteResize = null;
+        z.card.classList.remove('is-resizing');
+        document.body.classList.remove('note-resizing');
+        Object.assign(z.note, { width: width + 'px', height: height + 'px', x, y });
+        sb.from('notes')
+          .update({ width: width + 'px', height: height + 'px', pos_x: x, pos_y: y })
+          .eq('id', z.note.id)
+          .then(({ error }) => error && say(error.message));
+      }
       const pickerInput = (el) =>
         el.matches('input[type="date"][data-calendar], input[type="time"][data-clock]');
       document.addEventListener('pointerdown', (e) => {
+        if (startNoteResize(e)) return;
         startNoteDrag(e);
       });
-      document.addEventListener(
+      window.addEventListener(
         'pointermove',
         (e) => {
+          if (noteResize) {
+            moveNoteResize(e);
+            return;
+          }
           if (!noteDrag) return;
           e.preventDefault();
           moveNoteGhost(e);
         },
         { passive: false },
       );
-      document.addEventListener('pointerup', finishNoteDrag);
-      document.addEventListener('pointercancel', finishNoteDrag);
+      window.addEventListener('pointerup', (e) => {
+        finishNoteResize(e);
+        finishNoteDrag(e);
+      });
+      window.addEventListener('pointercancel', (e) => {
+        finishNoteResize(e);
+        finishNoteDrag(e);
+      });
       document.addEventListener('input', (e) => {
         if (e.target.matches('[data-note-body]')) startLocalNoteTyping(e.target.dataset.id);
       });
@@ -374,10 +445,10 @@
       let toast = '';
       const say = (m) => {
         toast = m;
-        render();
+        paintToast();
         clearTimeout(say.t);
         say.t = setTimeout(() => {
           toast = '';
-          render();
+          paintToast();
         }, 4500);
       };

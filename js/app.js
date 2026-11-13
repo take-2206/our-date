@@ -1,23 +1,51 @@
 // LoveSync app module. Classic scripts share state declared in js/core.js.
 (async () => {
+        const params = new URLSearchParams(location.search);
         if (CFG) {
           const { data } = await sb.auth.getSession();
           if (data.session) await enter(data.session.user);
         }
         view = S.user ? 'cal' : 'auth';
+        if (S.user && params.get('view') == 'notes') view = 'notes';
         render();
-        const q = new URLSearchParams(location.search).get('ev');
-        if (q) {
+        const q = params.get('ev');
+        if (q || params.has('view')) {
           history.replaceState(null, '', location.pathname);
+        }
+        if (q) {
           openFromUrl(q);
         }
       })();
 
+function notifyApp(body, tag, type) {
+        say(body);
+        if (
+          document.visibilityState == 'visible' ||
+          !('Notification' in window) ||
+          Notification.permission != 'granted' ||
+          !('serviceWorker' in navigator)
+        )
+          return;
+        navigator.serviceWorker.ready
+          .then((registration) =>
+            registration.showNotification('LoveSync', {
+              body,
+              icon: './img/icons/app-icon-192.png',
+              badge: './img/icons/app-icon-192.png',
+              tag,
+              data: { url: type == 'open-notes' ? './?view=notes' : './', type: type || '' },
+            }),
+          )
+          .catch(() => {});
+      }
+
 function offerAppUpdate(registration) {
         if (!registration || !registration.waiting || !navigator.serviceWorker.controller) return;
+        const firstNotice = !appUpdateReady;
         appUpdateRegistration = registration;
         appUpdateReady = true;
         paintAppUpdatePrompt();
+        if (firstNotice) notifyApp(t('updateAvailable'), 'app-update', 'app-update');
       }
 
 async function applyAppUpdate() {

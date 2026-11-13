@@ -1,4 +1,4 @@
-const CACHE = 'lovesync-v21';
+const CACHE = 'lovesync-v24';
 const APP_SHELL = [
   './',
   './index.html',
@@ -90,7 +90,7 @@ self.addEventListener('push', (event) => {
       badge: './img/icons/app-icon-192.png',
       tag: d.tag || undefined,
       lang: d.lang || undefined,
-      data: { url: d.url || './', id: d.id || null },
+      data: { url: d.url || './', id: d.id || null, type: d.type || '' },
     }),
   );
 });
@@ -98,7 +98,7 @@ self.addEventListener('push', (event) => {
 // Bấm vào thông báo: mở app (hoặc đưa app đang mở lên) và chuyển tới đúng buổi hẹn
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const { url, id } = event.notification.data || {};
+  const { url, id, type } = event.notification.data || {};
   event.waitUntil(
     (async () => {
       const list = await clients.matchAll({ type: 'window', includeUncontrolled: true });
@@ -106,6 +106,7 @@ self.addEventListener('notificationclick', (event) => {
         if ('focus' in c) {
           await c.focus();
           if (id) c.postMessage({ type: 'open-event', id });
+          else if (type == 'open-notes') c.postMessage({ type: 'open-notes' });
           return;
         }
       }

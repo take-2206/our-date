@@ -12,9 +12,7 @@ function render() {
                 (smod ? vSince() : '') +
                 (umod ? vUp() : '') +
                 (pv != null ? vPv() : '') +
-                (toast && view != 'auth'
-                  ? `<div class="toast card" role="status">${av(pr(), 32)}<span>${esc(toast)}</span></div>`
-                  : '');
+                toastPrompt();
         $('#app').innerHTML = content + appUpdatePrompt();
         // Từ lịch bấm "Mở trong album" (hoặc vừa thêm ảnh): cuộn tới đúng ngày trong album
         if (albumFocus && view == 'album') {
@@ -25,6 +23,17 @@ function render() {
             el.scrollIntoView({ block: 'start' });
           } else if (!upBusy && C.photos.length) albumFocus = null;
         } else if (view != 'album') albumFocus = null;
+      }
+      function toastPrompt() {
+        return toast && view != 'auth'
+          ? `<div class="toast card" role="status">${av(pr(), 32)}<span>${esc(toast)}</span></div>`
+          : '';
+      }
+      function paintToast() {
+        const current = document.querySelector('.toast'),
+          html = toastPrompt();
+        if (current) current.remove();
+        if (html) document.querySelector('#app')?.insertAdjacentHTML('beforeend', html);
       }
       function appUpdatePrompt() {
         return appUpdateReady
