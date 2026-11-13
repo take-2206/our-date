@@ -242,7 +242,9 @@
         await refresh();
         if (!note || !S.user || note.created_by == S.user.id) return;
         const name = (P[note.created_by] || {}).name || t('pt');
-        notifyApp(t('noteAdded').replace('{name}', name), 'note-' + note.id, 'open-notes');
+        const message = t('noteAdded').replace('{name}', name);
+        if (pushOn) say(message);
+        else notifyApp(message, 'note-' + note.id, 'open-notes');
       }
       async function onNoteUpdate(change) {
         const incoming = change && change.new,
@@ -252,7 +254,9 @@
         if (!bodyChanged || !S.user) return;
         const other = partner(),
           name = (other && other.name) || t('pt');
-        notifyApp(t('noteUpdated').replace('{name}', name), 'note-text-' + incoming.id, 'open-notes');
+        const message = t('noteUpdated').replace('{name}', name);
+        if (pushOn) say(message);
+        else notifyApp(message, 'note-text-' + incoming.id, 'open-notes');
       }
       function noteTypingText(noteId) {
         const typer = noteTypers[String(noteId)];

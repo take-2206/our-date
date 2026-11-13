@@ -325,12 +325,17 @@
             e.target.value = n.body;
             return;
           }
+          const bodyChanged = body != n.body;
           n.body = body;
           n.updated = Date.now();
           pendingNoteSave = sb.from('notes')
             .update({ body, updated_at: new Date().toISOString() })
             .eq('id', n.id)
-            .then(({ error }) => (error ? say(error.message) : refresh()));
+            .then(({ error }) => {
+              if (error) return say(error.message);
+              if (bodyChanged) pushNoteChange(n.id, 'update');
+              refresh();
+            });
         }
       });
       // Gửi form: auth = đăng nhập/đăng ký, ev = thêm buổi hẹn, todo = thêm việc cần làm
@@ -445,6 +450,7 @@
                 return;
               }
               C.notes.unshift(toNote(data));
+              pushNoteChange(data.id, 'new');
               render();
             });
         } else if (k == 'photo') {
@@ -463,12 +469,17 @@
             body = (v.body || '').trim(),
             color = ['yellow', 'pink', 'cyan', 'lilac'].includes(v.color) ? v.color : 'pink';
           if (!n || !body) return;
+          const bodyChanged = body != n.body;
           Object.assign(n, { body, color, updated: Date.now() });
           noteEdit = null;
           sb.from('notes')
             .update({ body, color, updated_at: new Date().toISOString() })
             .eq('id', n.id)
-            .then(({ error }) => (error ? say(error.message) : refresh()));
+            .then(({ error }) => {
+              if (error) return say(error.message);
+              if (bodyChanged) pushNoteChange(n.id, 'update');
+              refresh();
+            });
         } else if (k == 'todoedit') {
           if (!v.t.trim()) return;
           const e = C.ev.find((x) => x.id == open),

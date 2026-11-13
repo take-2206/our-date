@@ -1,4 +1,4 @@
-const CACHE = 'lovesync-v35';
+const CACHE = 'lovesync-v36';
 const APP_SHELL = [
   './',
   './index.html',
@@ -107,6 +107,7 @@ self.addEventListener('notificationclick', (event) => {
           await c.focus();
           if (id) c.postMessage({ type: 'open-event', id });
           else if (type == 'open-notes') c.postMessage({ type: 'open-notes' });
+          else if (type == 'app-update') c.postMessage({ type: 'check-update' });
           return;
         }
       }
