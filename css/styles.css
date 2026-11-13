@@ -928,12 +928,6 @@
         position: absolute;
         left: var(--x);
         top: var(--y);
-<<<<<<< HEAD
-        width: min(220px, calc(100% - 24px));
-        height: 190px;
-        min-height: 0;
-        transform: translate(-50%, -50%) rotate(var(--tilt));
-=======
         width: min(var(--note-w, 220px), calc(100% - 24px));
         height: var(--note-h, 190px);
         min-width: 180px;
@@ -942,7 +936,6 @@
         max-height: 420px;
         transform: translate(-50%, -50%) rotate(var(--tilt)) scale(var(--note-scale));
         backface-visibility: hidden;
->>>>>>> main
       }
       .note-board .sticky:hover,
       .note-board .sticky:focus-within {
@@ -979,8 +972,6 @@
         color: #24131d;
         background: transparent;
         font: 700 16px/1.5 'Nunito', sans-serif;
-<<<<<<< HEAD
-=======
         scrollbar-color: transparent transparent;
         scrollbar-width: thin;
         scrollbar-gutter: stable;
@@ -1062,7 +1053,6 @@
         z-index: 5;
         transition: none;
         transform: translate(-50%, -50%) rotate(0) scale(var(--note-scale));
->>>>>>> main
       }
       .sticky-inline::placeholder {
         color: rgba(36, 19, 29, 0.5);
