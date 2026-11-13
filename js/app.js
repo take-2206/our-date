@@ -20,7 +20,6 @@
 function notifyApp(body, tag, type) {
         say(body);
         if (
-          document.visibilityState == 'visible' ||
           !('Notification' in window) ||
           Notification.permission != 'granted' ||
           !('serviceWorker' in navigator)

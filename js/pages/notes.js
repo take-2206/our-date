@@ -10,9 +10,10 @@ const noteColors = (selected = 'pink') =>
         const color = ['yellow', 'pink', 'cyan', 'lilac'].includes(n.color) ? n.color : 'pink',
           tilt = [-1.4, 1.1, -0.7, 1.5][i % 4],
           author = P[n.by] || {},
-          cols = innerWidth < 600 ? 1 : innerWidth < 900 ? 2 : 4,
+          cols = innerWidth < 600 ? 4 : innerWidth < 900 ? 2 : 4,
+          layoutRows = Math.max(2, Math.ceil(C.notes.length / cols)),
           x = Number.isFinite(n.x) ? n.x : (i % cols + 0.5) / cols,
-          y = Number.isFinite(n.y) ? n.y : Math.min(0.18 + Math.floor(i / cols) * 0.32, 0.82),
+          y = Number.isFinite(n.y) ? n.y : (Math.floor(i / cols) + 0.5) / layoutRows,
           width = clamp(parseFloat(n.width) || 220, 180, 480),
           height = clamp(parseFloat(n.height) || 190, 150, 420),
           typing = noteTypingText(n.id);
@@ -24,12 +25,24 @@ const noteColors = (selected = 'pink') =>
         if (noteError) return `<div class="main">${h}<div class="card note-error">${t('noteSetup')}</div></div>`;
         const colors = ['yellow', 'pink', 'cyan', 'lilac'],
           piles = `<section class="card note-tray"><div class="note-tray-head"><b>${t('dragNote')}</b><span class="sub mono">// drag + drop</span></div><div class="note-piles">${colors.map((c) => `<button class="note-stack ${c}" type="button" data-note-color="${c}" aria-label="${t('addNote')}: ${c}"><i></i><i></i><i></i><span>${c}</span></button>`).join('')}</div></section>`,
-          cols = innerWidth < 600 ? 1 : innerWidth < 900 ? 2 : 4,
+          mobileBoard = innerWidth < 600,
+          cols = mobileBoard ? 4 : innerWidth < 900 ? 2 : 4,
           rows = Math.max(2, Math.ceil((C.notes.length + (noteDraft ? 1 : 0)) / cols)),
+          boardHeight = Math.max(560, rows * 230),
+          boardWidth = 960,
+          boardScale = mobileBoard ? Math.min(1, Math.max(280, document.documentElement.clientWidth - 40) / boardWidth) : 1,
           draft = noteDraft
             ? `<form class="sticky sticky-draft ${noteDraft.color}" style="--x:${noteDraft.x * 100}%;--y:${noteDraft.y * 100}%;--tilt:0deg" data-f="note"><textarea class="sticky-inline" name="body" maxlength="500" required placeholder="${t('notePlaceholder')}"></textarea><footer class="sticky-foot"><button type="button" class="mini" data-a="noteDraftCancel">${t('cancel')}</button><button class="mini">${t('save')}</button></footer></form>`
             : '',
-          board = `<div class="note-board" data-note-board data-hint="${t('dropNote')}" style="min-height:${Math.max(560, rows * 230)}px">${C.notes.map(noteCard).join('')}${draft}</div>`;
+          board = mobileBoard
+            ? `<div class="note-board-viewport" style="height:${Math.ceil(boardHeight * boardScale)}px"><div class="note-board mobile-board" data-note-board data-hint="${t('dropNote')}" style="width:${boardWidth}px;min-height:${boardHeight}px;transform:scale(${boardScale})">${C.notes.map(noteCard).join('')}${draft}</div></div>`
+            : `<div class="note-board" data-note-board data-hint="${t('dropNote')}" style="min-height:${boardHeight}px">${C.notes.map(noteCard).join('')}${draft}</div>`;
         return `<div class="main">${h}${piles}${board}</div>`;
       }
+      let noteBoardResizeTimer = null;
+      addEventListener('resize', () => {
+        if (view != 'notes' || document.activeElement?.closest('.sticky')) return;
+        clearTimeout(noteBoardResizeTimer);
+        noteBoardResizeTimer = setTimeout(render, 120);
+      });
       // Màn cài đặt: hồ sơ, tài khoản, công tắc thông báo, đăng xuất
