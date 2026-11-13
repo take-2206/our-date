@@ -16,11 +16,11 @@ const noteColors = (selected = 'pink') =>
           x = Number.isFinite(n.x) ? n.x : (i % cols + 0.5) / cols,
           y = Number.isFinite(n.y) ? n.y : (Math.floor(i / cols) + 0.5) / layoutRows,
           yPx = Number.isFinite(n.yPx) ? n.yPx : y * baseHeight,
-          width = clamp(parseFloat(n.width) || 220, 180, 480),
-          height = clamp(parseFloat(n.height) || 190, 150, 420),
+          width = clamp(parseFloat(n.width) || 220, 200, 4000),
+          height = clamp(parseFloat(n.height) || 190, 150, 4000),
           mobile = innerWidth < 600,
           typing = noteTypingText(n.id);
-        return `<article class="sticky ${color}${typing ? ' partner-typing' : ''}" style="--x:${x * 100}%;--y:${yPx}px;--tilt:${tilt}deg;--note-w:${width}px;--note-h:${height}px" data-note-id="${n.id}"><button class="note-drag" type="button" data-note-drag="${n.id}" aria-label="${t('dropNote')}"></button><textarea class="sticky-inline" data-note-body data-id="${n.id}" maxlength="500" aria-label="${t('editNote')}"${mobile ? ` readonly data-a="noteEdit"` : ''}>${esc(n.body)}</textarea><span class="note-typing" data-note-typing="${n.id}" role="status"${typing ? '' : ' hidden'}>${esc(typing)}</span><footer class="sticky-foot">${av(author.gender || 'f', 28)}<span class="who"><b>${esc(author.name || t('you'))}</b><br>${new Date(n.updated).toLocaleDateString(loc(), { month: 'short', day: 'numeric' })}</span><button class="mini" data-a="noteDel" data-id="${n.id}" aria-label="${t('deleteNote')}">×</button></footer><button class="note-resize" type="button" data-note-resize="${n.id}" aria-label="${esc(t('resizeNote'))}"></button></article>`;
+        return `<article class="sticky ${color}${typing ? ' partner-typing' : ''}" style="--x:${x * 100}%;--y:${yPx}px;--tilt:${tilt}deg;--note-w:${width}px;--note-h:${height}px" data-note-id="${n.id}"><button class="note-drag" type="button" data-note-drag="${n.id}" aria-label="${t('dropNote')}"></button><textarea class="sticky-inline" data-note-body data-id="${n.id}" maxlength="500" aria-label="${t('editNote')}"${mobile ? ` readonly data-a="noteEdit"` : ''}>${esc(n.body)}</textarea><span class="note-typing" data-note-typing="${n.id}" role="status"${typing ? '' : ' hidden'}>${esc(typing)}</span><footer class="sticky-foot">${av(author.gender || 'f', 28)}<span class="who"><b>${esc(author.name || t('you'))}</b><span class="note-date">${new Date(n.updated).toLocaleDateString(loc(), { month: 'short', day: 'numeric' })}</span></span><button class="mini" data-a="noteDel" data-id="${n.id}" aria-label="${t('deleteNote')}">×</button></footer><button class="note-resize" type="button" data-note-resize="${n.id}" aria-label="${esc(t('resizeNote'))}"></button></article>`;
       };
       function vNoteEditor() {
         const n = C.notes.find((item) => String(item.id) == String(noteEdit));
@@ -40,7 +40,7 @@ const noteColors = (selected = 'pink') =>
           contentBottom = Math.max(
             C.notes.reduce((max, note) => {
               if (!Number.isFinite(note.yPx)) return max;
-              const height = clamp(parseFloat(note.height) || 190, 150, 420);
+              const height = clamp(parseFloat(note.height) || 190, 150, 4000);
               return Math.max(max, note.yPx + height / 2 + 180);
             }, 0),
             Number.isFinite(noteDraft?.yPx) ? noteDraft.yPx + 275 : 0,
