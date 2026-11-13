@@ -7,6 +7,10 @@
          chk = tick việc cần làm, nt = mở thông báo, read = đánh dấu đã đọc hết,
          acc / dec = đồng ý / từ chối, lclose = đóng lá thư */
       function act(a, d, el) {
+        if (a == 'appUpdate') {
+          applyAppUpdate();
+          return;
+        }
         if (a == 'close' && el.classList.contains('mod') && event.target !== el) return;
         if (a == 'lclose' && el.classList.contains('lt') && event.target !== el) return;
         if (a == 'pclose' && el.classList.contains('mod') && event.target !== el) return;
@@ -16,6 +20,7 @@
           view = d.v;
           bell = false;
           if (view != 'notes') {
+            stopLocalNoteTyping();
             noteEdit = null;
             noteDraft = null;
           }
