@@ -923,6 +923,8 @@
         display: none;
       }
       .note-board .sticky {
+        --note-scale: 1;
+        --note-active-scale: 1.02;
         position: absolute;
         left: var(--x);
         top: var(--y);
@@ -932,12 +934,12 @@
         min-height: 150px;
         max-width: calc(100% - 24px);
         max-height: 420px;
-        transform: translate(-50%, -50%) rotate(var(--tilt));
+        transform: translate(-50%, -50%) rotate(var(--tilt)) scale(var(--note-scale));
         backface-visibility: hidden;
       }
       .note-board .sticky:hover,
       .note-board .sticky:focus-within {
-        transform: translate(-50%, -50%) rotate(0deg) scale(1.02);
+        transform: translate(-50%, -50%) rotate(0deg) scale(var(--note-active-scale));
       }
       .note-drag {
         position: absolute;
@@ -1015,16 +1017,33 @@
       .note-resize {
         position: absolute;
         z-index: 4;
+        right: 0;
+        bottom: 0;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        border: 0;
+        border-radius: 0 0 12px 0;
+        background: transparent;
+        cursor: nwse-resize;
+        touch-action: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-user-select: none;
+      }
+      .note-resize::after {
+        content: '';
+        position: absolute;
         right: 4px;
         bottom: 4px;
         width: 12px;
         height: 12px;
-        padding: 0;
-        border: 0;
-        border-radius: 0 0 12px 0;
+        border-radius: 0 0 8px 0;
         background: repeating-linear-gradient(135deg, transparent 0 2px, rgba(36, 19, 29, 0.48) 2px 3px);
-        cursor: nwse-resize;
-        touch-action: none;
+        pointer-events: none;
+      }
+      .note-board .sticky[data-note-id] .sticky-foot {
+        padding-right: 28px;
       }
       .note-resize:focus-visible {
         outline: 2px solid rgba(36, 19, 29, 0.7);
@@ -1033,7 +1052,7 @@
       .note-board .sticky.is-resizing {
         z-index: 5;
         transition: none;
-        transform: translate(-50%, -50%) rotate(0);
+        transform: translate(-50%, -50%) rotate(0) scale(var(--note-scale));
       }
       .sticky-inline::placeholder {
         color: rgba(36, 19, 29, 0.5);
@@ -1269,6 +1288,10 @@
         }
       }
       @media (max-width: 480px) {
+        .note-board .sticky {
+          --note-scale: 0.84;
+          --note-active-scale: 0.88;
+        }
         .note-compose-foot,
         .note-edit-foot {
           flex-wrap: wrap;
