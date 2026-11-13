@@ -26,8 +26,6 @@
         by: n.created_by,
         x: n.pos_x == null ? null : Number(n.pos_x),
         y: n.pos_y == null ? null : Number(n.pos_y),
-        width: n.width || '220px',
-        height: n.height || '190px',
         updated: Date.parse(n.updated_at || n.created_at) || Date.now(),
       });
       // Ảnh trong album: toPhoto đổi dòng database, shrink thu nhỏ ảnh, upPhotos tải lên Storage + ghi bảng photos
@@ -150,7 +148,7 @@
         const [ev, nt, pf, cp, notes, ph] = await Promise.all([
           sb.from('events').select('*').order('date'),
           sb.from('notifs').select('*').order('created_at', { ascending: false }).limit(50),
-          sb.from('profiles').select('id,name,gender').eq('couple_id', S.user.couple_id),
+          sb.from('profiles').select('id,name,gender'),
           sb.from('couples').select('start_date').eq('id', S.user.couple_id).maybeSingle(),
           sb.from('notes').select('*').order('updated_at', { ascending: false }),
           sb.from('photos').select('*').order('created_at', { ascending: false }),
@@ -174,6 +172,9 @@
       async function refresh() {
         if (!S.user) return;
         await loadC();
+        // Đang nhập / chọn ngày giờ trong form: đã tải dữ liệu mới nhưng chưa vẽ lại để không làm đóng bộ chọn
+        const ae = document.activeElement;
+        if (ae && ae.matches && ae.matches('.mod input, .mod textarea')) return;
         render();
         if (LT) drawLT();
       }

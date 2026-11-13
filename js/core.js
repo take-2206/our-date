@@ -363,7 +363,6 @@
         noteError = '',
         noteDraft = null,
         noteDrag = null,
-        noteResize = null,
         albumSel = '',
         albumFocus = null,
         pushOn = false,

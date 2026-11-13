@@ -12,10 +12,8 @@ const noteColors = (selected = 'pink') =>
           author = P[n.by] || {},
           cols = innerWidth < 600 ? 1 : innerWidth < 900 ? 2 : 4,
           x = Number.isFinite(n.x) ? n.x : (i % cols + 0.5) / cols,
-          y = Number.isFinite(n.y) ? n.y : Math.min(0.18 + Math.floor(i / cols) * 0.32, 0.82),
-          width = clamp(parseFloat(n.width) || 220, 180, 480),
-          height = clamp(parseFloat(n.height) || 190, 150, 420);
-        return `<article class="sticky ${color}" style="--x:${x * 100}%;--y:${y * 100}%;--tilt:${tilt}deg;--note-w:${width}px;--note-h:${height}px" data-note-id="${n.id}"><button class="note-drag" type="button" data-note-drag="${n.id}" aria-label="${t('dropNote')}"></button><textarea class="sticky-inline" data-note-body data-id="${n.id}" maxlength="500" aria-label="${t('editNote')}">${esc(n.body)}</textarea><footer class="sticky-foot">${av(author.gender || 'f', 28)}<span class="who"><b>${esc(author.name || t('you'))}</b><br>${new Date(n.updated).toLocaleDateString(loc(), { month: 'short', day: 'numeric' })}</span><button class="mini" data-a="noteDel" data-id="${n.id}" aria-label="${t('deleteNote')}">×</button></footer><button class="note-resize" type="button" data-note-resize="${n.id}" aria-label="Resize note"></button></article>`;
+          y = Number.isFinite(n.y) ? n.y : Math.min(0.18 + Math.floor(i / cols) * 0.32, 0.82);
+        return `<article class="sticky ${color}" style="--x:${x * 100}%;--y:${y * 100}%;--tilt:${tilt}deg" data-note-id="${n.id}"><button class="note-drag" type="button" data-note-drag="${n.id}" aria-label="${t('dropNote')}"></button><textarea class="sticky-inline" data-note-body data-id="${n.id}" maxlength="500" aria-label="${t('editNote')}">${esc(n.body)}</textarea><footer class="sticky-foot">${av(author.gender || 'f', 28)}<span class="who"><b>${esc(author.name || t('you'))}</b><br>${new Date(n.updated).toLocaleDateString(loc(), { month: 'short', day: 'numeric' })}</span><button class="mini" data-a="noteDel" data-id="${n.id}" aria-label="${t('deleteNote')}">×</button></footer></article>`;
       };
       // Bảng ghi chú được đồng bộ theo thời gian thực cho cả hai người
       function vNotes() {
