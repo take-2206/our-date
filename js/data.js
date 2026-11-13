@@ -10,6 +10,7 @@
         todo: e.todo || [],
         by: e.created_by,
         st: e.status,
+        deletedAt: Date.parse(e.deleted_at) || 0,
       });
       const toN = (n) => ({
         id: n.id,
@@ -28,6 +29,7 @@
         y: n.pos_y == null ? null : Number(n.pos_y),
         width: n.width || '220px',
         height: n.height || '190px',
+        deletedAt: Date.parse(n.deleted_at) || 0,
         updated: Date.parse(n.updated_at || n.created_at) || Date.now(),
       });
       // Ảnh trong album: toPhoto đổi dòng database, shrink thu nhỏ ảnh, upPhotos tải lên Storage + ghi bảng photos
@@ -40,12 +42,14 @@
         date: p.taken_on || key(new Date(Date.parse(p.created_at) || Date.now())),
         place: p.place || '',
         by: p.created_by,
+        deletedAt: Date.parse(p.deleted_at) || 0,
         ts: Date.parse(p.created_at) || Date.now(),
       });
       // Bucket "photos" là riêng tư nên mỗi ảnh cần link ký sẵn (hiệu lực 1 giờ, tự làm mới khi sắp hết hạn)
       async function signPhotos() {
         const now = Date.now(),
-          need = C.photos.filter((p) => !PU[p.path] || PU[p.path].exp < now + 300000).map((p) => p.path);
+          allPhotos = C.photos.concat(C.trash?.photos || []),
+          need = allPhotos.filter((p) => !PU[p.path] || PU[p.path].exp < now + 300000).map((p) => p.path);
         if (!need.length) return;
         try {
           const { data } = await sb.storage.from('photos').createSignedUrls(need, 3600);
@@ -146,15 +150,44 @@
                   ? t('dup')
                   : m;
       // Tải buổi hẹn, thông báo, hồ sơ và ghi chú của cặp đôi (RLS tự lọc đúng cặp đôi của mình)
+      let trashPurgeAt = 0;
+      async function purgeExpiredTrash() {
+        if (Date.now() - trashPurgeAt < 3600000) return;
+        trashPurgeAt = Date.now();
+        try {
+          const { data, error } = await sb.rpc('purge_expired_recycle_bin');
+          if (!error) {
+            const paths = (data || []).map((row) => row.photo_path).filter(Boolean);
+            if (paths.length) await sb.storage.from('photos').remove(paths);
+          }
+        } catch (x) {}
+      }
       async function loadC() {
-        const [ev, nt, pf, cp, notes, ph] = await Promise.all([
-          sb.from('events').select('*').order('date'),
+        await purgeExpiredTrash();
+        const trashCutoff = new Date(Date.now() - 30 * 864e5).toISOString();
+        let [ev, nt, pf, cp, notes, ph, trashEv, trashNotes, trashPhotos] = await Promise.all([
+          sb.from('events').select('*').is('deleted_at', null).order('date'),
           sb.from('notifs').select('*').order('created_at', { ascending: false }).limit(50),
           sb.from('profiles').select('id,name,gender').eq('couple_id', S.user.couple_id),
           sb.from('couples').select('start_date').eq('id', S.user.couple_id).maybeSingle(),
-          sb.from('notes').select('*').order('updated_at', { ascending: false }),
-          sb.from('photos').select('*').order('created_at', { ascending: false }),
+          sb.from('notes').select('*').is('deleted_at', null).order('updated_at', { ascending: false }),
+          sb.from('photos').select('*').is('deleted_at', null).order('created_at', { ascending: false }),
+          sb.from('events').select('*').not('deleted_at', 'is', null).gte('deleted_at', trashCutoff).order('deleted_at', { ascending: false }),
+          sb.from('notes').select('*').not('deleted_at', 'is', null).gte('deleted_at', trashCutoff).order('deleted_at', { ascending: false }),
+          sb.from('photos').select('*').not('deleted_at', 'is', null).gte('deleted_at', trashCutoff).order('deleted_at', { ascending: false }),
         ]);
+        const migrationError = [ev, notes, ph, trashEv, trashNotes, trashPhotos]
+          .map((result) => result.error && result.error.message)
+          .find((message) => message && /deleted_at|purge_expired_recycle_bin/i.test(message));
+        trashError = migrationError || '';
+        if (migrationError) {
+          [ev, notes, ph] = await Promise.all([
+            sb.from('events').select('*').order('date'),
+            sb.from('notes').select('*').order('updated_at', { ascending: false }),
+            sb.from('photos').select('*').order('created_at', { ascending: false }),
+          ]);
+          trashEv = trashNotes = trashPhotos = { data: [] };
+        }
         let ls = '';
         try {
           ls = localStorage.getItem('ls_since_' + S.user.couple_id) || '';
@@ -165,6 +198,11 @@
         C.ev = (ev.data || []).map(toE);
         C.nt = (nt.data || []).map(toN);
         C.notes = (notes.data || []).map(toNote);
+        C.trash = {
+          ev: (trashEv.data || []).map(toE),
+          notes: (trashNotes.data || []).map(toNote),
+          photos: (trashPhotos.data || []).map(toPhoto),
+        };
         noteError = notes.error ? notes.error.message : '';
         photoError = ph.error ? ph.error.message : '';
         C.photos = (ph.data || []).map(toPhoto).sort((a, b) => b.date.localeCompare(a.date) || b.ts - a.ts);

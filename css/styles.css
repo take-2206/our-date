@@ -1256,6 +1256,69 @@
         color: var(--pk);
         text-shadow: 0 0 16px var(--pk);
       }
+      .trash-list {
+        display: grid;
+        gap: 10px;
+      }
+      .trash-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+      }
+      .trash-thumb,
+      .trash-icon {
+        width: 58px;
+        height: 58px;
+        flex: none;
+        border-radius: 12px;
+      }
+      .trash-thumb {
+        object-fit: cover;
+      }
+      .trash-icon {
+        display: grid;
+        place-items: center;
+        color: var(--pk);
+        background: var(--bg);
+      }
+      .trash-copy {
+        flex: 1;
+        min-width: 0;
+      }
+      .trash-copy h2 {
+        margin: 6px 0 3px;
+        overflow: hidden;
+        font-size: 14px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .trash-copy p {
+        font-size: 11px;
+      }
+      .trash-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .mini.danger {
+        color: #ff8aa8;
+        border-color: #9b3550;
+      }
+      @media (max-width: 480px) {
+        .trash-item {
+          align-items: flex-start;
+          flex-wrap: wrap;
+        }
+        .trash-copy {
+          min-width: calc(100% - 70px);
+        }
+        .trash-actions {
+          width: 100%;
+          flex-direction: row;
+          justify-content: flex-end;
+        }
+      }
       .fab {
         position: fixed;
         right: 20px;

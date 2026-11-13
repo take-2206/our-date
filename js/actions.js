@@ -67,7 +67,7 @@
           C.notes = C.notes.filter((x) => String(x.id) != String(d.id));
           noteEdit = null;
           sb.from('notes')
-            .delete()
+            .update({ deleted_at: new Date().toISOString(), deleted_by: S.user.id })
             .eq('id', n.id)
             .then(({ error }) => (error ? say(error.message) : refresh()));
         }
@@ -106,7 +106,7 @@
           pv = nx ? nx.id : null;
           if (!nx) pvDay = null;
           sb.from('photos')
-            .delete()
+            .update({ deleted_at: new Date().toISOString(), deleted_by: S.user.id })
             .eq('id', p.id)
             .then(({ error }) => {
               if (error) {
@@ -114,11 +114,31 @@
                 refresh();
                 return;
               }
-              sb.storage
-                .from('photos')
-                .remove([p.path])
-                .then(() => refresh());
+              refresh();
             });
+        }
+        else if (a == 'trashRestore') {
+          const table = { event: 'events', note: 'notes', photo: 'photos' }[d.kind];
+          if (!table) return;
+          sb.from(table)
+            .update({ deleted_at: null, deleted_by: null })
+            .eq('id', d.id)
+            .then(({ error }) => (error ? say(error.message) : refresh()));
+          return;
+        }
+        else if (a == 'trashPermanent') {
+          const table = { event: 'events', note: 'notes', photo: 'photos' }[d.kind];
+          if (!table || !confirm(t('trashDeleteQ'))) return;
+          const photo = d.kind == 'photo' ? (C.trash?.photos || []).find((item) => String(item.id) == String(d.id)) : null;
+          sb.from(table)
+            .delete()
+            .eq('id', d.id)
+            .then(async ({ error }) => {
+              if (error) return say(error.message);
+              if (photo) await sb.storage.from('photos').remove([photo.path]);
+              refresh();
+            });
+          return;
         }
         else if (a == 'new') modal = 'new';
         else if (a == 'edit') modal = 'edit';
@@ -140,7 +160,7 @@
             if (CH) sb.removeChannel(CH);
           }
           S.user = null;
-          C = { ev: [], nt: [], notes: [], photos: [] };
+          C = { ev: [], nt: [], notes: [], photos: [], trash: { ev: [], notes: [], photos: [] } };
           P = {};
           PU = {};
           pv = null;
@@ -153,9 +173,9 @@
           const id = open;
           C.ev = C.ev.filter((e) => e.id != id);
           sb.from('events')
-            .delete()
+            .update({ deleted_at: new Date().toISOString(), deleted_by: S.user.id })
             .eq('id', id)
-            .then(() => {});
+            .then(({ error }) => (error ? say(error.message) : refresh()));
           open = null;
           view = 'cal';
         } else if (a == 'pushTog') {

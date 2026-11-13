@@ -86,7 +86,7 @@
           phN: 'Đã chọn {n} ảnh',
           phBusy: 'Đang tải ảnh lên…',
           phFail: '{n} ảnh tải lên không thành công',
-          phDelQ: 'Xoá ảnh này cho cả hai người?',
+          phDelQ: 'Chuyển ảnh này vào thùng rác?',
           phDel: 'Xoá ảnh',
           phSetup: 'Album chưa được thiết lập. Hãy chạy tệp supabase-album.sql trong Supabase.',
           phDate: 'Ngày chụp',
@@ -146,6 +146,15 @@
           badCode: 'Mã kết nối không đúng',
           full: 'Cặp đôi này đã đủ 2 người',
           noProf: 'Tài khoản chưa có hồ sơ. Hãy chuyển sang tab Đăng ký để hoàn tất.',
+          trash: 'Thùng rác',
+          trashSub: 'Có thể khôi phục trong 30 ngày',
+          trashEmpty: 'Thùng rác đang trống',
+          trashOpen: 'Mở thùng rác',
+          trashRestore: 'Khôi phục',
+          trashDelete: 'Xoá vĩnh viễn',
+          trashDeleteQ: 'Xoá vĩnh viễn mục này? Không thể hoàn tác.',
+          trashDays: 'còn {n} ngày',
+          trashSetup: 'Hãy chạy supabase-recycle-bin.sql trong Supabase trước.',
           cfg: 'Chưa điền SUPABASE_URL và SUPABASE_KEY trong js/core.js.',
         },
         en: {
@@ -233,7 +242,7 @@
           phN: '{n} photo(s) selected',
           phBusy: 'Uploading photos…',
           phFail: '{n} photo(s) failed to upload',
-          phDelQ: 'Delete this photo for both of you?',
+          phDelQ: 'Move this photo to the recycle bin?',
           phDel: 'Delete photo',
           phSetup: 'The album is not set up yet. Run supabase-album.sql in Supabase.',
           phDate: 'Date taken',
@@ -293,6 +302,15 @@
           badCode: 'Invalid connection code',
           full: 'This couple already has 2 people',
           noProf: 'This account has no profile yet. Switch to Sign up to finish.',
+          trash: 'Recycle bin',
+          trashSub: 'Restore items for up to 30 days',
+          trashEmpty: 'The recycle bin is empty',
+          trashOpen: 'Open recycle bin',
+          trashRestore: 'Restore',
+          trashDelete: 'Delete forever',
+          trashDeleteQ: 'Delete this item forever? This cannot be undone.',
+          trashDays: '{n} days left',
+          trashSetup: 'Run supabase-recycle-bin.sql in Supabase first.',
           cfg: 'SUPABASE_URL and SUPABASE_KEY are not set in js/core.js.',
         },
       };
@@ -329,7 +347,7 @@
       // S = cài đặt trên máy (ngôn ngữ, công tắc thông báo, người đang đăng nhập)
       // C = dữ liệu của cặp đôi (ev = buổi hẹn, nt = thông báo, notes = ghi chú chung)
       let S = {},
-        C = { ev: [], nt: [], notes: [], photos: [] };
+        C = { ev: [], nt: [], notes: [], photos: [], trash: { ev: [], notes: [], photos: [] } };
       try {
         S = JSON.parse(localStorage.getItem('ls')) || {};
       } catch (e) {}
@@ -361,6 +379,7 @@
         todoEdit = null,
         noteEdit = null,
         noteError = '',
+        trashError = '',
         noteDraft = null,
         noteDrag = null,
         noteResize = null,
@@ -495,7 +514,7 @@
         ]
           .map(
             ([v, i]) =>
-              `<button class="t${view == v ? ' on' : ''}" data-a="go" data-v="${v}">${i}<span>${t(v)}</span></button>`,
+              `<button class="t${view == v || (view == 'trash' && v == 'set') ? ' on' : ''}" data-a="go" data-v="${v}">${i}<span>${t(v)}</span></button>`,
           )
           .join('')}</nav>`;
       // Nút VI / EN
