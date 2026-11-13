@@ -1,4 +1,4 @@
-const CACHE = 'lovesync-v6';
+const CACHE = 'lovesync-v7';
 const APP_SHELL = [
   './',
   './index.html',
@@ -53,5 +53,44 @@ self.addEventListener('fetch', (event) => {
           return response;
         }),
     ),
+  );
+});
+
+// ===== Thông báo đẩy =====
+self.addEventListener('push', (event) => {
+  let d = {};
+  try {
+    d = event.data ? event.data.json() : {};
+  } catch (e) {
+    d = { body: event.data ? event.data.text() : '' };
+  }
+  event.waitUntil(
+    self.registration.showNotification(d.title || 'LoveSync', {
+      body: d.body || '',
+      icon: './img/icons/app-icon-192.png',
+      badge: './img/icons/app-icon-192.png',
+      tag: d.tag || undefined,
+      lang: d.lang || undefined,
+      data: { url: d.url || './', id: d.id || null },
+    }),
+  );
+});
+
+// Bấm vào thông báo: mở app (hoặc đưa app đang mở lên) và chuyển tới đúng buổi hẹn
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const { url, id } = event.notification.data || {};
+  event.waitUntil(
+    (async () => {
+      const list = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+      for (const c of list) {
+        if ('focus' in c) {
+          await c.focus();
+          if (id) c.postMessage({ type: 'open-event', id });
+          return;
+        }
+      }
+      await clients.openWindow(url || './');
+    })(),
   );
 });
