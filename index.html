@@ -1733,6 +1733,13 @@
           n1: 'Nhắc trước 1 ngày',
           n2: 'Nhắc trước 1 giờ',
           n3: 'Tin từ người ấy',
+          pushT: 'Thông báo về điện thoại',
+          pushHint: 'Nhắc hẹn và tin từ người ấy sẽ gửi về máy này, kể cả khi đã đóng app.',
+          pushIos: 'Trên iPhone: bấm Chia sẻ → "Thêm vào Màn hình chính", rồi mở app từ biểu tượng đó để bật thông báo.',
+          pushUnsup: 'Trình duyệt này chưa hỗ trợ thông báo đẩy.',
+          pushDenied: 'Thông báo đang bị chặn. Hãy cho phép thông báo của LoveSync trong cài đặt của máy.',
+          pushCfg: 'Chưa dán khóa VAPID công khai vào index.html (biến VAPID_PUBLIC).',
+          pushErr: 'Không bật được thông báo',
           lang: 'Ngôn ngữ',
           out: 'Đăng xuất',
           linked: 'đã liên kết',
@@ -1873,6 +1880,13 @@
           n1: 'Remind 1 day before',
           n2: 'Remind 1 hour before',
           n3: 'Messages from partner',
+          pushT: 'Phone notifications',
+          pushHint: 'Reminders and messages from your partner are sent to this device, even when the app is closed.',
+          pushIos: 'On iPhone: tap Share → "Add to Home Screen", then open the app from that icon to turn notifications on.',
+          pushUnsup: 'This browser does not support push notifications.',
+          pushDenied: 'Notifications are blocked. Allow LoveSync notifications in your device settings.',
+          pushCfg: 'The public VAPID key is not set in index.html (VAPID_PUBLIC).',
+          pushErr: 'Could not turn on notifications',
           lang: 'Language',
           out: 'Log out',
           linked: 'linked',
@@ -2047,6 +2061,8 @@
         noteDrag = null,
         albumSel = '',
         albumFocus = null,
+        pushOn = false,
+        pushBusy = false,
         pvDay = null,
         pv = null,
         umod = null,
@@ -2311,7 +2327,7 @@
           return o
             ? `<div class="card sec" style="display:flex;align-items:center;gap:14px;margin:0">${av(o.gender, 52)}<div style="flex:1"><h2 style="font-size:16px">${esc(o.name || '')}</h2><p class="sub" style="font-size:12px;margin-bottom:6px">${t('gd')}: ${o.gender == 'm' ? t('gm') : t('gf')}</p><span class="chip">${t('ptOn')}</span></div></div>`
             : `<div class="card sec" style="display:flex;align-items:center;gap:14px;margin:0">${av(me() == 'f' ? 'm' : 'f', 52)}<div style="flex:1"><h2 style="font-size:16px">${t('ptNone')}</h2><p class="sub" style="font-size:12px;margin-bottom:6px">${t('ptNoneH')}</p><span class="chip">${t('ptOff')}</span></div></div>`;
-        })()}<p class="mono sub h2" style="margin-top:18px">// ${t('acc')}</p><div class="card"><div class="rw"><span>${t('un')}</span><span class="sub">${esc(((S.user && S.user.email) || '').split('@')[0])}</span></div><div class="rw"><span>${t('code')}</span><span class="mono" style="color:var(--cy)">${esc((S.user && S.user.code) || 'LOVE-XXXX')}</span></div><div class="rw"><span>${t('lang')}</span>${lang()}</div></div><p class="mono sub h2" style="margin-top:18px">// ${t('nt')}</p><div class="card">${['n1', 'n2', 'n3'].map((k, i) => `<div class="rw"><label for="${k}">${t(k)}</label><input class="tg" id="${k}" type="checkbox" data-a="tg" data-i="${i}" ${n[i] ? 'checked' : ''}></div>`).join('')}</div><div class="row2" style="margin-top:20px"><button class="btn b2" data-a="out">${t('out')}</button></div></div>`;
+        })()}<p class="mono sub h2" style="margin-top:18px">// ${t('acc')}</p><div class="card"><div class="rw"><span>${t('un')}</span><span class="sub">${esc(((S.user && S.user.email) || '').split('@')[0])}</span></div><div class="rw"><span>${t('code')}</span><span class="mono" style="color:var(--cy)">${esc((S.user && S.user.code) || 'LOVE-XXXX')}</span></div><div class="rw"><span>${t('lang')}</span>${lang()}</div></div><p class="mono sub h2" style="margin-top:18px">// ${t('nt')}</p><div class="card"><div class="rw"><label for="pushTg">${t('pushT')}</label><input class="tg" id="pushTg" type="checkbox" data-a="pushTog" ${pushOn ? 'checked' : ''}${pushBusy ? ' disabled' : ''}></div>${['n1', 'n2', 'n3'].map((k, i) => `<div class="rw"><label for="${k}">${t(k)}</label><input class="tg" id="${k}" type="checkbox" data-a="tg" data-i="${i}" ${n[i] ? 'checked' : ''}></div>`).join('')}</div>${pushNote()}<div class="row2" style="margin-top:20px"><button class="btn b2" data-a="out">${t('out')}</button></div></div>`;
       }
       // Form thêm buổi hẹn (có ô "Gửi thông báo cho người ấy")
       function vMod() {
@@ -2529,6 +2545,7 @@
         } else if (a == 'lang') {
           S.lang = d.l;
           save();
+          pushResync();
         } else if (a == 'mode') {
           mode = d.m;
           msg = '';
@@ -2641,7 +2658,7 @@
         } else if (a == 'close') modal = false;
         else if (a == 'out') {
           if (sb) {
-            sb.auth.signOut();
+            pushDetach().then(() => sb.auth.signOut());
             if (CH) sb.removeChannel(CH);
           }
           S.user = null;
@@ -2663,9 +2680,14 @@
             .then(() => {});
           open = null;
           view = 'cal';
+        } else if (a == 'pushTog') {
+          if (el.checked) pushEnable();
+          else pushDisable();
+          return;
         } else if (a == 'tg') {
           S.n[d.i] = el.checked ? 1 : 0;
           save();
+          pushResync();
           return;
         } else if (a == 'chk') {
           const e = C.ev.find((x) => x.id == open),
@@ -3293,6 +3315,7 @@
         await loadC();
         subscribe();
         view = 'cal';
+        pushInit();
         return true;
       }
       // Đăng ký (signUp + join_couple) hoặc đăng nhập (signInWithPassword)
@@ -3344,6 +3367,147 @@
         }
         render();
       }
+      /* ===== THÔNG BÁO ĐẨY (Web Push) =====
+         Dán khóa công khai VAPID (tạo bằng: npx web-push generate-vapid-keys) vào VAPID_PUBLIC.
+         Máy được đăng ký qua hàm save_push_subscription trong Supabase (xem supabase-push.sql). */
+const VAPID_PUBLIC = 'BIol42oCVVxoqcBVueyTLai3kV8qseeVBYozCu5SiUqb_0G33VrVVec7dFXmL3b9raPD3_nC4Epb8wVlVXhKq9E';      const pushOK = () =>
+        location.protocol != 'file:' && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+      const pushKeyOK = () => /^[\w-]{80,}$/.test(VAPID_PUBLIC);
+      const pushFlag = () => 'ls_push_' + (S.user ? S.user.id : '');
+      const b64u = (x) => {
+        const b = atob((x + '='.repeat((4 - (x.length % 4)) % 4)).replace(/-/g, '+').replace(/_/g, '/'));
+        return Uint8Array.from(b, (c) => c.charCodeAt(0));
+      };
+      const pushReg = async () => (await navigator.serviceWorker.getRegistration()) || navigator.serviceWorker.ready;
+      const pushSubOf = async () => {
+        const reg = await pushReg();
+        return (await reg.pushManager.getSubscription()) || null;
+      };
+      const pushMake = async () => {
+        const reg = await pushReg();
+        return (
+          (await reg.pushManager.getSubscription()) ||
+          reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(VAPID_PUBLIC) })
+        );
+      };
+      // Lưu / cập nhật máy này (kèm ngôn ngữ, múi giờ, 3 công tắc nhắc) vào Supabase
+      async function pushSave(sub) {
+        const j = sub.toJSON(),
+          r = await sb.rpc('save_push_subscription', {
+            p_endpoint: sub.endpoint,
+            p_p256dh: j.keys.p256dh,
+            p_auth: j.keys.auth,
+            p_lang: S.lang,
+            p_tz: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Ho_Chi_Minh',
+            p_n1: !!S.n[0],
+            p_n2: !!S.n[1],
+            p_n3: !!S.n[2],
+          });
+        if (r.error) throw r.error;
+      }
+      async function pushEnable() {
+        if (pushBusy) return;
+        if (!pushOK()) return say(t('pushUnsup'));
+        if (!pushKeyOK()) return say(t('pushCfg'));
+        pushBusy = true;
+        render();
+        try {
+          const perm = await Notification.requestPermission();
+          if (perm != 'granted') throw new Error('denied');
+          await pushSave(await pushMake());
+          try {
+            localStorage.setItem(pushFlag(), '1');
+          } catch (x) {}
+          pushOn = true;
+          pushBusy = false;
+          render();
+        } catch (x) {
+          pushOn = false;
+          pushBusy = false;
+          say(x.message == 'denied' ? t('pushDenied') : t('pushErr') + ' (' + (x.message || x) + ')');
+        }
+      }
+      async function pushDisable() {
+        pushBusy = true;
+        render();
+        try {
+          const sub = await pushSubOf();
+          if (sub) {
+            await sb.from('push_subscriptions').delete().eq('endpoint', sub.endpoint);
+            await sub.unsubscribe();
+          }
+        } catch (x) {}
+        try {
+          localStorage.removeItem(pushFlag());
+        } catch (x) {}
+        pushOn = false;
+        pushBusy = false;
+        render();
+      }
+      // Đăng xuất: gỡ máy này khỏi tài khoản để không nhận thông báo của người khác
+      async function pushDetach() {
+        pushOn = false;
+        try {
+          if (!pushOK()) return;
+          const sub = await pushSubOf();
+          if (sub) await sb.from('push_subscriptions').delete().eq('endpoint', sub.endpoint);
+        } catch (x) {}
+      }
+      // Sau khi đăng nhập: nếu máy này đã bật thông báo thì đồng bộ lại
+      async function pushInit() {
+        pushOn = false;
+        if (!pushOK() || !pushKeyOK() || Notification.permission != 'granted') return;
+        let f = '';
+        try {
+          f = localStorage.getItem(pushFlag()) || '';
+        } catch (x) {}
+        if (!f) return;
+        try {
+          await pushSave(await pushMake());
+          pushOn = true;
+          render();
+        } catch (x) {}
+      }
+      // Đổi công tắc nhắc / ngôn ngữ thì cập nhật lại lên Supabase
+      async function pushResync() {
+        if (!pushOn) return;
+        try {
+          const sub = await pushSubOf();
+          if (sub) await pushSave(sub);
+        } catch (x) {}
+      }
+      function pushNote() {
+        const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+        const m = !pushOK()
+          ? ios
+            ? t('pushIos')
+            : t('pushUnsup')
+          : !pushKeyOK()
+            ? t('pushCfg')
+            : Notification.permission == 'denied'
+              ? t('pushDenied')
+              : t('pushHint');
+        return `<p class="sub" style="font-size:12px;margin-top:8px">${m}</p>`;
+      }
+      // Bấm thông báo -> mở đúng buổi hẹn
+      function openFromUrl(id) {
+        id = Number(id);
+        if (!id || !S.user) return;
+        const go = () => {
+          if (!C.ev.some((e) => e.id == id)) return false;
+          open = id;
+          todoEdit = null;
+          bell = false;
+          view = 'det';
+          render();
+          return true;
+        };
+        if (!go()) refresh().then(go);
+      }
+      if ('serviceWorker' in navigator && location.protocol != 'file:')
+        navigator.serviceWorker.addEventListener('message', (e) => {
+          if (e.data && e.data.type == 'open-event') openFromUrl(e.data.id);
+        });
       /* ===== 8. KHỞI ĐỘNG: nếu đã có phiên đăng nhập thì vào thẳng lịch, không thì hiện màn đăng nhập ===== */
       (async () => {
         if (CFG) {
@@ -3352,6 +3516,11 @@
         }
         view = S.user ? 'cal' : 'auth';
         render();
+        const q = new URLSearchParams(location.search).get('ev');
+        if (q) {
+          history.replaceState(null, '', location.pathname);
+          openFromUrl(q);
+        }
       })();
     </script>
     <script>
