@@ -1157,6 +1157,8 @@
       }
       .mod input[type='date'].in,
       .mod input[type='time'].in {
+        -webkit-appearance: auto;
+        appearance: auto;
         text-align: left;
         padding-right: 8px;
         line-height: 48px;
@@ -1645,6 +1647,19 @@
         .heart-light i {
           animation: none !important;
         }
+
+        .mod .in,
+.mod input[type='date'].in,
+.mod input[type='time'].in {
+  font-size: 16px; /* >=16px để iOS không tự zoom */
+}
+.mod input[type='date'].in,
+.mod input[type='time'].in {
+  min-height: 48px;
+  line-height: normal; /* thay cho line-height: 48px */
+  -webkit-appearance: none;
+  appearance: none;
+}
       }
     </style>
   </head>
@@ -2333,7 +2348,7 @@
       function vMod() {
         const e = modal == 'edit' ? C.ev.find((x) => x.id == open) : null,
           editing = !!e;
-        return `<div class="mod" data-a="close"><form class="card" data-f="ev" role="dialog" aria-label="${t(editing ? 'edit' : 'add')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:16px">${t(editing ? 'edit' : 'add')}</h2><div class="fl"><label class="lb" for="mt">${t('ttl')}</label><input class="in" id="mt" name="title" required value="${editing ? esc(tx(e.title)) : ''}"></div><div style="display:flex;gap:12px"><div class="fl" style="flex:1"><label class="lb" for="md">${t('dt')}</label><input class="in" id="md" name="date" type="date" data-calendar inputmode="none" required value="${editing ? e.date : sel}"></div><div class="fl" style="flex:1"><label class="lb" for="mm">${t('tm')}</label><input class="in" id="mm" name="time" type="time" data-clock inputmode="none" value="${editing ? e.time : '19:00'}"></div></div><div class="fl"><label class="lb" for="mp">${t('pl')}</label><input class="in" id="mp" name="place" value="${editing ? esc(tx(e.place)) : ''}"></div>${editing ? '' : `<label class="chk"><input type="checkbox" name="send" checked><span>${t('send')}</span></label>`}<div class="row2"><button type="button" class="btn b2" data-a="close">${t('cancel')}</button><button class="btn b1">${t(editing ? 'saveChanges' : 'save')}</button></div></form></div>`;
+        return `<div class="mod" data-a="close"><form class="card" data-f="ev" role="dialog" aria-label="${t(editing ? 'edit' : 'add')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:16px">${t(editing ? 'edit' : 'add')}</h2><div class="fl"><label class="lb" for="mt">${t('ttl')}</label><input class="in" id="mt" name="title" required value="${editing ? esc(tx(e.title)) : ''}"></div><div style="display:flex;gap:12px"><div class="fl" style="flex:1"><label class="lb" for="md">${t('dt')}</label><input class="in" id="md" name="date" type="date" data-calendar required value="${editing ? e.date : sel}"></div><div class="fl" style="flex:1"><label class="lb" for="mm">${t('tm')}</label><input class="in" id="mm" name="time" type="time" data-clock value="${editing ? e.time : '19:00'}"></div></div><div class="fl"><label class="lb" for="mp">${t('pl')}</label><input class="in" id="mp" name="place" value="${editing ? esc(tx(e.place)) : ''}"></div>${editing ? '' : `<label class="chk"><input type="checkbox" name="send" checked><span>${t('send')}</span></label>`}<div class="row2"><button type="button" class="btn b2" data-a="close">${t('cancel')}</button><button class="btn b1">${t(editing ? 'saveChanges' : 'save')}</button></div></form></div>`;
       }
       // Form sửa thông tin cá nhân (tên hiển thị + giới tính/avatar)
       function vProf() {
@@ -2393,7 +2408,7 @@
         const n = umod.files.length;
         return `<div class="mod" data-a="uclose"><form class="card" data-f="photo" role="dialog" aria-label="${t('phAdd')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:6px">${t('phAdd')}</h2><p class="sub" style="font-size:12px;margin-bottom:14px">${t('phN').replace('{n}', n)}</p><div class="ab-prev">${umod.urls.map((u) => `<img src="${u}" alt="">`).join('')}${n > umod.urls.length ? `<b>+${n - umod.urls.length}</b>` : ''}</div><div class="fl"><label class="lb" for="pa">${t('phAlbum')}</label><input class="in" id="pa" name="album" list="ab-list" maxlength="30" autocomplete="off" value="${esc(albumSel)}" placeholder="${t('phAlbumPh')}"><datalist id="ab-list">${albums()
           .map((a) => `<option value="${esc(a)}"></option>`)
-          .join('')}</datalist></div><div class="fl"><label class="lb" for="pd">${t('phDate')}</label><input class="in" id="pd" name="date" type="date" data-calendar inputmode="none" required value="${key(new Date())}"></div><div class="fl"><label class="lb" for="pp">${t('phPlace')}</label><input class="in" id="pp" name="place" maxlength="60" autocomplete="off" list="pl-list" placeholder="${t('phPlaceIPh')}"><datalist id="pl-list">${[...new Set(C.photos.map((x) => x.place).filter(Boolean))].map((a) => `<option value="${esc(a)}"></option>`).join('')}</datalist></div>${n == 1 ? `<div class="fl"><label class="lb" for="pc">${t('phCap')}</label><input class="in" id="pc" name="caption" maxlength="120" placeholder="${t('phCapPh')}"></div>` : ''}<div class="row2"><button type="button" class="btn b2" data-a="uclose">${t('cancel')}</button><button class="btn b1">${t('save')}</button></div></form></div>`;
+          .join('')}</datalist></div><div class="fl"><label class="lb" for="pd">${t('phDate')}</label><input class="in" id="pd" name="date" type="date" data-calendar required value="${key(new Date())}"></div><div class="fl"><label class="lb" for="pp">${t('phPlace')}</label><input class="in" id="pp" name="place" maxlength="60" autocomplete="off" list="pl-list" placeholder="${t('phPlaceIPh')}"><datalist id="pl-list">${[...new Set(C.photos.map((x) => x.place).filter(Boolean))].map((a) => `<option value="${esc(a)}"></option>`).join('')}</datalist></div>${n == 1 ? `<div class="fl"><label class="lb" for="pc">${t('phCap')}</label><input class="in" id="pc" name="caption" maxlength="120" placeholder="${t('phCapPh')}"></div>` : ''}<div class="row2"><button type="button" class="btn b2" data-a="uclose">${t('cancel')}</button><button class="btn b1">${t('save')}</button></div></form></div>`;
       }
       // Xem ảnh toàn màn hình: mũi tên / vuốt để chuyển ảnh, sửa chú thích, xoá
       function vPv() {
@@ -2403,10 +2418,12 @@
         const p = list[i],
           u = pu(p),
           who = (P[p.by] || {}).name || '';
-        return `<div class="pv" role="dialog" aria-modal="true" aria-label="${t('album')}"><div class="pv-top"><span class="mono sub" style="font-size:12px">${i + 1} / ${list.length}${p.album ? ' · ' + esc(p.album) : ''}</span><div style="display:flex;gap:8px"><button class="ib" data-a="phDel" data-id="${p.id}" aria-label="${t('phDel')}">${I.trash}</button><button class="ib" data-a="pvClose" aria-label="${t('phClose')}">${I.x}</button></div></div><div class="pv-img">${u ? `<img src="${esc(u)}" alt="${esc(p.cap)}">` : ''}${i > 0 ? `<button class="ib pv-nav" style="left:4px" data-a="pvGo" data-d="-1" aria-label="${t('phPrev')}">${I.back}</button>` : ''}${i < list.length - 1 ? `<button class="ib pv-nav" style="right:4px" data-a="pvGo" data-d="1" aria-label="${t('phNext')}">${I.fwd}</button>` : ''}</div><div class="pv-foot"><input class="in" data-photo-cap data-id="${p.id}" maxlength="120" value="${esc(p.cap)}" placeholder="${t('phCapPh')}" aria-label="${t('phCap')}"><div class="pv-meta"><input class="in" type="date" data-calendar inputmode="none" data-photo-date data-id="${p.id}" value="${p.date}" aria-label="${t('phDate')}"><input class="in" data-photo-place data-id="${p.id}" maxlength="60" value="${esc(p.place)}" placeholder="${t('phPlace')}" aria-label="${t('phPlace')}"></div>${who ? `<p class="sub mono" style="font-size:11px;text-align:center">${esc(who)}</p>` : ''}</div></div>`;
+        return `<div class="pv" role="dialog" aria-modal="true" aria-label="${t('album')}"><div class="pv-top"><span class="mono sub" style="font-size:12px">${i + 1} / ${list.length}${p.album ? ' · ' + esc(p.album) : ''}</span><div style="display:flex;gap:8px"><button class="ib" data-a="phDel" data-id="${p.id}" aria-label="${t('phDel')}">${I.trash}</button><button class="ib" data-a="pvClose" aria-label="${t('phClose')}">${I.x}</button></div></div><div class="pv-img">${u ? `<img src="${esc(u)}" alt="${esc(p.cap)}">` : ''}${i > 0 ? `<button class="ib pv-nav" style="left:4px" data-a="pvGo" data-d="-1" aria-label="${t('phPrev')}">${I.back}</button>` : ''}${i < list.length - 1 ? `<button class="ib pv-nav" style="right:4px" data-a="pvGo" data-d="1" aria-label="${t('phNext')}">${I.fwd}</button>` : ''}</div><div class="pv-foot"><input class="in" data-photo-cap data-id="${p.id}" maxlength="120" value="${esc(p.cap)}" placeholder="${t('phCapPh')}" aria-label="${t('phCap')}"><div class="pv-meta"><input class="in" type="date" data-calendar data-photo-date data-id="${p.id}" value="${p.date}" aria-label="${t('phDate')}"><input class="in" data-photo-place data-id="${p.id}" maxlength="60" value="${esc(p.place)}" placeholder="${t('phPlace')}" aria-label="${t('phPlace')}"></div>${who ? `<p class="sub mono" style="font-size:11px;text-align:center">${esc(who)}</p>` : ''}</div></div>`;
       }
       // Vẽ lại toàn bộ màn hình theo trạng thái hiện tại
       function render() {
+        const ae = document.activeElement;
+  if (ae && ae.matches && ae.matches('.mod input, .mod textarea') && !render.force) return;
         document.documentElement.lang = S.lang;
         $('#app').innerHTML =
           view == 'boot'
@@ -2775,10 +2792,7 @@
       const pickerInput = (el) =>
         el.matches('input[type="date"][data-calendar], input[type="time"][data-clock]');
       document.addEventListener('pointerdown', (e) => {
-        if (startNoteDrag(e)) return;
-        if (!pickerInput(e.target) || !e.target.showPicker) return;
-        e.preventDefault();
-        e.target.showPicker();
+        startNoteDrag(e);
       });
       document.addEventListener(
         'pointermove',
@@ -2792,10 +2806,7 @@
       document.addEventListener('pointerup', finishNoteDrag);
       document.addEventListener('pointercancel', finishNoteDrag);
       document.addEventListener('click', (e) => {
-        if (pickerInput(e.target)) {
-          if (e.target.showPicker) e.preventDefault();
-          return;
-        }
+        if (pickerInput(e.target)) return;
         const el = e.target.closest('[data-a]'),
           wasBell = bell;
         if (bell && !e.target.closest('.pop,[data-a=bell]')) bell = false;
@@ -3053,12 +3064,6 @@
       );
       // Phím Esc đóng mọi bảng đang mở
       document.addEventListener('keydown', (e) => {
-        if (pickerInput(e.target)) {
-          if (e.key == 'Tab' || e.key == 'Escape') return;
-          e.preventDefault();
-          if ((e.key == 'Enter' || e.key == ' ') && e.target.showPicker) e.target.showPicker();
-          return;
-        }
         if (pv != null && !e.target.matches('input,textarea')) {
           if (e.key == 'ArrowLeft') return act('pvGo', { d: -1 }, document.body);
           if (e.key == 'ArrowRight') return act('pvGo', { d: 1 }, document.body);
