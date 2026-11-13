@@ -40,39 +40,14 @@
         --pk2: #ffb6d9;
         --cy: #7df9ff;
         --mut: #a98598;
-        scrollbar-color: rgba(255, 105, 180, 0.8) rgba(13, 13, 13, 0.9);
-      }
-      html {
-        background: var(--bg);
-        overflow-x: hidden;
-        scrollbar-gutter: stable;
-        scrollbar-color: rgba(255, 105, 180, 0.8) rgba(13, 13, 13, 0.9);
       }
       * {
         box-sizing: border-box;
-        scrollbar-width: thin;
-        scrollbar-color: rgba(255, 105, 180, 0.8) rgba(13, 13, 13, 0.9);
-      }
-      *::-webkit-scrollbar {
-        width: 10px;
-        height: 10px;
-      }
-      *::-webkit-scrollbar-track {
-        background: rgba(13, 13, 13, 0.9);
-      }
-      *::-webkit-scrollbar-thumb {
-        background: linear-gradient(180deg, rgba(255, 105, 180, 0.9), rgba(125, 249, 255, 0.7));
-        border: 2px solid rgba(13, 13, 13, 0.9);
-        border-radius: 999px;
-      }
-      *::-webkit-scrollbar-corner {
-        background: transparent;
       }
       body {
         margin: 0;
         background: var(--bg);
         color: #fff;
-        overflow-x: hidden;
         font:
           600 15px/1.4 'Nunito',
           sans-serif;
@@ -799,9 +774,7 @@
       .sticky {
         --paper: #ffb6d9;
         position: relative;
-        min-width: 180px;
         min-height: 190px;
-        width: min(220px, calc(100% - 24px));
         padding: 22px 18px 14px;
         display: flex;
         flex-direction: column;
@@ -810,12 +783,6 @@
         border: 0;
         border-radius: 5px 5px 18px 5px;
         transform: rotate(var(--tilt));
-        transform-origin: center center;
-        backface-visibility: hidden;
-        -webkit-backface-visibility: hidden;
-        contain: layout paint;
-        resize: both;
-        overflow: auto;
         box-shadow:
           0 12px 24px rgba(0, 0, 0, 0.32),
           0 0 15px color-mix(in srgb, var(--paper) 50%, transparent);
@@ -995,12 +962,7 @@
         width: min(220px, calc(100% - 24px));
         height: 190px;
         min-height: 0;
-        resize: both;
-        overflow: auto;
         transform: translate(-50%, -50%) rotate(var(--tilt));
-        transform-origin: center center;
-        backface-visibility: hidden;
-        -webkit-backface-visibility: hidden;
       }
       .note-board .sticky:hover,
       .note-board .sticky:focus-within {
@@ -1030,29 +992,13 @@
         width: 100%;
         flex: 1;
         min-height: 0;
-        padding: 4px 0 4px 2px;
+        padding: 4px 0;
         resize: none;
         border: 0;
         outline: 0;
         color: #24131d;
         background: transparent;
-        overflow: auto;
-        scrollbar-width: thin;
-        scrollbar-color: rgba(36, 19, 29, 0.42) transparent;
-        -webkit-overflow-scrolling: touch;
         font: 700 16px/1.5 'Nunito', sans-serif;
-      }
-      .sticky-inline::-webkit-scrollbar {
-        width: 8px;
-      }
-      .sticky-inline::-webkit-scrollbar-track {
-        background: transparent;
-      }
-      .sticky-inline::-webkit-scrollbar-thumb {
-        background: rgba(36, 19, 29, 0.42);
-        border: 2px solid transparent;
-        border-radius: 999px;
-        background-clip: padding-box;
       }
       .sticky-inline::placeholder {
         color: rgba(36, 19, 29, 0.5);
@@ -1230,15 +1176,6 @@
         flex: 1;
         min-width: 0;
       }
-      .dc .dc-name {
-        margin-bottom: 3px;
-        overflow: hidden;
-        color: #fff;
-        font-size: 16px;
-        font-weight: 800;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
       .dc .dcv {
         display: flex;
         align-items: baseline;
@@ -1369,6 +1306,93 @@
         border-color: var(--pk);
         color: #0d0d0d;
         box-shadow: 0 0 14px rgba(255, 105, 180, 0.5);
+      }
+      .ab-day {
+        margin-bottom: 18px;
+        scroll-margin-top: 12px;
+        border-radius: 14px;
+      }
+      .ab-day.hl {
+        animation: ab-hl 1.6s ease-out;
+      }
+      @keyframes ab-hl {
+        from {
+          box-shadow: 0 0 0 6px rgba(255, 105, 180, 0.35);
+        }
+        to {
+          box-shadow: 0 0 0 6px rgba(255, 105, 180, 0);
+        }
+      }
+      .ab-dh {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 4px 12px;
+        margin: 0 2px 8px;
+      }
+      .ab-dh b {
+        font-weight: 800;
+        font-size: 14px;
+      }
+      .ab-dh span {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+      }
+      .ab-dh svg,
+      .cal-pl svg {
+        width: 14px;
+        height: 14px;
+        flex: none;
+      }
+      .pv-meta {
+        display: flex;
+        gap: 8px;
+      }
+      .pv-meta .in {
+        flex: 1;
+        min-width: 0;
+      }
+      .cl .ph-dot {
+        position: absolute;
+        right: 6px;
+        top: 5px;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--cy);
+        box-shadow: 0 0 6px var(--cy);
+        pointer-events: none;
+      }
+      .cl.td .ph-dot {
+        background: #fff;
+        box-shadow: 0 0 6px #fff;
+      }
+      .cal-ph {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .cal-ph-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+      }
+      .cal-more {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        background: rgba(0, 0, 0, 0.55);
+        color: #fff;
+        font: 800 14px 'JetBrains Mono', monospace;
+      }
+      .cal-pl {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
       }
       .ab-grid {
         display: grid;
@@ -1725,9 +1749,7 @@
           dcFrom: 'từ',
           dcNext: 'còn {n} ngày nữa đến ngày thứ {m}',
           dcTtl: 'Ngày bắt đầu yêu',
-          coupleName: 'Tên của hai bạn',
-          coupleNamePh: 'vd: Yan ♡ Min',
-          dcLocal: 'Mới lưu trên máy này. Để cả hai cùng thấy, hãy chạy tệp supabase-couple.sql trong Supabase.',
+          dcLocal: 'Mới lưu trên máy này. Để cả hai cùng thấy, cần thêm cột start_date vào bảng couples trên Supabase.',
           eedit: 'Sửa thời gian & địa điểm',
           del1: 'Xóa việc này',
           board: 'bảng_ghi_chú_chung',
@@ -1756,6 +1778,13 @@
           phDelQ: 'Xoá ảnh này cho cả hai người?',
           phDel: 'Xoá ảnh',
           phSetup: 'Album chưa được thiết lập. Hãy chạy tệp supabase-album.sql trong Supabase.',
+          phDate: 'Ngày chụp',
+          phPlace: 'Địa điểm',
+          phPlaceIPh: 'Ví dụ: Hồ Xuân Hương (có thể để trống)',
+          phOfDay: 'Ảnh kỷ niệm',
+          phOpenAlbum: 'Mở trong album',
+          phMore: 'ảnh',
+          phMigrate: 'Hãy chạy tệp supabase-album-dates.sql trong Supabase để lưu ngày và địa điểm của ảnh.',
           phPrev: 'Ảnh trước',
           phNext: 'Ảnh sau',
           phClose: 'Đóng',
@@ -1860,9 +1889,7 @@
           dcFrom: 'since',
           dcNext: '{n} days until day {m}',
           dcTtl: 'Start date',
-          coupleName: 'Couple name',
-          coupleNamePh: 'e.g. Yan ♡ Min',
-          dcLocal: 'Saved on this device only. To share it, run supabase-couple.sql in Supabase.',
+          dcLocal: 'Saved on this device only. To share it, add a start_date column to the couples table in Supabase.',
           eedit: 'Edit time & place',
           del1: 'Remove this item',
           board: 'shared_note_board',
@@ -1891,6 +1918,13 @@
           phDelQ: 'Delete this photo for both of you?',
           phDel: 'Delete photo',
           phSetup: 'The album is not set up yet. Run supabase-album.sql in Supabase.',
+          phDate: 'Date taken',
+          phPlace: 'Place',
+          phPlaceIPh: 'e.g. Xuan Huong Lake (optional)',
+          phOfDay: 'Photo memories',
+          phOpenAlbum: 'Open in album',
+          phMore: 'photos',
+          phMigrate: 'Run supabase-album-dates.sql in Supabase to save photo dates and places.',
           phPrev: 'Previous photo',
           phNext: 'Next photo',
           phClose: 'Close',
@@ -2012,6 +2046,8 @@
         noteDraft = null,
         noteDrag = null,
         albumSel = '',
+        albumFocus = null,
+        pvDay = null,
         pv = null,
         umod = null,
         upBusy = null,
@@ -2023,14 +2059,6 @@
         tx = (v) => (typeof v == 'object' ? t(v.k) : v);
       const esc = (s) =>
         String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-      const coupleNameFromUsers = () => {
-        const other = typeof partner === 'function' ? partner() : null;
-        const names = [S.user && S.user.name, other && other.name]
-          .filter(Boolean)
-          .map((n) => String(n).trim())
-          .filter(Boolean);
-        return names.length ? names.join(' & ') : '';
-      };
       // Avatar: AVF = ảnh nữ (img/girl.png), AVM = ảnh nam (img/boy.png), AVF0 = ảnh nữ nhúng sẵn dùng khi thiếu file
       // IMG = 3 ảnh lá thư nhúng base64: e0 = phong bì đóng, e1 = phong bì mở, pp = giấy thư
       const AVF0 = 'data:image/jpeg;base64,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';
@@ -2074,6 +2102,7 @@
         x: sv('<path d="M6 6l12 12M18 6L6 18"/>'),
         trash: sv('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>'),
         photo: sv('<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/>'),
+        pin: sv('<path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>'),
       };
       // Ngày giờ theo ngôn ngữ: fmt() định dạng, rel() = "3 ngày nữa", up() = danh sách buổi hẹn sắp tới
       const loc = () => (S.lang == 'vi' ? 'vi-VN' : 'en-US');
@@ -2173,17 +2202,16 @@
       // Đếm ngày bên nhau: ngày bắt đầu = ngày thứ 1; mốc kế tiếp = 100, 200, 300, 365, 500... rồi mỗi năm
       const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
       function dayCard() {
-        const sn = C.since,
-          cn = C.coupleName || coupleNameFromUsers();
+        const sn = C.since;
         if (!sn)
-          return `<div class="card dc"><div class="pair">${av(me(), 44)}${av(pr(), 44)}</div><div class="dcb">${cn ? `<p class="dc-name">${esc(cn)}</p>` : ''}<button class="btn b1" data-a="sedit" style="min-height:44px">${t('dcSet')}</button></div></div>`;
+          return `<div class="card dc"><div class="pair">${av(me(), 44)}${av(pr(), 44)}</div><div class="dcb"><button class="btn b1" data-a="sedit" style="min-height:44px">${t('dcSet')}</button></div></div>`;
         const n = Math.round((today0() - parse(sn)) / 864e5) + 1,
           nx = MS.find((x) => x > n) || Math.ceil((n + 1) / 365) * 365,
           sub = `${t('dcFrom')} ${fmt(sn, { day: 'numeric', month: 'numeric', year: 'numeric' })}${n > 0 ? ' · ' + t('dcNext').replace('{n}', nx - n).replace('{m}', nx) : ''}`;
-        return `<div class="card dc"><div class="pair">${av(me(), 44)}${av(pr(), 44)}</div><div class="dcb">${cn ? `<p class="dc-name">${esc(cn)}</p>` : ''}<div class="dcv"><b class="px">${Math.max(n, 0)}</b><span>${t('dc')}</span></div><p class="sub mono" style="font-size:12px;margin-top:2px">${sub}</p></div><button class="ib" data-a="sedit" aria-label="${t('dcTtl')}">${sv('<path d="M4 20h4L19 9l-4-4L4 16v4z"/>')}</button></div>`;
+        return `<div class="card dc"><div class="pair">${av(me(), 44)}${av(pr(), 44)}</div><div class="dcb"><div class="dcv"><b class="px">${Math.max(n, 0)}</b><span>${t('dc')}</span></div><p class="sub mono" style="font-size:12px;margin-top:2px">${sub}</p></div><button class="ib" data-a="sedit" aria-label="${t('dcTtl')}">${sv('<path d="M4 20h4L19 9l-4-4L4 16v4z"/>')}</button></div>`;
       }
       function vSince() {
-        return `<div class="mod" data-a="sclose"><form class="card" data-f="since" role="dialog" aria-label="${t('dcTtl')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:16px">${t('dcTtl')}</h2><div class="fl"><label class="lb" for="sd">${t('dt')}</label><input class="in" id="sd" name="since" type="date" data-calendar inputmode="none" required max="${key(new Date())}" value="${esc(C.since || '')}"></div><div class="row2"><button type="button" class="btn b2" data-a="sclose">${t('cancel')}</button><button class="btn b1">${t('save')}</button></div></form></div>`;
+        return `<div class="mod" data-a="sclose"><form class="card" data-f="since" role="dialog" aria-label="${t('dcTtl')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:16px">${t('dcTtl')}</h2><div class="fl"><label class="lb" for="sd">${t('dt')}</label><input class="in" id="sd" name="since" type="date" required max="${key(new Date())}" value="${esc(C.since || '')}"></div><div class="row2"><button type="button" class="btn b2" data-a="sclose">${t('cancel')}</button><button class="btn b1">${t('save')}</button></div></form></div>`;
       }
       function vCal() {
         const y = cur.getFullYear(),
@@ -2195,9 +2223,10 @@
           const d = new Date(st);
           d.setDate(st.getDate() + i);
           const k = key(d),
-            es = EV().filter((e) => e.date == k);
+            es = EV().filter((e) => e.date == k),
+            np = photosOn(k).length;
           cells.push(
-            `<button class="cl${d.getMonth() != m ? ' o' : ''}${k == tk ? ' td' : ''}${k == sel ? ' sl' : ''}${es.length ? ' has-plan' : ''}" data-a="day" data-k="${k}" aria-label="${fmt(k, { dateStyle: 'full' })}${es.length ? `, ${es.length} ${t('det')}` : ''}"><span>${d.getDate()}</span>${es.length ? '<span class="heart-light" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>' : ''}</button>`,
+            `<button class="cl${d.getMonth() != m ? ' o' : ''}${k == tk ? ' td' : ''}${k == sel ? ' sl' : ''}${es.length ? ' has-plan' : ''}${np ? ' has-ph' : ''}" data-a="day" data-k="${k}" aria-label="${fmt(k, { dateStyle: 'full' })}${es.length ? `, ${es.length} ${t('det')}` : ''}${np ? `, ${np} ${t('phMore')}` : ''}"><span>${d.getDate()}</span>${es.length ? '<span class="heart-light" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>' : ''}${np ? '<i class="ph-dot" aria-hidden="true"></i>' : ''}</button>`,
           );
         }
         const wk = [...Array(7)]
@@ -2210,9 +2239,23 @@
           upcoming = up()
             .filter((e) => e.date != sel)
             .slice(0, 3),
+          dph = photosOn(sel),
+          photoSec = dph.length
+            ? `<p class="mono sub h2"${day.length ? ' style="margin-top:22px"' : ''}>// ${t('phOfDay')} · ${fmt(sel, { day: 'numeric', month: 'long' })}</p><div class="card cal-ph"><div class="cal-ph-grid">${dph
+                .slice(0, 4)
+                .map((p, i) => {
+                  const u = pu(p),
+                    more = i == 3 && dph.length > 4 ? dph.length - 4 : 0;
+                  return `<button class="ab-ph" data-a="pvDay" data-k="${sel}" data-id="${p.id}" aria-label="${esc(p.cap || p.place || t('album'))}">${u ? `<img src="${esc(u)}" alt="${esc(p.cap)}" loading="lazy" decoding="async">` : ''}${more ? `<span class="cal-more">+${more}</span>` : ''}</button>`;
+                })
+                .join('')}</div>${(() => {
+                const pl = [...new Set(dph.map((p) => p.place).filter(Boolean))].join(' · ');
+                return pl ? `<p class="sub cal-pl">${I.pin} ${esc(pl)}</p>` : '';
+              })()}<button class="btn b2" data-a="goAlbum" data-k="${sel}" style="min-height:40px">${I.photo} ${t('phOpenAlbum')} · ${dph.length}</button></div>`
+            : '',
           side = day.length
-            ? `<p class="mono sub h2">// ${fmt(sel, { day: 'numeric', month: 'long' })}</p>${day.map(evCard).join('')}<p class="mono sub h2" style="margin-top:22px">// ${t('soon')}</p>${upcoming.length ? upcoming.map(evCard).join('') : `<div class="empty">${t('noUpcoming')}</div>`}`
-            : `<p class="mono sub h2">// ${t('soon')}</p>${up().slice(0, 3).map(evCard).join('') || `<div class="empty">${t('none')}</div>`}`;
+            ? `<p class="mono sub h2">// ${fmt(sel, { day: 'numeric', month: 'long' })}</p>${day.map(evCard).join('')}${photoSec}<p class="mono sub h2" style="margin-top:22px">// ${t('soon')}</p>${upcoming.length ? upcoming.map(evCard).join('') : `<div class="empty">${t('noUpcoming')}</div>`}`
+            : `${photoSec}<p class="mono sub h2"${photoSec ? ' style="margin-top:22px"' : ''}>// ${t('soon')}</p>${up().slice(0, 3).map(evCard).join('') || `<div class="empty">${t('none')}</div>`}`;
         return `<div class="main">${head(cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' }), t('shared'))}${dayCard()}<div class="cg"><div class="card cal"><div class="cn"><button class="ib" data-a="mo" data-n="-1" aria-label="prev" style="width:40px;height:40px">${I.back}</button><b>${cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' })}</b><button class="ib" data-a="mo" data-n="1" aria-label="next" style="width:40px;height:40px;transform:scaleX(-1)">${I.back}</button></div><div class="g7 wk">${wk}</div><div class="g7">${cells.join('')}</div></div><div>${side}</div></div></div><button class="fab" data-a="new" aria-label="${t('add')}">+</button>`;
       }
       const todoRows = (e) =>
@@ -2243,10 +2286,8 @@
           author = P[n.by] || {},
           cols = innerWidth < 600 ? 1 : innerWidth < 900 ? 2 : 4,
           x = Number.isFinite(n.x) ? n.x : (i % cols + 0.5) / cols,
-          y = Number.isFinite(n.y) ? n.y : Math.min(0.18 + Math.floor(i / cols) * 0.32, 0.82),
-          w = n.w || '220px',
-          h = n.h || '190px';
-        return `<article class="sticky ${color}" style="--x:${x * 100}%;--y:${y * 100}%;--tilt:${tilt}deg;width:${w};height:${h}" data-note-id="${n.id}"><button class="note-drag" type="button" data-note-drag="${n.id}" aria-label="${t('dropNote')}"></button><textarea class="sticky-inline" data-note-body data-id="${n.id}" maxlength="500" aria-label="${t('editNote')}">${esc(n.body)}</textarea><footer class="sticky-foot">${av(author.gender || 'f', 28)}<span class="who"><b>${esc(author.name || t('you'))}</b><br>${new Date(n.updated).toLocaleDateString(loc(), { month: 'short', day: 'numeric' })}</span><button class="mini" data-a="noteDel" data-id="${n.id}" aria-label="${t('deleteNote')}">×</button></footer></article>`;
+          y = Number.isFinite(n.y) ? n.y : Math.min(0.18 + Math.floor(i / cols) * 0.32, 0.82);
+        return `<article class="sticky ${color}" style="--x:${x * 100}%;--y:${y * 100}%;--tilt:${tilt}deg" data-note-id="${n.id}"><button class="note-drag" type="button" data-note-drag="${n.id}" aria-label="${t('dropNote')}"></button><textarea class="sticky-inline" data-note-body data-id="${n.id}" maxlength="500" aria-label="${t('editNote')}">${esc(n.body)}</textarea><footer class="sticky-foot">${av(author.gender || 'f', 28)}<span class="who"><b>${esc(author.name || t('you'))}</b><br>${new Date(n.updated).toLocaleDateString(loc(), { month: 'short', day: 'numeric' })}</span><button class="mini" data-a="noteDel" data-id="${n.id}" aria-label="${t('deleteNote')}">×</button></footer></article>`;
       };
       // Bảng ghi chú được đồng bộ theo thời gian thực cho cả hai người
       function vNotes() {
@@ -2297,6 +2338,9 @@
       const albums = () =>
         [...new Set(C.photos.map((p) => p.album).filter(Boolean))].sort((a, b) => a.localeCompare(b, loc()));
       const pu = (p) => (PU[p.path] || {}).url || '';
+      // Danh sách ảnh trong khung xem: nếu mở từ lịch thì chỉ gồm ảnh của ngày đó
+      const pvList = () => (pvDay ? C.photos.filter((p) => p.date == pvDay) : phs());
+      const photosOn = (k) => C.photos.filter((p) => p.date == k);
       function vAlbum() {
         const h = head(t('album'), t('albumSub'));
         if (photoError) return `<div class="main">${h}<div class="card note-error">${t('phSetup')}</div></div>`;
@@ -2311,13 +2355,20 @@
           prog = upBusy
             ? `<div class="card ab-prog" role="status"><span>${t('phBusy')}</span><div class="ab-meter"><i style="width:${Math.round((upBusy.n / upBusy.total) * 100)}%"></i></div><span class="mono">${upBusy.n}/${upBusy.total}</span></div>`
             : '',
+          days = [...new Set(list.map((p) => p.date))],
           grid = list.length
-            ? `<div class="ab-grid">${list
-                .map((p) => {
-                  const u = pu(p);
-                  return `<button class="ab-ph" data-a="pv" data-id="${p.id}" aria-label="${esc(p.cap || t('album'))}">${u ? `<img src="${esc(u)}" alt="${esc(p.cap)}" loading="lazy" decoding="async">` : ''}${p.cap ? `<span>${esc(p.cap)}</span>` : ''}</button>`;
+            ? days
+                .map((k) => {
+                  const g = list.filter((p) => p.date == k),
+                    places = [...new Set(g.map((p) => p.place).filter(Boolean))].join(' · ');
+                  return `<section class="ab-day" id="ad-${k}"><div class="ab-dh"><b>${fmt(k, { day: 'numeric', month: 'long', year: 'numeric' })}</b>${places ? `<span class="sub">${I.pin} ${esc(places)}</span>` : ''}</div><div class="ab-grid">${g
+                    .map((p) => {
+                      const u = pu(p);
+                      return `<button class="ab-ph" data-a="pv" data-id="${p.id}" aria-label="${esc(p.cap || p.place || t('album'))}">${u ? `<img src="${esc(u)}" alt="${esc(p.cap)}" loading="lazy" decoding="async">` : ''}${p.cap ? `<span>${esc(p.cap)}</span>` : ''}</button>`;
+                    })
+                    .join('')}</div></section>`;
                 })
-                .join('')}</div>`
+                .join('')
             : `<div class="card ab-empty">${I.photo}<h2 style="font-size:16px;font-weight:800">${t('phNone')}</h2><p class="sub" style="font-size:13px">${t('phNoneH')}</p></div>`;
         return `<div class="main">${h}<div class="ab-act"><button class="btn b1" data-a="pick"${upBusy ? ' disabled' : ''}>${I.photo} ${t('phAdd')}</button></div>${prog}${C.photos.length ? chips : ''}${grid}</div>`;
       }
@@ -2326,18 +2377,17 @@
         const n = umod.files.length;
         return `<div class="mod" data-a="uclose"><form class="card" data-f="photo" role="dialog" aria-label="${t('phAdd')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:6px">${t('phAdd')}</h2><p class="sub" style="font-size:12px;margin-bottom:14px">${t('phN').replace('{n}', n)}</p><div class="ab-prev">${umod.urls.map((u) => `<img src="${u}" alt="">`).join('')}${n > umod.urls.length ? `<b>+${n - umod.urls.length}</b>` : ''}</div><div class="fl"><label class="lb" for="pa">${t('phAlbum')}</label><input class="in" id="pa" name="album" list="ab-list" maxlength="30" autocomplete="off" value="${esc(albumSel)}" placeholder="${t('phAlbumPh')}"><datalist id="ab-list">${albums()
           .map((a) => `<option value="${esc(a)}"></option>`)
-          .join('')}</datalist></div>${n == 1 ? `<div class="fl"><label class="lb" for="pc">${t('phCap')}</label><input class="in" id="pc" name="caption" maxlength="120" placeholder="${t('phCapPh')}"></div>` : ''}<div class="row2"><button type="button" class="btn b2" data-a="uclose">${t('cancel')}</button><button class="btn b1">${t('save')}</button></div></form></div>`;
+          .join('')}</datalist></div><div class="fl"><label class="lb" for="pd">${t('phDate')}</label><input class="in" id="pd" name="date" type="date" data-calendar inputmode="none" required value="${key(new Date())}"></div><div class="fl"><label class="lb" for="pp">${t('phPlace')}</label><input class="in" id="pp" name="place" maxlength="60" autocomplete="off" list="pl-list" placeholder="${t('phPlaceIPh')}"><datalist id="pl-list">${[...new Set(C.photos.map((x) => x.place).filter(Boolean))].map((a) => `<option value="${esc(a)}"></option>`).join('')}</datalist></div>${n == 1 ? `<div class="fl"><label class="lb" for="pc">${t('phCap')}</label><input class="in" id="pc" name="caption" maxlength="120" placeholder="${t('phCapPh')}"></div>` : ''}<div class="row2"><button type="button" class="btn b2" data-a="uclose">${t('cancel')}</button><button class="btn b1">${t('save')}</button></div></form></div>`;
       }
       // Xem ảnh toàn màn hình: mũi tên / vuốt để chuyển ảnh, sửa chú thích, xoá
       function vPv() {
-        const list = phs(),
+        const list = pvList(),
           i = list.findIndex((p) => p.id == pv);
         if (i < 0) return '';
         const p = list[i],
           u = pu(p),
-          who = (P[p.by] || {}).name || '',
-          day = new Date(p.ts).toLocaleDateString(loc(), { day: 'numeric', month: 'short', year: 'numeric' });
-        return `<div class="pv" role="dialog" aria-modal="true" aria-label="${t('album')}"><div class="pv-top"><span class="mono sub" style="font-size:12px">${i + 1} / ${list.length}${p.album ? ' · ' + esc(p.album) : ''}</span><div style="display:flex;gap:8px"><button class="ib" data-a="phDel" data-id="${p.id}" aria-label="${t('phDel')}">${I.trash}</button><button class="ib" data-a="pvClose" aria-label="${t('phClose')}">${I.x}</button></div></div><div class="pv-img">${u ? `<img src="${esc(u)}" alt="${esc(p.cap)}">` : ''}${i > 0 ? `<button class="ib pv-nav" style="left:4px" data-a="pvGo" data-d="-1" aria-label="${t('phPrev')}">${I.back}</button>` : ''}${i < list.length - 1 ? `<button class="ib pv-nav" style="right:4px" data-a="pvGo" data-d="1" aria-label="${t('phNext')}">${I.fwd}</button>` : ''}</div><div class="pv-foot"><input class="in" data-photo-cap data-id="${p.id}" maxlength="120" value="${esc(p.cap)}" placeholder="${t('phCapPh')}" aria-label="${t('phCap')}"><p class="sub mono" style="font-size:11px;text-align:center">${esc(who)}${who ? ' · ' : ''}${day}</p></div></div>`;
+          who = (P[p.by] || {}).name || '';
+        return `<div class="pv" role="dialog" aria-modal="true" aria-label="${t('album')}"><div class="pv-top"><span class="mono sub" style="font-size:12px">${i + 1} / ${list.length}${p.album ? ' · ' + esc(p.album) : ''}</span><div style="display:flex;gap:8px"><button class="ib" data-a="phDel" data-id="${p.id}" aria-label="${t('phDel')}">${I.trash}</button><button class="ib" data-a="pvClose" aria-label="${t('phClose')}">${I.x}</button></div></div><div class="pv-img">${u ? `<img src="${esc(u)}" alt="${esc(p.cap)}">` : ''}${i > 0 ? `<button class="ib pv-nav" style="left:4px" data-a="pvGo" data-d="-1" aria-label="${t('phPrev')}">${I.back}</button>` : ''}${i < list.length - 1 ? `<button class="ib pv-nav" style="right:4px" data-a="pvGo" data-d="1" aria-label="${t('phNext')}">${I.fwd}</button>` : ''}</div><div class="pv-foot"><input class="in" data-photo-cap data-id="${p.id}" maxlength="120" value="${esc(p.cap)}" placeholder="${t('phCapPh')}" aria-label="${t('phCap')}"><div class="pv-meta"><input class="in" type="date" data-calendar inputmode="none" data-photo-date data-id="${p.id}" value="${p.date}" aria-label="${t('phDate')}"><input class="in" data-photo-place data-id="${p.id}" maxlength="60" value="${esc(p.place)}" placeholder="${t('phPlace')}" aria-label="${t('phPlace')}"></div>${who ? `<p class="sub mono" style="font-size:11px;text-align:center">${esc(who)}</p>` : ''}</div></div>`;
       }
       // Vẽ lại toàn bộ màn hình theo trạng thái hiện tại
       function render() {
@@ -2356,6 +2406,15 @@
                 (toast && view != 'auth'
                   ? `<div class="toast card" role="status">${av(pr(), 32)}<span>${esc(toast)}</span></div>`
                   : '');
+        // Từ lịch bấm "Mở trong album" (hoặc vừa thêm ảnh): cuộn tới đúng ngày trong album
+        if (albumFocus && view == 'album') {
+          const el = document.getElementById('ad-' + albumFocus);
+          if (el) {
+            albumFocus = null;
+            el.classList.add('hl');
+            el.scrollIntoView({ block: 'start' });
+          } else if (!upBusy && C.photos.length) albumFocus = null;
+        } else if (view != 'album') albumFocus = null;
       }
       const $ = (s) => document.querySelector(s);
       /* ===== 4. LÁ THƯ: bấm thông báo -> phong bì đóng lắc -> mở ra -> giấy thư hiện nội dung + nút Đồng ý / Từ chối.
@@ -2522,10 +2581,22 @@
           pin.click();
           return;
         } else if (a == 'albumSel') albumSel = d.al || '';
-        else if (a == 'pv') pv = Number(d.id);
-        else if (a == 'pvClose') pv = null;
-        else if (a == 'pvGo') {
-          const l = phs(),
+        else if (a == 'pv') {
+          pvDay = null;
+          pv = Number(d.id);
+        } else if (a == 'pvDay') {
+          pvDay = d.k;
+          pv = Number(d.id);
+        } else if (a == 'goAlbum') {
+          albumSel = '';
+          albumFocus = d.k;
+          bell = false;
+          view = 'album';
+        } else if (a == 'pvClose') {
+          pv = null;
+          pvDay = null;
+        } else if (a == 'pvGo') {
+          const l = pvList(),
             i = l.findIndex((p) => p.id == pv),
             nx = l[i + Number(d.d)];
           if (nx) pv = nx.id;
@@ -2533,11 +2604,12 @@
         else if (a == 'phDel') {
           const p = C.photos.find((x) => String(x.id) == String(d.id));
           if (!p || !confirm(t('phDelQ'))) return;
-          const l = phs(),
+          const l = pvList(),
             i = l.findIndex((x) => x.id == p.id),
             nx = l[i + 1] || l[i - 1];
           C.photos = C.photos.filter((x) => x.id != p.id);
           pv = nx ? nx.id : null;
+          if (!nx) pvDay = null;
           sb.from('photos')
             .delete()
             .eq('id', p.id)
@@ -2577,6 +2649,7 @@
           P = {};
           PU = {};
           pv = null;
+          pvDay = null;
           albumSel = '';
           closeUp();
           view = 'auth';
@@ -2665,20 +2738,13 @@
           x = clamp((centerX - r.left) / r.width, padX, 1 - padX),
           y = clamp((centerY - r.top) / r.height, padY, 1 - padY);
         if (drag.kind == 'new') {
-          noteDraft = { color: drag.color, x, y, w: "220px", h: "190px" };
+          noteDraft = { color: drag.color, x, y };
           render();
           requestAnimationFrame(() => document.querySelector('.sticky-draft textarea')?.focus());
         } else {
-          const liveCard = document.querySelector('[data-note-id="' + String(drag.note.id) + '"]');
           Object.assign(drag.note, { x, y });
-          if (liveCard) {
-            const cardW = Math.max(180, Math.round(liveCard.offsetWidth));
-            const cardH = Math.max(190, Math.round(liveCard.offsetHeight));
-            drag.note.w = `${cardW}px`;
-            drag.note.h = `${cardH}px`;
-          }
           sb.from('notes')
-            .update({ pos_x: x, pos_y: y, width: drag.note.w || '220px', height: drag.note.h || '190px' })
+            .update({ pos_x: x, pos_y: y })
             .eq('id', drag.note.id)
             .then(({ error }) => (error ? say(error.message) : refresh()));
           render();
@@ -2703,20 +2769,6 @@
       );
       document.addEventListener('pointerup', finishNoteDrag);
       document.addEventListener('pointercancel', finishNoteDrag);
-      document.addEventListener('resize', (e) => {
-        const el = e.target;
-        if (!(el instanceof HTMLElement) || !el.matches('.sticky[data-note-id]')) return;
-        const note = C.notes.find((n) => String(n.id) == String(el.dataset.noteId));
-        if (!note) return;
-        note.w = `${Math.max(180, Math.round(el.offsetWidth))}px`;
-        note.h = `${Math.max(190, Math.round(el.offsetHeight))}px`;
-        sb.from('notes')
-          .update({ width: note.w, height: note.h })
-          .eq('id', note.id)
-          .then(({ error }) => {
-            if (error) say(error.message);
-          });
-      });
       document.addEventListener('click', (e) => {
         if (pickerInput(e.target)) {
           if (e.target.showPicker) e.preventDefault();
@@ -2742,6 +2794,26 @@
             .update({ caption: cap })
             .eq('id', p.id)
             .then(({ error }) => (error ? say(error.message) : refresh()));
+          return;
+        }
+        if (e.target.matches('[data-photo-date], [data-photo-place]')) {
+          const p = C.photos.find((x) => String(x.id) == String(e.target.dataset.id)),
+            isDate = e.target.matches('[data-photo-date]'),
+            val = e.target.value.trim();
+          if (!p) return;
+          if (isDate && !/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+            e.target.value = p.date;
+            return;
+          }
+          if (isDate) {
+            p.date = val;
+            if (pvDay) pvDay = val;
+            C.photos.sort((a, b) => b.date.localeCompare(a.date) || b.ts - a.ts);
+          } else p.place = val.slice(0, 60);
+          sb.from('photos')
+            .update(isDate ? { taken_on: val } : { place: val.slice(0, 60) })
+            .eq('id', p.id)
+            .then(({ error }) => (error ? say(/taken_on|place/.test(error.message) ? t('phMigrate') : error.message) : refresh()));
           return;
         }
         if (e.target.matches('[data-note-body]')) {
@@ -2821,17 +2893,14 @@
           cur = new Date(parse(v.date).getFullYear(), parse(v.date).getMonth(), 1);
           modal = false;
         } else if (k == 'since') {
-          const coupleName = coupleNameFromUsers();
-          if (!v.since || !coupleName) return;
+          if (!v.since) return;
           C.since = v.since;
-          C.coupleName = coupleName;
           smod = false;
           try {
             localStorage.setItem('ls_since_' + S.user.couple_id, v.since);
-            localStorage.setItem('ls_couple_name_' + S.user.couple_id, coupleName);
           } catch (x) {}
           sb.from('couples')
-            .update({ start_date: v.since, couple_name: coupleName })
+            .update({ start_date: v.since })
             .eq('id', S.user.couple_id)
             .select('id')
             .then(({ data, error }) => {
@@ -2865,8 +2934,6 @@
               color: draft.color,
               pos_x: draft.x,
               pos_y: draft.y,
-              width: draft.w || '220px',
-              height: draft.h || '190px',
             })
             .select()
             .single()
@@ -2883,10 +2950,13 @@
           const files = umod ? umod.files : [];
           if (!files.length) return;
           const al = (v.album || '').trim().slice(0, 30),
-            cap = (v.caption || '').trim();
+            cap = (v.caption || '').trim(),
+            date = /^\d{4}-\d{2}-\d{2}$/.test(v.date || '') ? v.date : key(new Date()),
+            place = (v.place || '').trim().slice(0, 60);
           closeUp();
           albumSel = al;
-          upPhotos(files, al, cap);
+          albumFocus = date;
+          upPhotos(files, al, cap, date, place);
         } else if (k == 'noteedit') {
           const n = C.notes.find((x) => String(x.id) == String(f.dataset.id)),
             body = (v.body || '').trim(),
@@ -2895,7 +2965,7 @@
           Object.assign(n, { body, color, updated: Date.now() });
           noteEdit = null;
           sb.from('notes')
-            .update({ body, color, width: n.w || '220px', height: n.h || '190px', updated_at: new Date().toISOString() })
+            .update({ body, color, updated_at: new Date().toISOString() })
             .eq('id', n.id)
             .then(({ error }) => (error ? say(error.message) : refresh()));
         } else if (k == 'todoedit') {
@@ -2981,6 +3051,7 @@
           closeLT();
           closeUp();
           pv = null;
+          pvDay = null;
           render();
         }
       });
@@ -3022,8 +3093,6 @@
         by: n.created_by,
         x: n.pos_x == null ? null : Number(n.pos_x),
         y: n.pos_y == null ? null : Number(n.pos_y),
-        w: n.width || n.w || '220px',
-        h: n.height || n.h || '190px',
         updated: Date.parse(n.updated_at || n.created_at) || Date.now(),
       });
       // Ảnh trong album: toPhoto đổi dòng database, shrink thu nhỏ ảnh, upPhotos tải lên Storage + ghi bảng photos
@@ -3032,6 +3101,9 @@
         path: p.path,
         cap: p.caption || '',
         album: p.album || '',
+        // Ngày chụp (taken_on) và địa điểm; ảnh cũ chưa có thì lấy ngày tải lên
+        date: p.taken_on || key(new Date(Date.parse(p.created_at) || Date.now())),
+        place: p.place || '',
         by: p.created_by,
         ts: Date.parse(p.created_at) || Date.now(),
       });
@@ -3070,7 +3142,7 @@
           };
           img.src = url;
         });
-      async function upPhotos(files, album, caption) {
+      async function upPhotos(files, album, caption, date, place) {
         upBusy = { n: 0, total: files.length };
         render();
         let fail = 0,
@@ -3083,7 +3155,7 @@
             if (up.error) throw up.error;
             const ins = await sb
               .from('photos')
-              .insert({ couple_id: S.user.couple_id, path, album, caption: files.length == 1 ? caption : '' });
+              .insert({ couple_id: S.user.couple_id, path, album, caption: files.length == 1 ? caption : '', taken_on: date, place });
             if (ins.error) {
               sb.storage.from('photos').remove([path]);
               throw ins.error;
@@ -3097,7 +3169,11 @@
         }
         upBusy = null;
         await refresh();
-        if (fail) say(t('phFail').replace('{n}', fail) + (why ? ' (' + why + ')' : ''));
+        if (fail)
+          say(
+            t('phFail').replace('{n}', fail) +
+              (/taken_on|place/.test(why) ? ' — ' + t('phMigrate') : why ? ' (' + why + ')' : ''),
+          );
       }
       // Đánh dấu thông báo đã đọc (ghi vào mảng read_by)
       const markRead = (n) => {
@@ -3140,26 +3216,23 @@
           sb.from('events').select('*').order('date'),
           sb.from('notifs').select('*').order('created_at', { ascending: false }).limit(50),
           sb.from('profiles').select('id,name,gender'),
-          sb.from('couples').select('*').eq('id', S.user.couple_id).maybeSingle(),
+          sb.from('couples').select('start_date').eq('id', S.user.couple_id).maybeSingle(),
           sb.from('notes').select('*').order('updated_at', { ascending: false }),
           sb.from('photos').select('*').order('created_at', { ascending: false }),
         ]);
-        let ls = '',
-          ln = '';
+        let ls = '';
         try {
           ls = localStorage.getItem('ls_since_' + S.user.couple_id) || '';
-          ln = localStorage.getItem('ls_couple_name_' + S.user.couple_id) || '';
         } catch (x) {}
+        C.since = (!cp.error && cp.data && cp.data.start_date) || ls || '';
         P = {};
         (pf.data || []).forEach((x) => (P[x.id] = x));
-        C.since = (!cp.error && cp.data && cp.data.start_date) || ls || '';
-        C.coupleName = (!cp.error && cp.data && cp.data.couple_name) || ln || coupleNameFromUsers() || '';
         C.ev = (ev.data || []).map(toE);
         C.nt = (nt.data || []).map(toN);
         C.notes = (notes.data || []).map(toNote);
         noteError = notes.error ? notes.error.message : '';
         photoError = ph.error ? ph.error.message : '';
-        C.photos = (ph.data || []).map(toPhoto);
+        C.photos = (ph.data || []).map(toPhoto).sort((a, b) => b.date.localeCompare(a.date) || b.ts - a.ts);
         await signPhotos();
       }
       // Tải lại dữ liệu rồi vẽ lại màn hình
@@ -3186,11 +3259,6 @@
           .channel('c-' + S.user.couple_id)
           .on('postgres_changes', { event: '*', schema: 'public', table: 'events', filter: f }, refresh)
           .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'events' }, refresh)
-          .on(
-            'postgres_changes',
-            { event: 'UPDATE', schema: 'public', table: 'couples', filter: 'id=eq.' + S.user.couple_id },
-            refresh,
-          )
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notes', filter: f }, refresh)
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notes', filter: f }, refresh)
           .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'notes' }, refresh)
