@@ -9,6 +9,7 @@ create table if not exists public.notes (
   color text not null default 'pink' check (color in ('yellow', 'pink', 'cyan', 'lilac')),
   pos_x double precision check (pos_x between 0 and 1),
   pos_y double precision check (pos_y between 0 and 1),
+  pos_y_px double precision check (pos_y_px >= 0),
   width text not null default '220px',
   height text not null default '190px',
   created_by uuid not null default auth.uid() references auth.users(id) on delete cascade,
@@ -19,6 +20,7 @@ create table if not exists public.notes (
 -- Safe migration for boards created with an earlier version of this file.
 alter table public.notes add column if not exists pos_x double precision;
 alter table public.notes add column if not exists pos_y double precision;
+alter table public.notes add column if not exists pos_y_px double precision check (pos_y_px >= 0);
 alter table public.notes add column if not exists width text default '220px';
 alter table public.notes add column if not exists height text default '190px';
 

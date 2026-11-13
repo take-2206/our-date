@@ -27,6 +27,7 @@
         by: n.created_by,
         x: n.pos_x == null ? null : Number(n.pos_x),
         y: n.pos_y == null ? null : Number(n.pos_y),
+        yPx: n.pos_y_px == null ? null : Number(n.pos_y_px),
         width: n.width || '220px',
         height: n.height || '190px',
         deletedAt: Date.parse(n.deleted_at) || 0,

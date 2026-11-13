@@ -63,7 +63,10 @@
         else if (a == 'sclose') smod = false;
         else if (a == 'pedit') pmod = true;
         else if (a == 'pclose') pmod = false;
-        else if (a == 'noteEdit') noteEdit = d.id;
+        else if (a == 'noteEdit') {
+          noteEdit = d.id;
+          requestAnimationFrame(() => document.querySelector('[data-note-editor]')?.focus());
+        }
         else if (a == 'noteCancel') noteEdit = null;
         else if (a == 'noteDraftCancel') noteDraft = null;
         else if (a == 'noteDel') {

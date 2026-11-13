@@ -952,6 +952,44 @@
         background: rgba(255, 255, 255, 0.28);
         border-color: rgba(36, 19, 29, 0.3);
       }
+      .mod.note-focus {
+        z-index: 45;
+      }
+      .note-focus .sticky-edit {
+        width: min(520px, calc(100% - 24px));
+        height: min(620px, calc(100dvh - 48px));
+        min-height: 420px;
+        margin: auto;
+        transform: none;
+      }
+      .note-focus-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+        font-size: 18px;
+      }
+      .note-focus-head .ib {
+        flex: none;
+        width: 44px;
+        height: 44px;
+        color: #24131d;
+        border-color: rgba(36, 19, 29, 0.28);
+        background: rgba(255, 255, 255, 0.38);
+      }
+      .note-focus .note-focus-text {
+        font-size: 18px;
+        line-height: 1.55;
+      }
+      .note-focus-actions {
+        display: flex;
+        gap: 8px;
+      }
+      .note-focus-actions .btn {
+        min-height: 44px;
+        padding: 0 14px;
+      }
       .note-error {
         padding: 16px;
         color: var(--pk2);
@@ -1531,23 +1569,29 @@
           --note-active-scale: 1.03;
         }
         .mobile-board .sticky-inline {
-          font-size: 28px;
+          cursor: zoom-in;
+          font-size: 32px;
         }
-        .mobile-board .sticky-foot .who {
-          font-size: 20px;
+        .mobile-board .sticky-foot {
+          display: none;
         }
         .mobile-board .note-typing {
-          font-size: 18px;
+          font-size: 28px;
+        }
+        .mobile-board .note-drag {
+          top: -18px;
+          width: 120px;
+          height: 54px;
         }
         .mobile-board .note-resize {
-          width: 72px;
-          height: 72px;
+          width: 112px;
+          height: 112px;
         }
         .mobile-board .note-resize::after {
-          right: 8px;
-          bottom: 8px;
-          width: 22px;
-          height: 22px;
+          right: 10px;
+          bottom: 10px;
+          width: 34px;
+          height: 34px;
         }
         .note-compose-foot,
         .note-edit-foot {

@@ -14,8 +14,26 @@
         if (!noteDrag) return;
         noteDrag.ghost.style.left = e.clientX - noteDrag.dx + 'px';
         noteDrag.ghost.style.top = e.clientY - noteDrag.dy + 'px';
+        const board = document.querySelector('[data-note-board]');
+        if (board) {
+          const rect = board.getBoundingClientRect(),
+            scale = rect.width / board.clientWidth || 1,
+            logicalY = (e.clientY - rect.top) / scale;
+          if (e.clientX >= rect.left && e.clientX <= rect.right && logicalY > board.clientHeight - 160)
+            growNoteBoard(board, logicalY + 360);
+        }
         if (e.clientY > innerHeight - 70) scrollBy(0, 14);
         else if (e.clientY < 70) scrollBy(0, -14);
+      }
+      function growNoteBoard(board, requiredHeight) {
+        const current = board.clientHeight;
+        if (requiredHeight <= current) return;
+        const height = Math.ceil(requiredHeight / 400) * 400,
+          rect = board.getBoundingClientRect(),
+          scale = rect.width / board.clientWidth || 1,
+          viewport = board.closest('.note-board-viewport');
+        board.style.minHeight = height + 'px';
+        if (viewport) viewport.style.height = Math.ceil(height * scale) + 'px';
       }
       function startNoteDrag(e) {
         const pile = e.target.closest('[data-note-color]'),
@@ -52,22 +70,22 @@
         drag.ghost.remove();
         document.body.classList.remove('note-dragging');
         if (!board) return;
-        const r = board.getBoundingClientRect();
+        const r = board.getBoundingClientRect(),
+          boardScale = r.width / board.clientWidth || 1;
         if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
         const padX = Math.min((drag.width || 220) / 2 / board.clientWidth, 0.45),
-          padY = Math.min((drag.height || 190) / 2 / board.clientHeight, 0.45),
           centerX = e.clientX - drag.dx,
           centerY = e.clientY - drag.dy,
           x = clamp((centerX - r.left) / r.width, padX, 1 - padX),
-          y = clamp((centerY - r.top) / r.height, padY, 1 - padY);
+          yPx = clamp((centerY - r.top) / boardScale, (drag.height || 190) / 2 + 12, board.clientHeight - (drag.height || 190) / 2 - 12);
         if (drag.kind == 'new') {
-          noteDraft = { color: drag.color, x, y };
+          noteDraft = { color: drag.color, x, yPx };
           render();
           requestAnimationFrame(() => document.querySelector('.sticky-draft textarea')?.focus());
         } else {
-          Object.assign(drag.note, { x, y });
+          Object.assign(drag.note, { x, yPx });
           sb.from('notes')
-            .update({ pos_x: x, pos_y: y })
+            .update({ pos_x: x, pos_y_px: yPx })
             .eq('id', drag.note.id)
             .then(({ error }) => (error ? say(error.message) : refresh()));
           render();
@@ -123,13 +141,13 @@
           width = Math.round(z.card.offsetWidth),
           height = Math.round(z.card.offsetHeight),
           x = z.card.offsetLeft / z.board.clientWidth,
-          y = z.card.offsetTop / z.board.clientHeight;
+          yPx = z.card.offsetTop;
         noteResize = null;
         z.card.classList.remove('is-resizing');
         document.body.classList.remove('note-resizing');
-        Object.assign(z.note, { width: width + 'px', height: height + 'px', x, y });
+        Object.assign(z.note, { width: width + 'px', height: height + 'px', x, yPx });
         sb.from('notes')
-          .update({ width: width + 'px', height: height + 'px', pos_x: x, pos_y: y })
+          .update({ width: width + 'px', height: height + 'px', pos_x: x, pos_y_px: yPx })
           .eq('id', z.note.id)
           .then(({ error }) => error && say(error.message));
       }
@@ -161,10 +179,10 @@
         finishNoteDrag(e);
       });
       document.addEventListener('input', (e) => {
-        if (e.target.matches('[data-note-body]')) startLocalNoteTyping(e.target.dataset.id);
+        if (e.target.matches('[data-note-body], [data-note-editor]')) startLocalNoteTyping(e.target.dataset.id);
       });
       document.addEventListener('focusout', (e) => {
-        if (e.target.matches('[data-note-body]')) stopLocalNoteTyping(e.target.dataset.id);
+        if (e.target.matches('[data-note-body], [data-note-editor]')) stopLocalNoteTyping(e.target.dataset.id);
       });
       document.addEventListener('click', (e) => {
         if (pickerInput(e.target)) return;
@@ -327,7 +345,7 @@
               body,
               color: draft.color,
               pos_x: draft.x,
-              pos_y: draft.y,
+              pos_y_px: draft.yPx,
             })
             .select()
             .single()
