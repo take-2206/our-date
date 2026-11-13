@@ -105,6 +105,14 @@ const VAPID_PUBLIC = 'BIol42oCVVxoqcBVueyTLai3kV8qseeVBYozCu5SiUqb_0G33VrVVec7dF
           if (sub) await pushSave(sub);
         } catch (x) {}
       }
+      async function pushNoteChange(noteId, action) {
+        if (!S.user || !noteId || !['new', 'update'].includes(action)) return;
+        try {
+          await sb.functions.invoke('send-push', {
+            body: { type: 'note', note_id: Number(noteId), action },
+          });
+        } catch (x) {}
+      }
       function pushNote() {
         const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
         const m = !pushOK()
@@ -139,6 +147,7 @@ const VAPID_PUBLIC = 'BIol42oCVVxoqcBVueyTLai3kV8qseeVBYozCu5SiUqb_0G33VrVVec7dF
           else if (e.data && e.data.type == 'open-notes' && S.user) {
             view = 'notes';
             render();
-          }
+          } else if (e.data && e.data.type == 'check-update')
+            navigator.serviceWorker.getRegistration().then((registration) => registration?.update()).catch(() => {});
         });
       /* ===== 8. KHỞI ĐỘNG: nếu đã có phiên đăng nhập thì vào thẳng lịch, không thì hiện màn đăng nhập ===== */
