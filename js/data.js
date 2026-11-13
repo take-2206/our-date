@@ -243,6 +243,16 @@
         const name = (P[note.created_by] || {}).name || t('pt');
         notifyApp(t('noteAdded').replace('{name}', name), 'note-' + note.id, 'open-notes');
       }
+      async function onNoteUpdate(change) {
+        const incoming = change && change.new,
+          current = incoming && C.notes.find((note) => String(note.id) == String(incoming.id)),
+          bodyChanged = !!(current && incoming.body != current.body);
+        await refresh();
+        if (!bodyChanged || !S.user) return;
+        const other = partner(),
+          name = (other && other.name) || t('pt');
+        notifyApp(t('noteUpdated').replace('{name}', name), 'note-text-' + incoming.id, 'open-notes');
+      }
       function noteTypingText(noteId) {
         const typer = noteTypers[String(noteId)];
         return typer ? t('noteTyping').replace('{name}', typer.name || t('pt')) : '';
@@ -258,19 +268,17 @@
         });
       }
       function sendNoteTyping(noteId, typing) {
-        if (!CH || !S.user || noteId == null) return;
-        Promise.resolve(
-          CH.send({
-            type: 'broadcast',
-            event: 'note-typing',
-            payload: {
+        if (!CH || !S.user || !realtimeReady) return;
+        const request = typing
+          ? CH.track({
               noteId: String(noteId),
               userId: S.user.id,
               name: S.user.name || t('you'),
-              typing: !!typing,
-            },
-          }),
-        ).catch(() => {});
+              typing: true,
+              at: Date.now(),
+            })
+          : CH.untrack();
+        Promise.resolve(request).catch(() => {});
       }
       function startLocalNoteTyping(noteId) {
         const id = String(noteId),
@@ -292,42 +300,40 @@
         localTypingTimer = null;
         localTypingSentAt = 0;
       }
-      function onNoteTyping(message) {
-        const payload = (message && message.payload) || {},
-          id = payload.noteId == null ? '' : String(payload.noteId);
-        if (!id || !S.user || payload.userId == S.user.id) return;
-        clearTimeout(noteTypingTimers[id]);
-        if (!payload.typing) {
-          delete noteTypers[id];
-          delete noteTypingTimers[id];
-          return paintNoteTyping(id);
-        }
-        noteTypers[id] = { userId: payload.userId, name: String(payload.name || '').slice(0, 60) };
-        noteTypingTimers[id] = setTimeout(() => {
-          delete noteTypers[id];
-          delete noteTypingTimers[id];
-          paintNoteTyping(id);
-        }, 3000);
-        paintNoteTyping(id);
+      function syncNoteTypingPresence() {
+        if (!CH || !S.user) return;
+        const previous = Object.keys(noteTypers),
+          next = {};
+        Object.values(CH.presenceState() || {})
+          .flat()
+          .forEach((presence) => {
+            const id = !presence || presence.noteId == null ? '' : String(presence.noteId);
+            if (!id || !presence.typing || presence.userId == S.user.id) return;
+            next[id] = {
+              userId: presence.userId,
+              name: String(presence.name || '').slice(0, 60),
+            };
+          });
+        noteTypers = next;
+        new Set(previous.concat(Object.keys(next))).forEach(paintNoteTyping);
       }
       // Realtime: nghe thay đổi của events / notifs để hai máy đồng bộ ngay
       function subscribe() {
         clearTimeout(localTypingTimer);
-        Object.values(noteTypingTimers).forEach(clearTimeout);
         noteTypers = {};
-        noteTypingTimers = {};
+        realtimeReady = false;
         localTypingNote = null;
         localTypingTimer = null;
         localTypingSentAt = 0;
         if (CH) sb.removeChannel(CH);
         const f = 'couple_id=eq.' + S.user.couple_id;
         CH = sb
-          .channel('c-' + S.user.couple_id)
-          .on('broadcast', { event: 'note-typing' }, onNoteTyping)
+          .channel('c-' + S.user.couple_id, { config: { presence: { key: notePresenceKey } } })
+          .on('presence', { event: 'sync' }, syncNoteTypingPresence)
           .on('postgres_changes', { event: '*', schema: 'public', table: 'events', filter: f }, refresh)
           .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'events' }, refresh)
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notes', filter: f }, onNoteInsert)
-          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notes', filter: f }, refresh)
+          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notes', filter: f }, onNoteUpdate)
           .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'notes' }, refresh)
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'photos', filter: f }, refresh)
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'photos', filter: f }, refresh)
@@ -336,7 +342,10 @@
             onNotif(x.new),
           )
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notifs', filter: f }, refresh)
-          .subscribe();
+          .subscribe((status) => {
+            realtimeReady = status == 'SUBSCRIBED';
+            if (realtimeReady && localTypingNote) sendNoteTyping(localTypingNote, true);
+          });
       }
       // Sau khi đăng nhập: lấy hồ sơ + mã cặp đôi, tải dữ liệu, bật realtime
       async function enter(u) {

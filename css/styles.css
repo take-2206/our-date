@@ -1035,6 +1035,14 @@
           radial-gradient(circle at 1px 1px, rgba(255, 105, 180, 0.2) 1px, transparent 0) 0 0 / 24px 24px,
           rgba(255, 255, 255, 0.015);
       }
+      .note-board-viewport {
+        width: 100%;
+        overflow: hidden;
+        border-radius: 20px;
+      }
+      .note-board.mobile-board {
+        transform-origin: top left;
+      }
       .note-board::before {
         content: attr(data-hint);
         position: absolute;
@@ -1517,10 +1525,29 @@
           font-size: 16px;
         }
       }
-      @media (max-width: 480px) {
+      @media (max-width: 599px) {
         .note-board .sticky {
-          --note-scale: 0.84;
-          --note-active-scale: 0.88;
+          --note-scale: 1;
+          --note-active-scale: 1.03;
+        }
+        .mobile-board .sticky-inline {
+          font-size: 28px;
+        }
+        .mobile-board .sticky-foot .who {
+          font-size: 20px;
+        }
+        .mobile-board .note-typing {
+          font-size: 18px;
+        }
+        .mobile-board .note-resize {
+          width: 72px;
+          height: 72px;
+        }
+        .mobile-board .note-resize::after {
+          right: 8px;
+          bottom: 8px;
+          width: 22px;
+          height: 22px;
         }
         .note-compose-foot,
         .note-edit-foot {

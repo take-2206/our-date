@@ -54,8 +54,8 @@
         if (!board) return;
         const r = board.getBoundingClientRect();
         if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
-        const padX = Math.min((drag.width || 220) / 2 / r.width, 0.45),
-          padY = Math.min((drag.height || 190) / 2 / r.height, 0.45),
+        const padX = Math.min((drag.width || 220) / 2 / board.clientWidth, 0.45),
+          padY = Math.min((drag.height || 190) / 2 / board.clientHeight, 0.45),
           centerX = e.clientX - drag.dx,
           centerY = e.clientY - drag.dy,
           x = clamp((centerX - r.left) / r.width, padX, 1 - padX),
@@ -104,10 +104,12 @@
         if (!noteResize || e.pointerId != noteResize.pointerId) return;
         e.preventDefault();
         const z = noteResize,
+          boardRect = z.board.getBoundingClientRect(),
+          boardScale = boardRect.width / z.board.clientWidth || 1,
           maxWidth = Math.min(480, z.board.clientWidth - 24),
           maxHeight = Math.min(420, z.board.clientHeight - 24),
-          width = clamp(z.startWidth + e.clientX - z.startX, Math.min(180, maxWidth), maxWidth),
-          height = clamp(z.startHeight + e.clientY - z.startY, Math.min(150, maxHeight), maxHeight),
+          width = clamp(z.startWidth + (e.clientX - z.startX) / boardScale, Math.min(180, maxWidth), maxWidth),
+          height = clamp(z.startHeight + (e.clientY - z.startY) / boardScale, Math.min(150, maxHeight), maxHeight),
           centerX = clamp(z.startCenterX + (width - z.startWidth) / 2, width / 2 + 12, z.board.clientWidth - width / 2 - 12),
           centerY = clamp(z.startCenterY + (height - z.startHeight) / 2, height / 2 + 12, z.board.clientHeight - height / 2 - 12);
         z.card.style.width = width + 'px';
