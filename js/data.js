@@ -236,6 +236,13 @@
           say(((P[n.from_id] || {}).name || '') + ' ' + ntx(x) + (e ? ': ' + tx(e.title) : ''));
         }
       }
+      async function onNoteInsert(change) {
+        const note = change && change.new;
+        await refresh();
+        if (!note || !S.user || note.created_by == S.user.id) return;
+        const name = (P[note.created_by] || {}).name || t('pt');
+        notifyApp(t('noteAdded').replace('{name}', name), 'note-' + note.id, 'open-notes');
+      }
       function noteTypingText(noteId) {
         const typer = noteTypers[String(noteId)];
         return typer ? t('noteTyping').replace('{name}', typer.name || t('pt')) : '';
@@ -319,7 +326,7 @@
           .on('broadcast', { event: 'note-typing' }, onNoteTyping)
           .on('postgres_changes', { event: '*', schema: 'public', table: 'events', filter: f }, refresh)
           .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'events' }, refresh)
-          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notes', filter: f }, refresh)
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notes', filter: f }, onNoteInsert)
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notes', filter: f }, refresh)
           .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'notes' }, refresh)
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'photos', filter: f }, refresh)

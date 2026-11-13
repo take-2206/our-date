@@ -1202,6 +1202,14 @@
         user-select: none;
         -webkit-user-select: none;
       }
+      body.note-resizing {
+        cursor: nwse-resize;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      body.note-resizing * {
+        cursor: nwse-resize !important;
+      }
       /* ----- Bảng thông báo của chuông ----- */
       .pop {
         position: absolute;

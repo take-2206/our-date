@@ -136,5 +136,9 @@ const VAPID_PUBLIC = 'BIol42oCVVxoqcBVueyTLai3kV8qseeVBYozCu5SiUqb_0G33VrVVec7dF
       if ('serviceWorker' in navigator && location.protocol != 'file:')
         navigator.serviceWorker.addEventListener('message', (e) => {
           if (e.data && e.data.type == 'open-event') openFromUrl(e.data.id);
+          else if (e.data && e.data.type == 'open-notes' && S.user) {
+            view = 'notes';
+            render();
+          }
         });
       /* ===== 8. KHỞI ĐỘNG: nếu đã có phiên đăng nhập thì vào thẳng lịch, không thì hiện màn đăng nhập ===== */
