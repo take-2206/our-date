@@ -1,4 +1,4 @@
-const CACHE = 'lovesync-v9';
+const CACHE = 'lovesync-v11';
 const APP_SHELL = [
   './',
   './index.html',
@@ -10,6 +10,7 @@ const APP_SHELL = [
   './js/pages/calendar.js',
   './js/pages/details.js',
   './js/pages/notes.js',
+  './js/pages/trash.js',
   './js/pages/settings.js',
   './js/pages/album.js',
   './js/render.js',
