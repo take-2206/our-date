@@ -1,12 +1,16 @@
 // LoveSync interactions module. Classic scripts share state declared in js/core.js.
 /* ===== 6. SỰ KIỆN: dùng "uỷ quyền" — chỉ cần một bộ lắng nghe cho cả trang ===== */
       const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
-      function noteGhost(color, body = '', width = 220, height = 190) {
+      function noteGhost(color, body = '', width = 220, height = 190, scale = 1, fontSize = 16) {
         const ghost = document.createElement('div');
         ghost.className = `sticky drag-ghost ${color}`;
         ghost.innerHTML = `<p class="sticky-body">${esc(body)}</p>`;
         ghost.style.width = width + 'px';
         ghost.style.height = height + 'px';
+        ghost.style.padding = `${Math.max(6, 22 * scale)}px ${Math.max(6, 18 * scale)}px ${Math.max(5, 14 * scale)}px`;
+        const ghostBody = ghost.querySelector('.sticky-body');
+        ghostBody.style.fontSize = fontSize + 'px';
+        ghostBody.style.margin = '0';
         document.body.append(ghost);
         return ghost;
       }
@@ -40,18 +44,33 @@
           handle = e.target.closest('[data-note-drag]');
         if (!pile && !handle) return false;
         e.preventDefault();
+        const board = document.querySelector('[data-note-board]'),
+          boardRect = board?.getBoundingClientRect(),
+          boardScale = boardRect && board?.clientWidth ? boardRect.width / board.clientWidth : 1;
         if (pile) {
           const color = pile.dataset.noteColor;
-          noteDrag = { kind: 'new', color, ghost: noteGhost(color), dx: 0, dy: 0 };
+          noteDrag = {
+            kind: 'new',
+            color,
+            ghost: noteGhost(color, '', 220 * boardScale, 190 * boardScale, boardScale, 16 * boardScale),
+            width: 220,
+            height: 190,
+            dx: 0,
+            dy: 0,
+          };
         } else {
           const n = C.notes.find((x) => String(x.id) == String(handle.dataset.noteDrag));
           if (!n) return false;
           const card = handle.closest('.sticky'),
-            r = card.getBoundingClientRect();
+            r = card.getBoundingClientRect(),
+            editor = card.querySelector('.sticky-inline'),
+            logicalFontSize = parseFloat(getComputedStyle(editor).fontSize) || 16;
+          card.classList.add('is-drag-source');
           noteDrag = {
             kind: 'move',
             note: n,
-            ghost: noteGhost(n.color, n.body, r.width, r.height),
+            source: card,
+            ghost: noteGhost(n.color, n.body, r.width, r.height, boardScale, logicalFontSize * boardScale),
             width: card.offsetWidth,
             height: card.offsetHeight,
             dx: e.clientX - (r.left + r.width / 2),
@@ -68,6 +87,7 @@
           board = document.querySelector('[data-note-board]');
         noteDrag = null;
         drag.ghost.remove();
+        drag.source?.classList.remove('is-drag-source');
         document.body.classList.remove('note-dragging');
         if (!board) return;
         const r = board.getBoundingClientRect(),
@@ -91,6 +111,36 @@
           render();
         }
       }
+      function noteResizeWidthLimits(card, board) {
+        const style = getComputedStyle(card),
+          footer = card.querySelector('.sticky-foot'),
+          footerStyle = footer && getComputedStyle(footer),
+          avatar = footer?.querySelector('.av'),
+          close = footer?.querySelector('.mini'),
+          date = footer?.querySelector('.note-date'),
+          who = footer?.querySelector('.who'),
+          gap = parseFloat(footerStyle?.columnGap) || 0,
+          nameRoom = Math.max(48, (parseFloat(getComputedStyle(who || card).fontSize) || 11) * 4),
+          metadataWidth = Math.max(date?.scrollWidth || 0, nameRoom),
+          headerWidth = (avatar?.offsetWidth || 0) + (close?.offsetWidth || 0) + metadataWidth + gap * 2,
+          padding = (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.paddingRight) || 0),
+          minWidth = Math.ceil(Math.max(200, headerWidth + padding)),
+          maxWidth = Math.max(minWidth, Math.floor(board.clientWidth / 2));
+        return { minWidth, maxWidth };
+      }
+      function noteResizeHeightLimits(card) {
+        const editor = card.querySelector('.sticky-inline'),
+          lineHeight = parseFloat(getComputedStyle(editor).lineHeight) || 24,
+          chromeHeight = Math.max(0, card.offsetHeight - editor.clientHeight),
+          minHeight = Math.ceil(chromeHeight + lineHeight * 2),
+          previousHeight = card.style.height;
+        card.style.height = minHeight + 'px';
+        const fittedChrome = Math.max(0, card.offsetHeight - editor.clientHeight),
+          contentHeight = Math.max(lineHeight * 2, editor.scrollHeight),
+          maxHeight = Math.max(minHeight, Math.min(4000, Math.ceil(fittedChrome + contentHeight)));
+        card.style.height = previousHeight;
+        return { minHeight, maxHeight };
+      }
       function startNoteResize(e) {
         const handle = e.target.closest('[data-note-resize]');
         if (!handle) return false;
@@ -103,6 +153,17 @@
         document.body.classList.add('note-resizing');
         card.style.width = card.offsetWidth + 'px';
         card.style.height = card.offsetHeight + 'px';
+        const boardRect = board.getBoundingClientRect(),
+          boardWidth = board.clientWidth,
+          boardHeight = board.clientHeight,
+          widthLimits = noteResizeWidthLimits(card, board),
+          startWidth = clamp(card.offsetWidth, widthLimits.minWidth, widthLimits.maxWidth),
+          heightLimits = noteResizeHeightLimits(card),
+          startHeight = clamp(card.offsetHeight, heightLimits.minHeight, heightLimits.maxHeight),
+          startCenterX = card.offsetLeft,
+          startCenterY = card.offsetTop;
+        card.style.width = startWidth + 'px';
+        card.style.height = startHeight + 'px';
         noteResize = {
           pointerId: e.pointerId,
           note,
@@ -111,10 +172,21 @@
           board,
           startX: e.clientX,
           startY: e.clientY,
-          startWidth: card.offsetWidth,
-          startHeight: card.offsetHeight,
-          startCenterX: card.offsetLeft,
-          startCenterY: card.offsetTop,
+          startWidth,
+          startHeight,
+          startCenterX,
+          startCenterY,
+          boardWidth,
+          boardHeight,
+          boardScale: boardRect.width / boardWidth || 1,
+          minWidth: widthLimits.minWidth,
+          maxWidth: widthLimits.maxWidth,
+          minHeight: heightLimits.minHeight,
+          maxHeight: heightLimits.maxHeight,
+          currentWidth: startWidth,
+          currentHeight: startHeight,
+          currentCenterX: startCenterX,
+          currentCenterY: startCenterY,
         };
         return true;
       }
@@ -122,30 +194,47 @@
         if (!noteResize || e.pointerId != noteResize.pointerId) return;
         e.preventDefault();
         const z = noteResize,
-          boardRect = z.board.getBoundingClientRect(),
-          boardScale = boardRect.width / z.board.clientWidth || 1,
-          maxWidth = Math.min(480, z.board.clientWidth - 24),
-          maxHeight = Math.min(420, z.board.clientHeight - 24),
-          width = clamp(z.startWidth + (e.clientX - z.startX) / boardScale, Math.min(180, maxWidth), maxWidth),
-          height = clamp(z.startHeight + (e.clientY - z.startY) / boardScale, Math.min(150, maxHeight), maxHeight),
-          centerX = clamp(z.startCenterX + (width - z.startWidth) / 2, width / 2 + 12, z.board.clientWidth - width / 2 - 12),
-          centerY = clamp(z.startCenterY + (height - z.startHeight) / 2, height / 2 + 12, z.board.clientHeight - height / 2 - 12);
-        z.card.style.width = width + 'px';
-        z.card.style.height = height + 'px';
-        z.card.style.left = centerX + 'px';
-        z.card.style.top = centerY + 'px';
+          width = clamp(z.startWidth + (e.clientX - z.startX) / z.boardScale, z.minWidth, z.maxWidth);
+        if (z.card.isConnected) {
+          z.card.style.width = width + 'px';
+          const heightLimits = noteResizeHeightLimits(z.card);
+          z.minHeight = heightLimits.minHeight;
+          z.maxHeight = heightLimits.maxHeight;
+        }
+        const height = clamp(z.startHeight + (e.clientY - z.startY) / z.boardScale, z.minHeight, z.maxHeight),
+          centerX = clamp(z.startCenterX + (width - z.startWidth) / 2, width / 2 + 12, z.boardWidth - width / 2 - 12),
+          requiredBoardHeight = z.startCenterY + (height - z.startHeight) / 2 + height / 2 + 24;
+        if (z.board.isConnected && requiredBoardHeight > z.boardHeight) {
+          growNoteBoard(z.board, requiredBoardHeight);
+          z.boardHeight = z.board.clientHeight;
+        }
+        const centerY = clamp(z.startCenterY + (height - z.startHeight) / 2, height / 2 + 12, z.boardHeight - height / 2 - 12);
+        Object.assign(z, {
+          currentWidth: width,
+          currentHeight: height,
+          currentCenterX: centerX,
+          currentCenterY: centerY,
+        });
+        if (z.card.isConnected) {
+          z.card.style.width = width + 'px';
+          z.card.style.height = height + 'px';
+          z.card.style.left = centerX + 'px';
+          z.card.style.top = centerY + 'px';
+        }
       }
       function finishNoteResize(e) {
         if (!noteResize || (e && e.pointerId != noteResize.pointerId)) return;
         const z = noteResize,
-          width = Math.round(z.card.offsetWidth),
-          height = Math.round(z.card.offsetHeight),
-          x = z.card.offsetLeft / z.board.clientWidth,
-          yPx = z.card.offsetTop;
+          width = Math.round(z.currentWidth),
+          height = Math.round(z.currentHeight),
+          x = z.currentCenterX / z.boardWidth,
+          yPx = z.currentCenterY,
+          cardWasReplaced = !z.card.isConnected;
         noteResize = null;
         z.card.classList.remove('is-resizing');
         document.body.classList.remove('note-resizing');
         Object.assign(z.note, { width: width + 'px', height: height + 'px', x, yPx });
+        if (cardWasReplaced) render();
         sb.from('notes')
           .update({ width: width + 'px', height: height + 'px', pos_x: x, pos_y_px: yPx })
           .eq('id', z.note.id)
