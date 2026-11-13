@@ -1167,6 +1167,15 @@
         text-align: left;
         min-width: 0;
       }
+      /* iOS Safari: font >= 16px để không tự zoom; bỏ line-height cố định làm lệch vùng bấm */
+      .mod input[type='date'].in,
+      .mod input[type='time'].in {
+        font-size: 16px;
+        min-height: 48px;
+        line-height: normal;
+        -webkit-appearance: none;
+        appearance: none;
+      }
       .dc {
         display: flex;
         align-items: center;
@@ -1647,19 +1656,6 @@
         .heart-light i {
           animation: none !important;
         }
-
-        .mod .in,
-.mod input[type='date'].in,
-.mod input[type='time'].in {
-  font-size: 16px; /* >=16px để iOS không tự zoom */
-}
-.mod input[type='date'].in,
-.mod input[type='time'].in {
-  min-height: 48px;
-  line-height: normal; /* thay cho line-height: 48px */
-  -webkit-appearance: none;
-  appearance: none;
-}
       }
     </style>
   </head>
@@ -2422,8 +2418,6 @@
       }
       // Vẽ lại toàn bộ màn hình theo trạng thái hiện tại
       function render() {
-        const ae = document.activeElement;
-  if (ae && ae.matches && ae.matches('.mod input, .mod textarea') && !render.force) return;
         document.documentElement.lang = S.lang;
         $('#app').innerHTML =
           view == 'boot'
@@ -3266,6 +3260,9 @@
       async function refresh() {
         if (!S.user) return;
         await loadC();
+        // Đang nhập / chọn ngày giờ trong form: đã tải dữ liệu mới nhưng chưa vẽ lại để không làm đóng bộ chọn
+        const ae = document.activeElement;
+        if (ae && ae.matches && ae.matches('.mod input, .mod textarea')) return;
         render();
         if (LT) drawLT();
       }
