@@ -1211,6 +1211,8 @@
       }
       .mod input[type='date'].in,
       .mod input[type='time'].in {
+        -webkit-appearance: auto;
+        appearance: auto;
         text-align: left;
         padding-right: 8px;
         line-height: 48px;
@@ -1218,6 +1220,15 @@
       .mod input::-webkit-date-and-time-value {
         text-align: left;
         min-width: 0;
+      }
+      /* iOS Safari: font >= 16px để không tự zoom; bỏ line-height cố định làm lệch vùng bấm */
+      .mod input[type='date'].in,
+      .mod input[type='time'].in {
+        font-size: 16px;
+        min-height: 48px;
+        line-height: normal;
+        -webkit-appearance: none;
+        appearance: none;
       }
       .dc {
         display: flex;
@@ -1229,20 +1240,6 @@
       .dc .dcb {
         flex: 1;
         min-width: 0;
-      }
-      .dc .dc-names {
-        margin-bottom: 4px;
-        overflow: hidden;
-        color: var(--tx);
-        font-size: 13px;
-        font-weight: 800;
-        line-height: 1.3;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      .dc .dc-names span {
-        color: var(--pk);
-        text-shadow: 0 0 8px var(--pk);
       }
       .dc .dcv {
         display: flex;
