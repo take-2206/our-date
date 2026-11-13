@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+const CACHE = 'lovesync-v9';
+=======
 const CACHE = 'lovesync-v11';
+>>>>>>> main
 const APP_SHELL = [
   './',
   './index.html',

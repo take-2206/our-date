@@ -1,19 +1,13 @@
 // LoveSync calendar module. Classic scripts share state declared in js/core.js.
 const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
       function dayCard() {
-        const sn = C.since,
-          self = P[(S.user || {}).id] || S.user || {},
-          other = partner(),
-          names = [self.name, other && other.name].filter(Boolean),
-          nameLine = names.length
-            ? `<p class="dc-names">${names.map(esc).join(' <span aria-hidden="true">&#9829;</span> ')}</p>`
-            : '';
+        const sn = C.since;
         if (!sn)
-          return `<div class="card dc"><div class="pair">${av(me(), 44)}${av(pr(), 44)}</div><div class="dcb">${nameLine}<button class="btn b1" data-a="sedit" style="min-height:44px">${t('dcSet')}</button></div></div>`;
+          return `<div class="card dc"><div class="pair">${av(me(), 44)}${av(pr(), 44)}</div><div class="dcb"><button class="btn b1" data-a="sedit" style="min-height:44px">${t('dcSet')}</button></div></div>`;
         const n = Math.round((today0() - parse(sn)) / 864e5) + 1,
           nx = MS.find((x) => x > n) || Math.ceil((n + 1) / 365) * 365,
           sub = `${t('dcFrom')} ${fmt(sn, { day: 'numeric', month: 'numeric', year: 'numeric' })}${n > 0 ? ' · ' + t('dcNext').replace('{n}', nx - n).replace('{m}', nx) : ''}`;
-        return `<div class="card dc"><div class="pair">${av(me(), 44)}${av(pr(), 44)}</div><div class="dcb">${nameLine}<div class="dcv"><b class="px">${Math.max(n, 0)}</b><span>${t('dc')}</span></div><p class="sub mono" style="font-size:12px;margin-top:2px">${sub}</p></div><button class="ib" data-a="sedit" aria-label="${t('dcTtl')}">${sv('<path d="M4 20h4L19 9l-4-4L4 16v4z"/>')}</button></div>`;
+        return `<div class="card dc"><div class="pair">${av(me(), 44)}${av(pr(), 44)}</div><div class="dcb"><div class="dcv"><b class="px">${Math.max(n, 0)}</b><span>${t('dc')}</span></div><p class="sub mono" style="font-size:12px;margin-top:2px">${sub}</p></div><button class="ib" data-a="sedit" aria-label="${t('dcTtl')}">${sv('<path d="M4 20h4L19 9l-4-4L4 16v4z"/>')}</button></div>`;
       }
       function vSince() {
         return `<div class="mod" data-a="sclose"><form class="card" data-f="since" role="dialog" aria-label="${t('dcTtl')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:16px">${t('dcTtl')}</h2><div class="fl"><label class="lb" for="sd">${t('dt')}</label><input class="in" id="sd" name="since" type="date" data-calendar inputmode="none" required max="${key(new Date())}" value="${esc(C.since || '')}"></div><div class="row2"><button type="button" class="btn b2" data-a="sclose">${t('cancel')}</button><button class="btn b1">${t('save')}</button></div></form></div>`;

@@ -1,7 +1,7 @@
 // LoveSync interactions module. Classic scripts share state declared in js/core.js.
 /* ===== 6. SỰ KIỆN: dùng "uỷ quyền" — chỉ cần một bộ lắng nghe cho cả trang ===== */
       const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
-      function noteGhost(color, body = '', width = 220, height = 190) {
+      function noteGhost(color, body = '', width = 190, height = 165) {
         const ghost = document.createElement('div');
         ghost.className = `sticky drag-ghost ${color}`;
         ghost.innerHTML = `<p class="sticky-body">${esc(body)}</p>`;
@@ -34,8 +34,6 @@
             kind: 'move',
             note: n,
             ghost: noteGhost(n.color, n.body, r.width, r.height),
-            width: card.offsetWidth,
-            height: card.offsetHeight,
             dx: e.clientX - (r.left + r.width / 2),
             dy: e.clientY - (r.top + r.height / 2),
           };
@@ -54,8 +52,8 @@
         if (!board) return;
         const r = board.getBoundingClientRect();
         if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
-        const padX = Math.min((drag.width || 220) / 2 / r.width, 0.45),
-          padY = Math.min((drag.height || 190) / 2 / r.height, 0.45),
+        const padX = Math.min(110 / r.width, 0.45),
+          padY = Math.min(95 / r.height, 0.45),
           centerX = e.clientX - drag.dx,
           centerY = e.clientY - drag.dy,
           x = clamp((centerX - r.left) / r.width, padX, 1 - padX),
@@ -73,95 +71,24 @@
           render();
         }
       }
-      function startNoteResize(e) {
-        const handle = e.target.closest('[data-note-resize]');
-        if (!handle) return false;
-        const note = C.notes.find((n) => String(n.id) == String(handle.dataset.noteResize)),
-          card = handle.closest('.sticky'),
-          board = card && card.closest('[data-note-board]');
-        if (!note || !card || !board) return false;
-        e.preventDefault();
-        handle.setPointerCapture?.(e.pointerId);
-        card.classList.add('is-resizing');
-        noteResize = {
-          pointerId: e.pointerId,
-          note,
-          card,
-          board,
-          startX: e.clientX,
-          startY: e.clientY,
-          startWidth: card.offsetWidth,
-          startHeight: card.offsetHeight,
-          startCenterX: card.offsetLeft,
-          startCenterY: card.offsetTop,
-        };
-        return true;
-      }
-      function moveNoteResize(e) {
-        if (!noteResize || e.pointerId != noteResize.pointerId) return;
-        e.preventDefault();
-        const z = noteResize,
-          maxWidth = Math.min(480, z.board.clientWidth - 24),
-          maxHeight = Math.min(420, z.board.clientHeight - 24),
-          width = clamp(z.startWidth + e.clientX - z.startX, Math.min(180, maxWidth), maxWidth),
-          height = clamp(z.startHeight + e.clientY - z.startY, Math.min(150, maxHeight), maxHeight),
-          centerX = clamp(z.startCenterX + (width - z.startWidth) / 2, width / 2 + 12, z.board.clientWidth - width / 2 - 12),
-          centerY = clamp(z.startCenterY + (height - z.startHeight) / 2, height / 2 + 12, z.board.clientHeight - height / 2 - 12);
-        z.card.style.setProperty('--note-w', width + 'px');
-        z.card.style.setProperty('--note-h', height + 'px');
-        z.card.style.setProperty('--x', (centerX / z.board.clientWidth) * 100 + '%');
-        z.card.style.setProperty('--y', (centerY / z.board.clientHeight) * 100 + '%');
-      }
-      function finishNoteResize(e) {
-        if (!noteResize || (e && e.pointerId != noteResize.pointerId)) return;
-        const z = noteResize,
-          width = Math.round(z.card.offsetWidth),
-          height = Math.round(z.card.offsetHeight),
-          x = z.card.offsetLeft / z.board.clientWidth,
-          y = z.card.offsetTop / z.board.clientHeight;
-        noteResize = null;
-        z.card.classList.remove('is-resizing');
-        Object.assign(z.note, { width: width + 'px', height: height + 'px', x, y });
-        sb.from('notes')
-          .update({ width: width + 'px', height: height + 'px', pos_x: x, pos_y: y })
-          .eq('id', z.note.id)
-          .then(({ error }) => error && say(error.message));
-      }
       const pickerInput = (el) =>
         el.matches('input[type="date"][data-calendar], input[type="time"][data-clock]');
       document.addEventListener('pointerdown', (e) => {
-        if (startNoteResize(e)) return;
-        if (startNoteDrag(e)) return;
-        if (!pickerInput(e.target) || !e.target.showPicker) return;
-        e.preventDefault();
-        e.target.showPicker();
+        startNoteDrag(e);
       });
       document.addEventListener(
         'pointermove',
         (e) => {
-          if (noteResize) {
-            moveNoteResize(e);
-            return;
-          }
           if (!noteDrag) return;
           e.preventDefault();
           moveNoteGhost(e);
         },
         { passive: false },
       );
-      document.addEventListener('pointerup', (e) => {
-        finishNoteResize(e);
-        finishNoteDrag(e);
-      });
-      document.addEventListener('pointercancel', (e) => {
-        finishNoteResize(e);
-        finishNoteDrag(e);
-      });
+      document.addEventListener('pointerup', finishNoteDrag);
+      document.addEventListener('pointercancel', finishNoteDrag);
       document.addEventListener('click', (e) => {
-        if (pickerInput(e.target)) {
-          if (e.target.showPicker) e.preventDefault();
-          return;
-        }
+        if (pickerInput(e.target)) return;
         const el = e.target.closest('[data-a]'),
           wasBell = bell;
         if (bell && !e.target.closest('.pop,[data-a=bell]')) bell = false;
@@ -419,12 +346,6 @@
       );
       // Phím Esc đóng mọi bảng đang mở
       document.addEventListener('keydown', (e) => {
-        if (pickerInput(e.target)) {
-          if (e.key == 'Tab' || e.key == 'Escape') return;
-          e.preventDefault();
-          if ((e.key == 'Enter' || e.key == ' ') && e.target.showPicker) e.target.showPicker();
-          return;
-        }
         if (pv != null && !e.target.matches('input,textarea')) {
           if (e.key == 'ArrowLeft') return act('pvGo', { d: -1 }, document.body);
           if (e.key == 'ArrowRight') return act('pvGo', { d: 1 }, document.body);

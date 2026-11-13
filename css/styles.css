@@ -928,6 +928,12 @@
         position: absolute;
         left: var(--x);
         top: var(--y);
+<<<<<<< HEAD
+        width: min(220px, calc(100% - 24px));
+        height: 190px;
+        min-height: 0;
+        transform: translate(-50%, -50%) rotate(var(--tilt));
+=======
         width: min(var(--note-w, 220px), calc(100% - 24px));
         height: var(--note-h, 190px);
         min-width: 180px;
@@ -936,6 +942,7 @@
         max-height: 420px;
         transform: translate(-50%, -50%) rotate(var(--tilt)) scale(var(--note-scale));
         backface-visibility: hidden;
+>>>>>>> main
       }
       .note-board .sticky:hover,
       .note-board .sticky:focus-within {
@@ -972,6 +979,8 @@
         color: #24131d;
         background: transparent;
         font: 700 16px/1.5 'Nunito', sans-serif;
+<<<<<<< HEAD
+=======
         scrollbar-color: transparent transparent;
         scrollbar-width: thin;
         scrollbar-gutter: stable;
@@ -1053,6 +1062,7 @@
         z-index: 5;
         transition: none;
         transform: translate(-50%, -50%) rotate(0) scale(var(--note-scale));
+>>>>>>> main
       }
       .sticky-inline::placeholder {
         color: rgba(36, 19, 29, 0.5);
@@ -1211,6 +1221,8 @@
       }
       .mod input[type='date'].in,
       .mod input[type='time'].in {
+        -webkit-appearance: auto;
+        appearance: auto;
         text-align: left;
         padding-right: 8px;
         line-height: 48px;
@@ -1218,6 +1230,15 @@
       .mod input::-webkit-date-and-time-value {
         text-align: left;
         min-width: 0;
+      }
+      /* iOS Safari: font >= 16px để không tự zoom; bỏ line-height cố định làm lệch vùng bấm */
+      .mod input[type='date'].in,
+      .mod input[type='time'].in {
+        font-size: 16px;
+        min-height: 48px;
+        line-height: normal;
+        -webkit-appearance: none;
+        appearance: none;
       }
       .dc {
         display: flex;
@@ -1229,20 +1250,6 @@
       .dc .dcb {
         flex: 1;
         min-width: 0;
-      }
-      .dc .dc-names {
-        margin-bottom: 4px;
-        overflow: hidden;
-        color: var(--tx);
-        font-size: 13px;
-        font-weight: 800;
-        line-height: 1.3;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      .dc .dc-names span {
-        color: var(--pk);
-        text-shadow: 0 0 8px var(--pk);
       }
       .dc .dcv {
         display: flex;
