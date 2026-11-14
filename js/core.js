@@ -1,5 +1,6 @@
 // LoveSync core module. Classic scripts share state declared in js/core.js.
 /* ===== 1. NGÔN NGỮ (vi / en). Thêm chữ mới = thêm cùng một khoá ở cả hai bên ===== */
+let PET = { name: "Mochi", reactions: [] };
       const D = {
         vi: {
           cal: 'Lịch',
@@ -170,6 +171,17 @@
           trashDeleteQ: 'Xoá vĩnh viễn mục này? Không thể hoàn tác.',
           trashDays: 'còn {n} ngày',
           trashSetup: 'Hãy chạy supabase-recycle-bin.sql trong Supabase trước.',
+          petKicker: 'NUÔI CÙNG NHAU',
+          petSub: 'Cùng chăm một bé, cùng gửi chút yêu thương.',
+          petRename: 'Đổi tên pet',
+          petPartner: 'Người ấy',
+          petMale: 'Nhân vật nam',
+          petFemale: 'Nhân vật nữ',
+          petSend: 'Gửi cảm xúc cho pet',
+          petReactOption: 'Gửi {emoji}',
+          petNamePrompt: 'Đặt tên cho pet chung của hai bạn:',
+          petDeleteBubble: 'Xóa bubble của bạn',
+          petSharedBubbles: 'Mỗi người có bubble riêng — cả hai cùng thấy',
           cfg: 'Chưa điền SUPABASE_URL và SUPABASE_KEY trong js/core.js.',
         },
         en: {
@@ -341,6 +353,17 @@
           trashDeleteQ: 'Delete this item forever? This cannot be undone.',
           trashDays: '{n} days left',
           trashSetup: 'Run supabase-recycle-bin.sql in Supabase first.',
+          petKicker: 'OUR SHARED PET',
+          petSub: "Let's care for our little friend and share some love.",
+          petRename: 'Rename pet',
+          petPartner: 'Your partner',
+          petMale: 'Male character',
+          petFemale: 'Female character',
+          petSend: 'Send a reaction to the pet',
+          petReactOption: 'Send {emoji}',
+          petNamePrompt: 'Name your shared pet:',
+          petDeleteBubble: 'Remove your bubble',
+          petSharedBubbles: 'Each person has a bubble — both can see them',
           cfg: 'SUPABASE_URL and SUPABASE_KEY are not set in js/core.js.',
         },
       };
