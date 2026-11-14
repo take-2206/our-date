@@ -1,5 +1,4 @@
-const CACHE = "lovesync-v40";
-
+const CACHE = 'lovesync-v36';
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -33,20 +32,19 @@ const APP_SHELL = [
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(APP_SHELL)));
-  self.skipWaiting();
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) =>
-        Promise.all(
-          keys.filter((key) => key !== CACHE).map((key) => caches.delete(key)),
-        ),
-      ),
+      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key))))
+      .then(() => self.clients.claim()),
   );
-  self.clients.claim();
 });
 
 self.addEventListener("fetch", (event) => {
@@ -99,7 +97,7 @@ self.addEventListener("push", (event) => {
       badge: "./img/icons/app-icon-192.png",
       tag: d.tag || undefined,
       lang: d.lang || undefined,
-      data: { url: d.url || "./", id: d.id || null },
+      data: { url: d.url || './', id: d.id || null, type: d.type || '' },
     }),
   );
 });
@@ -107,7 +105,7 @@ self.addEventListener("push", (event) => {
 // Bấm vào thông báo: mở app (hoặc đưa app đang mở lên) và chuyển tới đúng buổi hẹn
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const { url, id } = event.notification.data || {};
+  const { url, id, type } = event.notification.data || {};
   event.waitUntil(
     (async () => {
       const list = await clients.matchAll({
@@ -117,7 +115,9 @@ self.addEventListener("notificationclick", (event) => {
       for (const c of list) {
         if ("focus" in c) {
           await c.focus();
-          if (id) c.postMessage({ type: "open-event", id });
+          if (id) c.postMessage({ type: 'open-event', id });
+          else if (type == 'open-notes') c.postMessage({ type: 'open-notes' });
+          else if (type == 'app-update') c.postMessage({ type: 'check-update' });
           return;
         }
       }

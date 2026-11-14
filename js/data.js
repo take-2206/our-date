@@ -27,12 +27,10 @@
         by: n.created_by,
         x: n.pos_x == null ? null : Number(n.pos_x),
         y: n.pos_y == null ? null : Number(n.pos_y),
-<<<<<<< HEAD
-=======
+        yPx: n.pos_y_px == null ? null : Number(n.pos_y_px),
         width: n.width || '220px',
         height: n.height || '190px',
         deletedAt: Date.parse(n.deleted_at) || 0,
->>>>>>> main
         updated: Date.parse(n.updated_at || n.created_at) || Date.now(),
       });
       // Ảnh trong album: toPhoto đổi dòng database, shrink thu nhỏ ảnh, upPhotos tải lên Storage + ghi bảng photos
@@ -214,9 +212,18 @@
       // Tải lại dữ liệu rồi vẽ lại màn hình
       async function refresh() {
         if (!S.user) return;
+        const ae = document.activeElement,
+          activeNote = ae && ae.matches && ae.matches('[data-note-body]')
+            ? { id: String(ae.dataset.id), body: ae.value }
+            : null;
         await loadC();
+        // Keep a live sticky-note editor in place. Replacing it here loses the cursor and unsaved text.
+        if (activeNote && ae.isConnected && document.activeElement === ae) {
+          const note = C.notes.find((item) => String(item.id) == activeNote.id);
+          if (note) note.body = activeNote.body;
+          return;
+        }
         // Đang nhập / chọn ngày giờ trong form: đã tải dữ liệu mới nhưng chưa vẽ lại để không làm đóng bộ chọn
-        const ae = document.activeElement;
         if (ae && ae.matches && ae.matches('.mod input, .mod textarea')) return;
         render();
         if (LT) drawLT();
@@ -230,16 +237,108 @@
           say(((P[n.from_id] || {}).name || '') + ' ' + ntx(x) + (e ? ': ' + tx(e.title) : ''));
         }
       }
+      async function onNoteInsert(change) {
+        const note = change && change.new;
+        await refresh();
+        if (!note || !S.user || note.created_by == S.user.id) return;
+        const name = (P[note.created_by] || {}).name || t('pt');
+        const message = t('noteAdded').replace('{name}', name);
+        if (pushOn) say(message);
+        else notifyApp(message, 'note-' + note.id, 'open-notes');
+      }
+      async function onNoteUpdate(change) {
+        const incoming = change && change.new,
+          current = incoming && C.notes.find((note) => String(note.id) == String(incoming.id)),
+          bodyChanged = !!(current && incoming.body != current.body);
+        await refresh();
+        if (!bodyChanged || !S.user) return;
+        const other = partner(),
+          name = (other && other.name) || t('pt');
+        const message = t('noteUpdated').replace('{name}', name);
+        if (pushOn) say(message);
+        else notifyApp(message, 'note-text-' + incoming.id, 'open-notes');
+      }
+      function noteTypingText(noteId) {
+        const typer = noteTypers[String(noteId)];
+        return typer ? t('noteTyping').replace('{name}', typer.name || t('pt')) : '';
+      }
+      function paintNoteTyping(noteId) {
+        const id = String(noteId),
+          text = noteTypingText(id);
+        document.querySelectorAll('[data-note-typing]').forEach((el) => {
+          if (String(el.dataset.noteTyping) != id) return;
+          el.textContent = text;
+          el.hidden = !text;
+          el.closest('.sticky')?.classList.toggle('partner-typing', !!text);
+        });
+      }
+      function sendNoteTyping(noteId, typing) {
+        if (!CH || !S.user || !realtimeReady) return;
+        const request = typing
+          ? CH.track({
+              noteId: String(noteId),
+              userId: S.user.id,
+              name: S.user.name || t('you'),
+              typing: true,
+              at: Date.now(),
+            })
+          : CH.untrack();
+        Promise.resolve(request).catch(() => {});
+      }
+      function startLocalNoteTyping(noteId) {
+        const id = String(noteId),
+          now = Date.now();
+        if (localTypingNote && localTypingNote != id) sendNoteTyping(localTypingNote, false);
+        localTypingNote = id;
+        if (now - localTypingSentAt > 800) {
+          sendNoteTyping(id, true);
+          localTypingSentAt = now;
+        }
+        clearTimeout(localTypingTimer);
+        localTypingTimer = setTimeout(() => stopLocalNoteTyping(id), 1500);
+      }
+      function stopLocalNoteTyping(noteId = localTypingNote) {
+        if (noteId == null || String(noteId) != String(localTypingNote)) return;
+        clearTimeout(localTypingTimer);
+        sendNoteTyping(localTypingNote, false);
+        localTypingNote = null;
+        localTypingTimer = null;
+        localTypingSentAt = 0;
+      }
+      function syncNoteTypingPresence() {
+        if (!CH || !S.user) return;
+        const previous = Object.keys(noteTypers),
+          next = {};
+        Object.values(CH.presenceState() || {})
+          .flat()
+          .forEach((presence) => {
+            const id = !presence || presence.noteId == null ? '' : String(presence.noteId);
+            if (!id || !presence.typing || presence.userId == S.user.id) return;
+            next[id] = {
+              userId: presence.userId,
+              name: String(presence.name || '').slice(0, 60),
+            };
+          });
+        noteTypers = next;
+        new Set(previous.concat(Object.keys(next))).forEach(paintNoteTyping);
+      }
       // Realtime: nghe thay đổi của events / notifs để hai máy đồng bộ ngay
       function subscribe() {
+        clearTimeout(localTypingTimer);
+        noteTypers = {};
+        realtimeReady = false;
+        localTypingNote = null;
+        localTypingTimer = null;
+        localTypingSentAt = 0;
         if (CH) sb.removeChannel(CH);
         const f = 'couple_id=eq.' + S.user.couple_id;
         CH = sb
-          .channel('c-' + S.user.couple_id)
+          .channel('c-' + S.user.couple_id, { config: { presence: { key: notePresenceKey } } })
+          .on('presence', { event: 'sync' }, syncNoteTypingPresence)
           .on('postgres_changes', { event: '*', schema: 'public', table: 'events', filter: f }, refresh)
           .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'events' }, refresh)
-          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notes', filter: f }, refresh)
-          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notes', filter: f }, refresh)
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notes', filter: f }, onNoteInsert)
+          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notes', filter: f }, onNoteUpdate)
           .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'notes' }, refresh)
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'photos', filter: f }, refresh)
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'photos', filter: f }, refresh)
@@ -248,7 +347,10 @@
             onNotif(x.new),
           )
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notifs', filter: f }, refresh)
-          .subscribe();
+          .subscribe((status) => {
+            realtimeReady = status == 'SUBSCRIBED';
+            if (realtimeReady && localTypingNote) sendNoteTyping(localTypingNote, true);
+          });
       }
       // Sau khi đăng nhập: lấy hồ sơ + mã cặp đôi, tải dữ liệu, bật realtime
       async function enter(u) {

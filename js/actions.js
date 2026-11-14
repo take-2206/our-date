@@ -7,6 +7,10 @@
          chk = tick việc cần làm, nt = mở thông báo, read = đánh dấu đã đọc hết,
          acc / dec = đồng ý / mở xác nhận từ chối, lclose = đóng lá thư */
       function act(a, d, el) {
+        if (a == 'appUpdate') {
+          applyAppUpdate();
+          return;
+        }
         if (a == 'close' && el.classList.contains('mod') && event.target !== el) return;
         if (a == 'lclose' && el.classList.contains('lt') && event.target !== el) return;
         if (a == 'pclose' && el.classList.contains('mod') && event.target !== el) return;
@@ -16,10 +20,11 @@
           view = d.v;
           bell = false;
           if (view != 'notes') {
+            stopLocalNoteTyping();
             noteEdit = null;
             noteDraft = null;
           }
-          if (view == 'det' && !C.ev.some((e) => e.id == open)) open = (up()[0] || {}).id;
+          if (view == 'det') open = null;
         } else if (a == 'lang') {
           S.lang = d.l;
           save();
@@ -69,7 +74,10 @@
         else if (a == 'sclose') smod = false;
         else if (a == 'pedit') pmod = true;
         else if (a == 'pclose') pmod = false;
-        else if (a == 'noteEdit') noteEdit = d.id;
+        else if (a == 'noteEdit') {
+          noteEdit = d.id;
+          requestAnimationFrame(() => document.querySelector('[data-note-editor]')?.focus());
+        }
         else if (a == 'noteCancel') noteEdit = null;
         else if (a == 'noteDraftCancel') noteDraft = null;
         else if (a == 'noteDel') {
@@ -188,7 +196,7 @@
             .eq('id', id)
             .then(({ error }) => (error ? say(error.message) : refresh()));
           open = null;
-          view = 'cal';
+          view = 'det';
         } else if (a == 'pushTog') {
           if (el.checked) pushEnable();
           else pushDisable();

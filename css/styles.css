@@ -339,6 +339,25 @@
         font-weight: 700;
         cursor: pointer;
       }
+      .t-icon {
+        width: 24px;
+        height: 24px;
+        display: grid;
+        flex: none;
+        place-items: center;
+        line-height: 0;
+      }
+      .t-icon svg {
+        display: block;
+      }
+      .t-icon.heart svg {
+        width: 22px;
+        height: 18px;
+      }
+      .t-label {
+        min-height: 14px;
+        line-height: 14px;
+      }
       .t.on {
         color: var(--pk);
         filter: drop-shadow(0 0 6px var(--pk));
@@ -494,6 +513,90 @@
       }
       .ev .i {
         flex: 1;
+      }
+      .date-list {
+        display: grid;
+        gap: 10px;
+      }
+      .date-list-item {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 16px;
+        color: inherit;
+        text-align: left;
+        cursor: pointer;
+      }
+      .date-list-item.is-past {
+        opacity: 0.68;
+      }
+      .date-list-item .d {
+        min-width: 76px;
+        color: var(--pk);
+        font: 20px/1 'Silkscreen', monospace;
+        text-align: center;
+      }
+      .date-list-item .d small {
+        display: block;
+        margin-top: 4px;
+        font-size: 9px;
+      }
+      .date-list-item .i {
+        flex: 1;
+        min-width: 0;
+      }
+      .date-list-item h2 {
+        overflow: hidden;
+        font-size: 15px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .date-list-item .sub,
+      .date-rel {
+        font-size: 11px;
+      }
+      .date-rel {
+        color: var(--cy);
+        white-space: nowrap;
+      }
+      .route-card {
+        margin-top: 12px;
+        padding: 12px;
+        overflow: hidden;
+      }
+      .route-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+      .route-head h3 {
+        margin-top: 3px;
+        font-size: 14px;
+      }
+      .route-btn {
+        width: auto;
+        min-height: 40px;
+        padding: 0 14px;
+        flex: none;
+      }
+      .route-map {
+        display: block;
+        width: 100%;
+        height: clamp(220px, 36vw, 360px);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #111;
+      }
+      @media (max-width: 480px) {
+        .date-rel {
+          display: none;
+        }
+        .route-map {
+          height: 240px;
+        }
       }
       .h2 {
         font-size: 12px;
@@ -806,8 +909,47 @@
       .sticky-foot .who {
         flex: 1;
         min-width: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 0;
+        overflow: hidden;
         font-size: 11px;
+        line-height: 1.2;
         opacity: 0.72;
+        white-space: nowrap;
+      }
+      .sticky-foot .who b {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .sticky-foot .note-date {
+        flex: none;
+      }
+      .note-typing {
+        max-width: 100%;
+        margin: 0 0 4px auto;
+        overflow: hidden;
+        color: #7b2955;
+        font: 800 10px/1.25 'JetBrains Mono', monospace;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        animation: note-typing-pulse 1s ease-in-out infinite alternate;
+      }
+      .note-typing[hidden] {
+        display: none;
+      }
+      .sticky.partner-typing {
+        box-shadow:
+          0 12px 24px rgba(0, 0, 0, 0.32),
+          0 0 0 2px rgba(123, 41, 85, 0.34),
+          0 0 18px color-mix(in srgb, var(--paper) 68%, transparent);
+      }
+      @keyframes note-typing-pulse {
+        from { opacity: 0.55; }
+        to { opacity: 1; }
       }
       .sticky .mini {
         min-height: 30px;
@@ -825,6 +967,44 @@
         color: #24131d;
         background: rgba(255, 255, 255, 0.28);
         border-color: rgba(36, 19, 29, 0.3);
+      }
+      .mod.note-focus {
+        z-index: 45;
+      }
+      .note-focus .sticky-edit {
+        width: min(520px, calc(100% - 24px));
+        height: min(620px, calc(100dvh - 48px));
+        min-height: 420px;
+        margin: auto;
+        transform: none;
+      }
+      .note-focus-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+        font-size: 18px;
+      }
+      .note-focus-head .ib {
+        flex: none;
+        width: 44px;
+        height: 44px;
+        color: #24131d;
+        border-color: rgba(36, 19, 29, 0.28);
+        background: rgba(255, 255, 255, 0.38);
+      }
+      .note-focus .note-focus-text {
+        font-size: 18px;
+        line-height: 1.55;
+      }
+      .note-focus-actions {
+        display: flex;
+        gap: 8px;
+      }
+      .note-focus-actions .btn {
+        min-height: 44px;
+        padding: 0 14px;
       }
       .note-error {
         padding: 16px;
@@ -909,6 +1089,14 @@
           radial-gradient(circle at 1px 1px, rgba(255, 105, 180, 0.2) 1px, transparent 0) 0 0 / 24px 24px,
           rgba(255, 255, 255, 0.015);
       }
+      .note-board-viewport {
+        width: 100%;
+        overflow: hidden;
+        border-radius: 20px;
+      }
+      .note-board.mobile-board {
+        transform-origin: top left;
+      }
       .note-board::before {
         content: attr(data-hint);
         position: absolute;
@@ -928,21 +1116,14 @@
         position: absolute;
         left: var(--x);
         top: var(--y);
-<<<<<<< HEAD
-        width: min(220px, calc(100% - 24px));
-        height: 190px;
-        min-height: 0;
-        transform: translate(-50%, -50%) rotate(var(--tilt));
-=======
         width: min(var(--note-w, 220px), calc(100% - 24px));
         height: var(--note-h, 190px);
-        min-width: 180px;
+        min-width: 200px;
         min-height: 150px;
-        max-width: calc(100% - 24px);
-        max-height: 420px;
+        max-width: 50%;
+        max-height: none;
         transform: translate(-50%, -50%) rotate(var(--tilt)) scale(var(--note-scale));
         backface-visibility: hidden;
->>>>>>> main
       }
       .note-board .sticky:hover,
       .note-board .sticky:focus-within {
@@ -979,8 +1160,6 @@
         color: #24131d;
         background: transparent;
         font: 700 16px/1.5 'Nunito', sans-serif;
-<<<<<<< HEAD
-=======
         scrollbar-color: transparent transparent;
         scrollbar-width: thin;
         scrollbar-gutter: stable;
@@ -1052,7 +1231,12 @@
         pointer-events: none;
       }
       .note-board .sticky[data-note-id] .sticky-foot {
-        padding-right: 28px;
+        order: -1;
+        margin-bottom: 10px;
+        padding-top: 0;
+        padding-bottom: 10px;
+        border-top: 0;
+        border-bottom: 1px dashed rgba(36, 19, 29, 0.25);
       }
       .note-resize:focus-visible {
         outline: 2px solid rgba(36, 19, 29, 0.7);
@@ -1062,7 +1246,6 @@
         z-index: 5;
         transition: none;
         transform: translate(-50%, -50%) rotate(0) scale(var(--note-scale));
->>>>>>> main
       }
       .sticky-inline::placeholder {
         color: rgba(36, 19, 29, 0.5);
@@ -1080,11 +1263,28 @@
         min-height: 0;
         transform: translate(-50%, -50%) rotate(-4deg) !important;
         pointer-events: none;
-        opacity: 0.9;
+        overflow: hidden;
+        opacity: 1;
+        transition: none;
+      }
+      .drag-ghost .sticky-body {
+        overflow: hidden;
+        text-shadow: none;
+      }
+      .note-board .sticky.is-drag-source {
+        visibility: hidden;
       }
       body.note-dragging {
         user-select: none;
         -webkit-user-select: none;
+      }
+      body.note-resizing {
+        cursor: nwse-resize;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      body.note-resizing * {
+        cursor: nwse-resize !important;
       }
       /* ----- Bảng thông báo của chuông ----- */
       .pop {
@@ -1168,6 +1368,36 @@
         max-width: calc(100vw - 32px);
         border-color: var(--pk);
         box-shadow: 0 0 24px var(--pk);
+      }
+      .app-update {
+        position: fixed;
+        right: 18px;
+        bottom: 88px;
+        z-index: 40;
+        width: min(390px, calc(100% - 36px));
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 16px;
+        box-shadow: 0 18px 46px rgba(0, 0, 0, 0.45);
+      }
+      .app-update span {
+        flex: 1;
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .app-update .btn {
+        width: auto;
+        min-height: 40px;
+        padding: 0 14px;
+        white-space: nowrap;
+      }
+      @media (max-width: 600px) {
+        .app-update {
+          right: 50%;
+          bottom: 82px;
+          transform: translateX(50%);
+        }
       }
       .deco {
         position: fixed;
@@ -1263,6 +1493,44 @@
         color: var(--pk);
         text-shadow: 0 0 16px var(--pk);
       }
+      .dc-ann {
+        margin-top: 6px;
+        color: var(--pk);
+        font-size: 11px;
+        font-weight: 700;
+      }
+      @media (max-width: 599px) {
+        .dc {
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 10px 14px;
+          padding: 16px;
+        }
+        .dc > .pair {
+          order: 1;
+        }
+        .dc > .ib {
+          order: 2;
+          margin-left: auto;
+        }
+        .dc .dcb {
+          order: 3;
+          flex: 0 0 100%;
+          width: 100%;
+        }
+        .dc-names {
+          margin-bottom: 6px;
+        }
+        .dc .dcv {
+          gap: 6px 8px;
+        }
+        .dc .sub,
+        .dc-ann {
+          max-width: 100%;
+          line-height: 1.5;
+          overflow-wrap: anywhere;
+        }
+      }
       .trash-list {
         display: grid;
         gap: 10px;
@@ -1357,10 +1625,60 @@
           font-size: 16px;
         }
       }
-      @media (max-width: 480px) {
+      @media (max-width: 599px) {
         .note-board .sticky {
-          --note-scale: 0.84;
-          --note-active-scale: 0.88;
+          --note-scale: 1;
+          --note-active-scale: 1.03;
+        }
+        .mobile-board .sticky-inline {
+          cursor: zoom-in;
+          font-size: 32px;
+        }
+        .mobile-board .sticky[data-note-id] {
+          min-width: 300px;
+        }
+        .mobile-board .sticky-foot {
+          display: flex;
+          gap: 8px;
+          min-height: 64px;
+          margin-bottom: 12px;
+          padding-top: 0;
+          padding-bottom: 10px;
+        }
+        .mobile-board .sticky-foot .av {
+          width: 56px !important;
+          height: 56px !important;
+          border-width: 4px;
+        }
+        .mobile-board .sticky-foot .who {
+          font-size: 25px;
+          line-height: 1.15;
+        }
+        .mobile-board .sticky-foot .mini {
+          min-width: 68px;
+          min-height: 68px;
+          padding: 0;
+          border-width: 2px;
+          border-radius: 18px;
+          font-size: 30px;
+        }
+        .mobile-board .note-typing {
+          font-size: 28px;
+        }
+        .mobile-board .note-drag {
+          top: -18px;
+          width: 120px;
+          height: 54px;
+        }
+        .mobile-board .note-resize {
+          width: 112px;
+          height: 112px;
+        }
+        .mobile-board .note-resize::after {
+          right: 10px;
+          bottom: 10px;
+          width: 34px;
+          height: 34px;
         }
         .note-compose-foot,
         .note-edit-foot {
@@ -1637,9 +1955,16 @@
         position: fixed;
         inset: 0;
         z-index: 9;
+        width: 100%;
+        height: 100vh;
+        height: 100dvh;
+        max-width: 100vw;
+        max-height: 100vh;
+        max-height: 100dvh;
         display: flex;
         flex-direction: column;
         gap: 10px;
+        overflow: hidden;
         background: rgba(0, 0, 0, 0.94);
         padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
       }
@@ -1652,16 +1977,29 @@
       .pv-img {
         position: relative;
         flex: 1;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
         min-height: 0;
         display: grid;
         place-items: center;
       }
       .pv-img img {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: contain;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        display: block;
+        width: auto;
+        height: auto;
+        max-width: none;
+        max-height: none;
+        opacity: 0;
+        transform: translate(-50%, -50%);
         border-radius: 12px;
-        box-shadow: 0 0 30px rgba(255, 105, 180, 0.35);
+        filter: drop-shadow(0 0 18px rgba(255, 105, 180, 0.35));
+      }
+      .pv-img img[data-fitted='true'] {
+        opacity: 1;
       }
       .ib.pv-nav {
         position: absolute;

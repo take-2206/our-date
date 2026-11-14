@@ -59,6 +59,21 @@ const T = {
   },
 } as const;
 const tt = (lang: string) => (lang === 'en' ? T.en : T.vi);
+const PT = {
+  vi: {
+    noteNew: (name: string) => `${name} vừa thêm một ghi chú mới`,
+    noteUpdate: (name: string) => `${name} vừa cập nhật một ghi chú`,
+    appUpdate: 'Có phiên bản mới của LoveSync',
+    appUpdateBody: 'Mở ứng dụng để cập nhật ngay.',
+  },
+  en: {
+    noteNew: (name: string) => `${name} added a new sticky note`,
+    noteUpdate: (name: string) => `${name} updated a sticky note`,
+    appUpdate: 'A new version of LoveSync is available',
+    appUpdateBody: 'Open the app to update now.',
+  },
+} as const;
+const pt = (lang: string) => (lang === 'en' ? PT.en : PT.vi);
 
 // ---- 1) Thông báo từ người ấy ----
 async function onNotif(r: { couple_id: string; event_id: number | null; kind: string; from_id: string }) {
@@ -77,6 +92,62 @@ async function onNotif(r: { couple_id: string; event_id: number | null; kind: st
       url: ev ? `./?ev=${ev.id}` : './',
       id: ev?.id ?? null,
       tag: `notif-${r.event_id ?? 'x'}-${kind}`,
+    });
+    if (ok) sent++;
+  }
+  return { sent };
+}
+
+async function caller(req: Request) {
+  const token = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
+  if (!token) return null;
+  const { data, error } = await db.auth.getUser(token);
+  return error ? null : data.user;
+}
+
+async function onNote(req: Request, body: { note_id?: number; action?: string }) {
+  const user = await caller(req),
+    noteId = Number(body.note_id),
+    action = body.action === 'new' ? 'new' : body.action === 'update' ? 'update' : '';
+  if (!user || !noteId || !action) throw new Error('unauthorized');
+  const [{ data: note }, { data: profile }] = await Promise.all([
+    db.from('notes').select('id,couple_id,body,created_by,deleted_at').eq('id', noteId).maybeSingle(),
+    db.from('profiles').select('name,couple_id').eq('id', user.id).maybeSingle(),
+  ]);
+  if (!note || !profile || note.deleted_at || note.couple_id !== profile.couple_id)
+    throw new Error('forbidden');
+  if (action === 'new' && note.created_by !== user.id) throw new Error('forbidden');
+  const { data: subs } = await db
+    .from('push_subscriptions')
+    .select('*')
+    .eq('couple_id', note.couple_id)
+    .neq('user_id', user.id)
+    .eq('n3', true);
+  const preview = String(note.body || '').replace(/\s+/g, ' ').trim().slice(0, 140);
+  let sent = 0;
+  for (const s of (subs ?? []) as Sub[]) {
+    const ok = await send(s, {
+      title: action === 'new' ? pt(s.lang).noteNew(profile.name || '') : pt(s.lang).noteUpdate(profile.name || ''),
+      body: preview,
+      url: './?view=notes',
+      type: 'open-notes',
+      tag: action === 'new' ? `note-${note.id}` : `note-text-${note.id}`,
+    });
+    if (ok) sent++;
+  }
+  return { sent };
+}
+
+async function appUpdate(version: string) {
+  const { data: subs } = await db.from('push_subscriptions').select('*');
+  let sent = 0;
+  for (const s of (subs ?? []) as Sub[]) {
+    const ok = await send(s, {
+      title: pt(s.lang).appUpdate,
+      body: pt(s.lang).appUpdateBody,
+      url: './',
+      type: 'app-update',
+      tag: `app-update-${String(version || 'latest').slice(0, 40)}`,
     });
     if (ok) sent++;
   }
@@ -146,11 +217,13 @@ async function reminders() {
 }
 
 Deno.serve(async (req) => {
-  if (!SECRET || req.headers.get('x-push-secret') !== SECRET) return json({ error: 'forbidden' }, 403);
   const body = await req.json().catch(() => ({}));
   try {
+    if (body.type === 'note') return json(await onNote(req, body));
+    if (!SECRET || req.headers.get('x-push-secret') !== SECRET) return json({ error: 'forbidden' }, 403);
     if (body.type === 'reminders') return json(await reminders());
     if (body.type === 'notif' && body.record) return json(await onNotif(body.record));
+    if (body.type === 'app_update') return json(await appUpdate(body.version || 'latest'));
     return json({ error: 'bad request' }, 400);
   } catch (e) {
     console.error(e);
