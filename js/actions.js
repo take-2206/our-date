@@ -36,6 +36,16 @@
           sel = d.k;
           const p = parse(d.k);
           cur = new Date(p.getFullYear(), p.getMonth(), 1);
+        } else if (a == 'petReact') {
+          sendPetReaction(d.emoji || '❤️');
+          return;
+        } else if (a == 'petClear') {
+          clearPetReaction();
+          return;
+        } else if (a == 'petName') {
+          const next = prompt(t('petNamePrompt'), PET.name || 'Mochi');
+          if (next && next.trim()) savePetName(next.trim().slice(0, 20));
+          return;
         } else if (a == 'mo') cur = new Date(cur.getFullYear(), cur.getMonth() + Number(d.n), 1);
         else if (a == 'ev') {
           open = Number(d.id);
