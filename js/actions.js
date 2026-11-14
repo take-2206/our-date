@@ -5,7 +5,7 @@
          mo = đổi tháng, ev = mở buổi hẹn, bell = bật/tắt chuông, new = mở form thêm,
          close = đóng form, out = đăng xuất, del = xoá buổi hẹn, tg = công tắc thông báo,
          chk = tick việc cần làm, nt = mở thông báo, read = đánh dấu đã đọc hết,
-         acc / dec = đồng ý / từ chối, lclose = đóng lá thư */
+         acc / dec = đồng ý / mở xác nhận từ chối, lclose = đóng lá thư */
       function act(a, d, el) {
         if (a == 'appUpdate') {
           applyAppUpdate();
@@ -55,7 +55,18 @@
             } else openLetter(n);
           }
         } else if (a == 'acc') answer(true);
-        else if (a == 'dec') answer(false);
+        else if (a == 'dec') {
+          if (LT) {
+            LT.confirm = 1;
+            drawLT();
+          }
+        } else if (a == 'decSure') confirmDecline();
+        else if (a == 'decCancel') {
+          if (LT) {
+            LT.confirm = 0;
+            drawLT();
+          }
+        }
         else if (a == 'lclose') closeLT();
         else if (a == 'read') {
           mine().forEach((n) => markRead(n));

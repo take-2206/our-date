@@ -2041,6 +2041,30 @@
         max-width: 100%;
         height: auto;
       }
+      .lt-confirm {
+        position: fixed;
+        inset: 0;
+        z-index: 1;
+        display: grid;
+        place-items: center;
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.62);
+      }
+      .lt-confirm-card {
+        width: min(360px, 100%);
+        padding: 24px;
+        text-align: center;
+        box-shadow: 0 0 28px rgba(255, 105, 180, 0.3);
+      }
+      .lt-confirm-card p {
+        margin: 0 0 20px;
+        color: var(--pk);
+        font-size: 18px;
+        font-weight: 800;
+      }
+      .lt-confirm-card .acts {
+        width: 100%;
+      }
       .env {
         width: min(240px, 62vw);
         filter: drop-shadow(0 0 22px var(--pk));
@@ -2057,20 +2081,20 @@
         container-type: inline-size;
         animation: rise 0.7s cubic-bezier(0.2, 1.2, 0.4, 1);
         filter: drop-shadow(0 0 24px rgba(255, 105, 180, 0.5));
-        --t0: 17.13cqw;
-        --pt: 7cqw;
+        --t0: 15.5cqw;
+        --pt: 5.3cqw;
       }
       .ppr .tx {
         position: absolute;
-        left: 8.97cqw;
-        width: 79.27cqw;
+        left: 20.4cqw;
+        width: 59.5cqw;
         height: var(--pt);
         display: flex;
         align-items: flex-end;
-        padding-bottom: 0.8cqw;
+        padding-bottom: 0.3cqw;
         color: #8b1450;
         font:
-          700 3.5cqw/1 'Nunito',
+          700 3cqw/1 'Nunito',
           sans-serif;
         white-space: nowrap;
         overflow: hidden;
@@ -2078,7 +2102,7 @@
       }
       .ppr .ti {
         font-weight: 800;
-        font-size: 4.06cqw;
+        font-size: 3.4cqw;
       }
       .acts {
         display: flex;
