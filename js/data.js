@@ -27,12 +27,9 @@
         by: n.created_by,
         x: n.pos_x == null ? null : Number(n.pos_x),
         y: n.pos_y == null ? null : Number(n.pos_y),
-<<<<<<< HEAD
-=======
         width: n.width || '220px',
         height: n.height || '190px',
         deletedAt: Date.parse(n.deleted_at) || 0,
->>>>>>> main
         updated: Date.parse(n.updated_at || n.created_at) || Date.now(),
       });
       // Ảnh trong album: toPhoto đổi dòng database, shrink thu nhỏ ảnh, upPhotos tải lên Storage + ghi bảng photos
