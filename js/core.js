@@ -518,6 +518,7 @@ let PET = { name: "Mochi", reactions: [] };
         genCode = () => 'LOVE-' + Math.random().toString(36).slice(2, 6).toUpperCase();
       const av = (g, z) =>
         `<span class="av" style="width:${z}px;height:${z}px"><img src="${g == 'm' ? AVM : AVF}" alt="" onerror="avFail(this,'${g}')"></span>`;
+      const coupleAvatar = () => '<img class="couple-avatar" src="./img/couple.png" alt="" aria-hidden="true">';
       // Nếu thiếu file ảnh: nữ dùng ảnh nhúng sẵn, nam dùng hình SVG vẽ sẵn
       function avFail(i, g) {
         i.onerror = null;
@@ -599,7 +600,7 @@ let PET = { name: "Mochi", reactions: [] };
             .filter((e) => (parse(e.date) - today0()) / 864e5 <= 7)
             .slice(0, 3),
           ms = mine().slice(0, 5);
-        return `<header class="top"><div><p class="mono sub" style="font-size:11px">&gt; ${sub}</p><h1 class="px">${title}</h1></div><div class="r"><button class="ib" data-a="bell" aria-label="${t('nt')}${u ? ' (' + u + ')' : ''}" aria-expanded="${bell}">${I.bell}${u ? `<i class="bd">${u}</i>` : ''}</button><div class="pair">${av(me(), 44)}${av(pr(), 44)}</div>${
+        return `<header class="top"><div><p class="mono sub" style="font-size:11px">&gt; ${sub}</p><h1 class="px">${title}</h1></div><div class="r"><button class="ib" data-a="bell" aria-label="${t('nt')}${u ? ' (' + u + ')' : ''}" aria-expanded="${bell}">${I.bell}${u ? `<i class="bd">${u}</i>` : ''}</button><div class="pair couple-pair">${coupleAvatar()}</div>${
           bell
             ? `<div class="card pop" role="dialog">${
                 ms

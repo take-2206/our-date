@@ -1,4 +1,4 @@
-const CACHE = 'lovesync-v1.50.10';
+const CACHE = 'lovesync-v1.50.13';
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -25,6 +25,7 @@ const APP_SHELL = [
   "./img/letter_0.png",
   "./img/letter_1.png",
   "./img/paper.png",
+  "./img/couple.png",
   "./img/icons/app-icon-180.png",
   "./img/icons/app-icon-192.png",
   "./img/icons/app-icon-512.png",
