@@ -51,15 +51,14 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  if (
-    event.request.method !== "GET" ||
-    new URL(event.request.url).origin !== self.location.origin
-  )
-    return;
+  const req = event.request;
+  const url = new URL(req.url);
+  if (req.method !== "GET" || url.origin !== self.location.origin) return;
 
-  if (event.request.mode === "navigate") {
+  // Trang chính: mạng trước, mất mạng dùng index.html đã lưu
+  if (req.mode === "navigate") {
     event.respondWith(
-      fetch(event.request)
+      fetch(req)
         .then((response) => {
           const copy = response.clone();
           caches.open(CACHE).then((cache) => cache.put("./index.html", copy));
@@ -70,14 +69,31 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then(
-      (cached) =>
-        cached ||
-        fetch(event.request).then((response) => {
+  // Code (js, css, manifest): mạng trước, mất mạng mới dùng cache
+  if (/\.(?:js|css|webmanifest)$/.test(url.pathname)) {
+    event.respondWith(
+      fetch(req, { cache: "no-cache" })
+        .then((response) => {
           if (response.ok) {
             const copy = response.clone();
-            caches.open(CACHE).then((cache) => cache.put(event.request, copy));
+            caches.open(CACHE).then((cache) => cache.put(req, copy));
+          }
+          return response;
+        })
+        .catch(() => caches.match(req)),
+    );
+    return;
+  }
+
+  // Ảnh và file khác: cache trước cho nhanh
+  event.respondWith(
+    caches.match(req).then(
+      (cached) =>
+        cached ||
+        fetch(req).then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE).then((cache) => cache.put(req, copy));
           }
           return response;
         }),

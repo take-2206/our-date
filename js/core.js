@@ -185,6 +185,8 @@ let PET = { name: "Mochi", reactions: [] };
           petNamePrompt: 'Đặt tên cho pet chung của hai bạn:',
           petDeleteBubble: 'Xóa bubble của bạn',
           petSharedBubbles: 'Mỗi người có bubble riêng — cả hai cùng thấy',
+          petTextPlaceholder: 'Nhắn lời gì cho pet...',
+          petTextSend: 'Gửi',
           cfg: 'Chưa điền SUPABASE_URL và SUPABASE_KEY trong js/core.js.',
         },
         en: {
@@ -369,6 +371,8 @@ let PET = { name: "Mochi", reactions: [] };
           petNamePrompt: 'Name your shared pet:',
           petDeleteBubble: 'Remove your bubble',
           petSharedBubbles: 'Each person has a bubble — both can see them',
+          petTextPlaceholder: 'Write a message for your pet...',
+          petTextSend: 'Send',
           cfg: 'SUPABASE_URL and SUPABASE_KEY are not set in js/core.js.',
         },
       };

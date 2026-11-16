@@ -345,7 +345,11 @@
           k = f.dataset.f,
           formData = new FormData(f),
           v = Object.fromEntries(formData);
-        if (k == 'auth') {
+        if (k == 'petText') {
+          const text = String(v.text || '').trim();
+          if (text) sendPetReaction(text);
+          return;
+        } else if (k == 'auth') {
           doAuth(f, v);
           return;
         } else if (k == 'ev') {
