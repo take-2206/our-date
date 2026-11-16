@@ -233,7 +233,9 @@
           PET.reactions = (data || []).map((r) => ({ id: r.id, emoji: r.emoji, by: r.sender_id, byName: (P[r.sender_id] || {}).name || '', at: Date.parse(r.created_at) || Date.now() }));
         } catch (x) {}
       }
-      async function sendPetReaction(emoji) {
+      async function sendPetReaction(message) {
+        const emoji = String(message || '').trim().slice(0, 120);
+        if (!emoji || !S.user) return;
         const reaction = { id: 'local-' + Date.now(), emoji, by: S.user.id, byName: S.user.name, at: Date.now() };
         PET.reactions = (PET.reactions || []).filter((r) => r.by != S.user.id).concat(reaction);
         render();

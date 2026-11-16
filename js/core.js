@@ -1,6 +1,6 @@
 // LoveSync core module. Classic scripts share state declared in js/core.js.
 /* ===== 1. NGÔN NGỮ (vi / en). Thêm chữ mới = thêm cùng một khoá ở cả hai bên ===== */
-const APP_VERSION = '1.50.1';
+const APP_VERSION = '1.50.2';
 let PET = { name: "Mochi", reactions: [] };
       const D = {
         vi: {
@@ -190,6 +190,8 @@ let PET = { name: "Mochi", reactions: [] };
           petNamePrompt: 'Đặt tên cho pet chung của hai bạn:',
           petDeleteBubble: 'Xóa bubble của bạn',
           petSharedBubbles: 'Mỗi người có bubble riêng — cả hai cùng thấy',
+          petTextPlaceholder: 'Nhắn lời gì cho pet...',
+          petTextSend: 'Gửi',
           cfg: 'Chưa điền SUPABASE_URL và SUPABASE_KEY trong js/core.js.',
         },
         en: {
@@ -379,6 +381,8 @@ let PET = { name: "Mochi", reactions: [] };
           petNamePrompt: 'Name your shared pet:',
           petDeleteBubble: 'Remove your bubble',
           petSharedBubbles: 'Each person has a bubble — both can see them',
+          petTextPlaceholder: 'Write a message for your pet...',
+          petTextSend: 'Send',
           cfg: 'SUPABASE_URL and SUPABASE_KEY are not set in js/core.js.',
         },
       };
