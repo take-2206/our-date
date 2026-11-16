@@ -430,6 +430,10 @@
         font-size: 11px;
         padding-bottom: 4px;
       }
+      .wk span:nth-child(6),
+      .wk span:nth-child(7) {
+        color: #ff6b81;
+      }
       .cl {
         position: relative;
         isolation: isolate;
@@ -461,6 +465,10 @@
         color: #0d0d0d;
         box-shadow: 0 0 16px var(--pk);
       }
+      .g7:not(.wk) .cl:nth-child(7n + 6),
+      .g7:not(.wk) .cl:nth-child(7n + 7) {
+        color: #ff6b81;
+      }
       .free-day-markers {
         position: absolute;
         top: 3px;
@@ -471,15 +479,25 @@
         pointer-events: none;
       }
       .free-day-markers i {
-        color: #ffd166;
         font-size: 9px;
         font-style: normal;
         line-height: 1;
+      }
+      .free-day-markers .free-owner-a {
+        color: var(--cy);
+        filter: drop-shadow(0 0 4px var(--cy));
+      }
+      .free-day-markers .free-owner-b {
+        color: #ffd166;
         filter: drop-shadow(0 0 4px #ffd166);
       }
-      .cl.td .free-day-markers i {
-        color: #0d0d0d;
-        filter: none;
+      .cl.td .free-day-markers .free-owner-a {
+        color: var(--cy);
+        filter: drop-shadow(0 0 2px #0d0d0d);
+      }
+      .cl.td .free-day-markers .free-owner-b {
+        color: #ffd166;
+        filter: drop-shadow(0 0 2px #0d0d0d);
       }
       .heart-light {
         position: absolute;
@@ -558,6 +576,8 @@
         color: inherit;
       }
       .ev .d {
+        width: 34px;
+        flex: 0 0 34px;
         font:
           20px/1 'Silkscreen',
           monospace;
@@ -570,6 +590,7 @@
       }
       .ev .i {
         flex: 1;
+        min-width: 0;
       }
       .date-list {
         display: grid;
@@ -641,6 +662,22 @@
         background: rgba(255, 209, 102, 0.1);
         font-size: 25px;
         filter: drop-shadow(0 0 6px rgba(255, 209, 102, 0.7));
+      }
+      .free-day-card.free-owner-a {
+        border-color: color-mix(in srgb, var(--cy) 65%, transparent);
+      }
+      .free-day-card.free-owner-a .free-day-icon {
+        color: var(--cy);
+        background: color-mix(in srgb, var(--cy) 10%, transparent);
+        filter: drop-shadow(0 0 6px color-mix(in srgb, var(--cy) 70%, transparent));
+      }
+      .free-day-card.free-owner-b {
+        border-color: color-mix(in srgb, #ffd166 65%, transparent);
+      }
+      .free-day-card.free-owner-b .free-day-icon {
+        color: #ffd166;
+        background: color-mix(in srgb, #ffd166 10%, transparent);
+        filter: drop-shadow(0 0 6px color-mix(in srgb, #ffd166 70%, transparent));
       }
       .free-day-card h2 {
         margin-top: 6px;

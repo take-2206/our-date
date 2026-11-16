@@ -1,6 +1,6 @@
 // LoveSync core module. Classic scripts share state declared in js/core.js.
 /* ===== 1. NGÔN NGỮ (vi / en). Thêm chữ mới = thêm cùng một khoá ở cả hai bên ===== */
-const APP_VERSION = '1.50.2';
+const APP_VERSION = '1.50.6';
 let PET = { name: "Mochi", reactions: [] };
       const D = {
         vi: {
@@ -427,6 +427,10 @@ let PET = { name: "Mochi", reactions: [] };
       // Buổi hẹn được phép hiện: đã đồng ý, hoặc đang chờ nhưng do chính mình tạo (bị từ chối thì ẩn)
       const FREE_DAY_TITLE = '__LOVESYNC_FREE_DAY__',
         isFreeDay = (event) => event && event.title == FREE_DAY_TITLE,
+        freeDayOwnerClass = (userId) => {
+          const ids = [...new Set([...Object.keys(P), S.user && S.user.id].filter(Boolean).map(String))].sort();
+          return ids.indexOf(String(userId)) == 1 ? 'free-owner-b' : 'free-owner-a';
+        },
         EV = () =>
           C.ev.filter(
             (e) =>
@@ -569,7 +573,7 @@ let PET = { name: "Mochi", reactions: [] };
           name = person.name || t('you'),
           mine = S.user && e.by == S.user.id,
           saving = String(e.id).startsWith('free-');
-        return `<article class="card free-day-card"><span class="free-day-icon" aria-hidden="true">☀</span><div><span class="chip">${t('freeDay')}</span><h2>${esc(t('freeDayBy').replace('{name}', name))}</h2></div>${mine && !saving ? `<button class="mini danger" data-a="freeRemove" data-id="${e.id}">${t('freeDayRemove')}</button>` : ''}</article>`;
+        return `<article class="card free-day-card ${freeDayOwnerClass(e.by)}"><span class="free-day-icon" aria-hidden="true">☀</span><div><span class="chip">${t('freeDay')}</span><h2>${esc(t('freeDayBy').replace('{name}', name))}</h2></div>${mine && !saving ? `<button class="mini danger" data-a="freeRemove" data-id="${e.id}">${t('freeDayRemove')}</button>` : ''}</article>`;
       };
       /* Thông báo: mine() = do người ấy gửi, isR() = đã đọc chưa, unread() = các cái chưa đọc,
          ntx() = nội dung theo loại (lịch mới / đồng ý / từ chối) */
