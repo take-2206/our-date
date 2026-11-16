@@ -190,6 +190,53 @@
           }
           return;
         }
+        else if (a == 'freeNew') {
+          if (C.ev.some((item) => isFreeDay(item) && item.date == sel && item.by == S.user.id)) return;
+          const tempId = 'free-' + Date.now(),
+            optimistic = {
+              id: tempId,
+              title: FREE_DAY_TITLE,
+              date: sel,
+              time: '00:00',
+              place: '—',
+              todo: [],
+              by: S.user.id,
+              st: 'ok',
+            };
+          C.ev.push(optimistic);
+          sb.from('events')
+            .insert({
+              couple_id: S.user.couple_id,
+              title: FREE_DAY_TITLE,
+              date: sel,
+              time: '00:00',
+              place: '—',
+              status: 'ok',
+            })
+            .select()
+            .single()
+            .then(({ data, error }) => {
+              if (error) {
+                C.ev = C.ev.filter((item) => item.id != tempId);
+                say(error.message);
+                render();
+                return;
+              }
+              const index = C.ev.findIndex((item) => item.id == tempId);
+              if (index >= 0) C.ev[index] = toE(data);
+              render();
+              refresh();
+            });
+        }
+        else if (a == 'freeRemove') {
+          const freeDay = C.ev.find((item) => String(item.id) == String(d.id) && isFreeDay(item));
+          if (!freeDay || freeDay.by != S.user.id) return;
+          C.ev = C.ev.filter((item) => item.id != freeDay.id);
+          sb.from('events')
+            .update({ deleted_at: new Date().toISOString(), deleted_by: S.user.id })
+            .eq('id', freeDay.id)
+            .then(({ error }) => (error ? say(error.message) : refresh()));
+        }
         else if (a == 'new') modal = 'new';
         else if (a == 'edit') modal = 'edit';
         else if (a == 'todoEdit') todoEdit = Number(d.i);

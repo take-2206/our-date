@@ -152,6 +152,14 @@
                   : m;
       // Tải buổi hẹn, thông báo, hồ sơ và ghi chú của cặp đôi (RLS tự lọc đúng cặp đôi của mình)
       let trashPurgeAt = 0;
+      let freeDayPurgeAt = 0;
+      async function purgeExpiredFreeDays() {
+        if (Date.now() - freeDayPurgeAt < 3600000) return;
+        freeDayPurgeAt = Date.now();
+        try {
+          await sb.from('events').delete().eq('title', FREE_DAY_TITLE).lt('date', key(new Date()));
+        } catch (x) {}
+      }
       async function purgeExpiredTrash() {
         if (Date.now() - trashPurgeAt < 3600000) return;
         trashPurgeAt = Date.now();
@@ -164,7 +172,7 @@
         } catch (x) {}
       }
       async function loadC() {
-        await purgeExpiredTrash();
+        await Promise.all([purgeExpiredTrash(), purgeExpiredFreeDays()]);
         loadLocalPet();
         const trashCutoff = new Date(Date.now() - 30 * 864e5).toISOString();
         let [ev, nt, pf, cp, notes, ph, trashEv, trashNotes, trashPhotos] = await Promise.all([

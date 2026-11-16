@@ -13,6 +13,7 @@ const todoRows = (e) =>
           h = head(t('det'), e ? 'date_details' : t('allDates'));
         if (!e) {
           const dates = EV()
+            .filter((item) => !isFreeDay(item))
             .slice()
             .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
           return `<div class="main">${h}<div class="date-list">${dates

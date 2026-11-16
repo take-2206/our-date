@@ -1,6 +1,6 @@
 // LoveSync core module. Classic scripts share state declared in js/core.js.
 /* ===== 1. NGÔN NGỮ (vi / en). Thêm chữ mới = thêm cùng một khoá ở cả hai bên ===== */
-const APP_VERSION = 'v44';
+const APP_VERSION = '1.50.1';
 let PET = { name: "Mochi", reactions: [] };
       const D = {
         vi: {
@@ -19,6 +19,11 @@ let PET = { name: "Mochi", reactions: [] };
           allDates: 'từ cũ nhất đến mới nhất',
           none: 'Chưa có buổi hẹn nào',
           add: 'Thêm buổi hẹn',
+          freeDay: 'Ngày rảnh',
+          freeDayAdd: 'Thêm ngày rảnh',
+          freeDayAddThis: 'Đánh dấu ngày này là ngày rảnh',
+          freeDayBy: '{name} rảnh ngày này',
+          freeDayRemove: 'Xoá ngày rảnh',
           ttl: 'Tiêu đề',
           dt: 'Ngày',
           tm: 'Giờ',
@@ -203,6 +208,11 @@ let PET = { name: "Mochi", reactions: [] };
           allDates: 'oldest to newest',
           none: 'No dates yet',
           add: 'Add a date',
+          freeDay: 'Free day',
+          freeDayAdd: 'Add a free day',
+          freeDayAddThis: 'Add this day as a free day',
+          freeDayBy: '{name} is free this day',
+          freeDayRemove: 'Remove free day',
           ttl: 'Title',
           dt: 'Date',
           tm: 'Time',
@@ -411,7 +421,14 @@ let PET = { name: "Mochi", reactions: [] };
       } catch (e) {}
       S = { lang: S.lang || 'vi', n: S.v == 2 ? S.n : [1, 1, 1], user: null };
       // Buổi hẹn được phép hiện: đã đồng ý, hoặc đang chờ nhưng do chính mình tạo (bị từ chối thì ẩn)
-      const EV = () => C.ev.filter((e) => !e.st || e.st == 'ok' || (e.st == 'pending' && e.by == S.user.id));
+      const FREE_DAY_TITLE = '__LOVESYNC_FREE_DAY__',
+        isFreeDay = (event) => event && event.title == FREE_DAY_TITLE,
+        EV = () =>
+          C.ev.filter(
+            (e) =>
+              (!e.st || e.st == 'ok' || (e.st == 'pending' && e.by == S.user.id)) &&
+              (!isFreeDay(e) || e.date >= key(new Date())),
+          );
       // Lưu cài đặt cục bộ (ngôn ngữ + công tắc thông báo)
       const save = () => {
         try {
@@ -537,11 +554,19 @@ let PET = { name: "Mochi", reactions: [] };
       const fmt = (s, o) => parse(s).toLocaleDateString(loc(), o);
       const up = () =>
         EV()
+          .filter((e) => !isFreeDay(e))
           .filter((e) => parse(e.date) >= today0())
           .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
       // Thẻ một buổi hẹn trong danh sách
       const evCard = (e) =>
         `<button class="card h ev" data-a="ev" data-id="${e.id}"><div class="d">${fmt(e.date, { day: 'numeric' })}<small class="mono">${fmt(e.date, { month: 'short' })}</small></div><div class="i"><h2 style="font-size:15px;font-weight:800">${esc(tx(e.title))}</h2><p class="sub" style="font-size:12px">${e.time} · ${esc(eventPlaceText(e.place) || '—')}</p></div>${e.st == 'pending' ? `<span class="chip">${t('wait')}</span>` : ic('hr')}</button>`;
+      const freeDayCard = (e) => {
+        const person = P[e.by] || (S.user && e.by == S.user.id ? S.user : {}),
+          name = person.name || t('you'),
+          mine = S.user && e.by == S.user.id,
+          saving = String(e.id).startsWith('free-');
+        return `<article class="card free-day-card"><span class="free-day-icon" aria-hidden="true">☀</span><div><span class="chip">${t('freeDay')}</span><h2>${esc(t('freeDayBy').replace('{name}', name))}</h2></div>${mine && !saving ? `<button class="mini danger" data-a="freeRemove" data-id="${e.id}">${t('freeDayRemove')}</button>` : ''}</article>`;
+      };
       /* Thông báo: mine() = do người ấy gửi, isR() = đã đọc chưa, unread() = các cái chưa đọc,
          ntx() = nội dung theo loại (lịch mới / đồng ý / từ chối) */
       const mine = () => C.nt.filter((n) => n.by != S.user.id).sort((a, b) => b.ts - a.ts);

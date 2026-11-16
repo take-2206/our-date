@@ -38,7 +38,7 @@ Set `PUSH_SECRET`, `VAPID_SUBJECT`, `VAPID_PUBLIC_KEY`, and `VAPID_PRIVATE_KEY` 
 curl -X POST "https://PROJECT_REF.supabase.co/functions/v1/send-push" \
   -H "Content-Type: application/json" \
   -H "x-push-secret: PUSH_SECRET" \
-  -d '{"type":"app_update","version":"v36"}'
+  -d '{"type":"app_update","version":"1.50.1"}'
 ```
 
-Use a unique `version` for each release. New-note and changed-text pushes are invoked automatically by the authenticated sender after the database save succeeds.
+Use a unique semantic `version` for each release. Increment the patch number for small fixes (for example, `1.50.1` to `1.50.2`), the minor number for feature releases, and the major number for breaking releases. New-note and changed-text pushes are invoked automatically by the authenticated sender after the database save succeeds.
