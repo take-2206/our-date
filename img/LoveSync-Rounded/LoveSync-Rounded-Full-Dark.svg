@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 182"><title>LoveSync</title><g fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="64" y="19" width="122" height="81" rx="21" fill="#432C40" stroke="#F7DCE7" stroke-width="3.2"/>
+<ellipse cx="78" cy="105" rx="5.9" ry="4.8" fill="#432C40" stroke="#F7DCE7" stroke-width="2.6"/><circle cx="66" cy="113" r="2.6" fill="#F7DCE7"/>
+<g stroke="#F7DCE7" stroke-width="3.5"><path d="M104 27 C98 26 98 12 103 9 C109 5 113 10 113 17"/><path d="M141 27 C135 26 135 12 140 9 C146 5 150 10 150 17"/></g>
+<g transform="translate(46 23) scale(.64)" stroke="#FF9AB5" stroke-width="5">
+<path d="M132 31 C146 13 172 12 176 32 C181 55 153 88 128 108 C107 96 72 62 74 39 C75 17 99 10 122 32"/>
+<path d="M117 18 Q121 26 123 33 L108 35"/>
+</g><g transform="translate(0 6)"><g stroke="#F7DCE7" stroke-width="3.6" transform="translate(9 0)">
+<path d="M17 122 Q17 137 20 151 Q29 148 37 148"/>
+<path d="M57 136 C45 128 38 146 47 150 C55 154 64 141 56 136 Z"/>
+<path d="M67 135 Q69 144 73 150 Q81 144 86 134"/>
+<path d="M93 143 C102 143 109 136 103 133 C95 130 86 143 92 149 Q97 154 108 146"/>
+<path d="M139 121 C129 115 116 124 122 132 C125 137 140 137 138 145 C136 153 123 155 117 149"/>
+<path d="M147 134 Q149 148 154 148 Q161 145 166 133 C162 147 159 163 151 163 C144 162 151 154 162 149"/>
+<path d="M175 135 L174 149 C179 138 186 130 190 135 C192 139 186 153 195 148"/>
+<path d="M217 136 C208 128 195 144 202 150 Q208 155 219 146"/>
+</g></g></g></svg>
