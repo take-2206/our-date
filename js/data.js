@@ -317,6 +317,7 @@ function onPetTouch(p) {
         const incoming = change && change.new,
           current = incoming && C.notes.find((note) => String(note.id) == String(incoming.id)),
           bodyChanged = !!(current && incoming.body != current.body);
+          
         await refresh();
         if (!bodyChanged || !S.user) return;
         const other = partner(),
