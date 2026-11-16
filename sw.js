@@ -1,4 +1,4 @@
-const CACHE = 'lovesync-v1.50.7';
+const CACHE = 'lovesync-v1.50.10';
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -31,9 +31,20 @@ const APP_SHELL = [
   "./img/LoveSync-Rounded/LoveSync-Rounded-Full-Dark.svg",
   "./img/LoveSync-Rounded/LoveSync-Rounded-Icon-Dark.svg",
   "./img/LoveSync-Rounded/LoveSync-Rounded-Icon-Light.svg",
-  "./img/pet/boy_left.png",
-  "./img/pet/boy_right.png",
-  "./img/pet/girl_right.png",
+  "./img/pet/boy_act.png",
+  "./img/pet/girl_act.png",
+  "./img/pet/boy_walk_left_0.png",
+  "./img/pet/boy_walk_left_1.png",
+  "./img/pet/boy_walk_left_2.png",
+  "./img/pet/boy_walk_right_0.png",
+  "./img/pet/boy_walk_right_1.png",
+  "./img/pet/boy_walk_right_2.png",
+  "./img/pet/girl_walk_left_0.png",
+  "./img/pet/girl_walk_left_1.png",
+  "./img/pet/girl_walk_left_2.png",
+  "./img/pet/girl_walk_right_0.png",
+  "./img/pet/girl_walk_right_1.png",
+  "./img/pet/girl_walk_right_2.png",
   "./img/pet/mini_boy.png",
   "./img/pet/mini_girl.png",
 ];
