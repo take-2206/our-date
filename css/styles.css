@@ -461,6 +461,26 @@
         color: #0d0d0d;
         box-shadow: 0 0 16px var(--pk);
       }
+      .free-day-markers {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        display: flex;
+        align-items: center;
+        gap: 1px;
+        pointer-events: none;
+      }
+      .free-day-markers i {
+        color: #ffd166;
+        font-size: 9px;
+        font-style: normal;
+        line-height: 1;
+        filter: drop-shadow(0 0 4px #ffd166);
+      }
+      .cl.td .free-day-markers i {
+        color: #0d0d0d;
+        filter: none;
+      }
       .heart-light {
         position: absolute;
         width: 38px;
@@ -602,6 +622,40 @@
         padding: 12px;
         overflow: hidden;
       }
+      .free-day-card {
+        display: grid;
+        grid-template-columns: 46px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        margin-bottom: 10px;
+        border-color: rgba(255, 209, 102, 0.55);
+      }
+      .free-day-icon {
+        display: grid;
+        width: 46px;
+        height: 46px;
+        place-items: center;
+        border-radius: 14px;
+        color: #ffd166;
+        background: rgba(255, 209, 102, 0.1);
+        font-size: 25px;
+        filter: drop-shadow(0 0 6px rgba(255, 209, 102, 0.7));
+      }
+      .free-day-card h2 {
+        margin-top: 6px;
+        font-size: 14px;
+        overflow-wrap: anywhere;
+      }
+      .free-day-inline {
+        margin-top: 10px;
+        border-color: #ffd166;
+        color: #ffd166;
+        box-shadow: 0 0 14px rgba(255, 209, 102, 0.16);
+      }
+      .free-day-inline:hover {
+        box-shadow: 0 0 22px rgba(255, 209, 102, 0.38);
+      }
       .route-head {
         display: flex;
         align-items: center;
@@ -633,6 +687,13 @@
         }
         .route-map {
           height: 240px;
+        }
+        .free-day-card {
+          grid-template-columns: 46px minmax(0, 1fr);
+        }
+        .free-day-card > .mini {
+          grid-column: 1 / -1;
+          width: 100%;
         }
       }
       .h2 {
@@ -2233,6 +2294,7 @@
       .pet-walker-left { left:36%; }
       .pet-walker-right { left:64%; }
       .pet-character-action { position:absolute; inset:0; width:100%; height:100%; padding:0; border:0; background:none; cursor:pointer; }
+      .pet-character-action.pet-flip { transform:scaleX(-1); }
       .pet-character-image { display:block; width:100%; height:100%; object-fit:contain; object-position:bottom; filter:drop-shadow(0 4px 6px rgba(0,0,0,.32)); }
       .pet-chat-bubble { position:absolute; z-index:3; top:30px; display:flex; align-items:center; gap:5px; min-width:42px; min-height:38px; padding:2px 5px 2px 9px; border:1px solid rgba(255,255,255,.68); background:#fff8fc; box-shadow:0 4px 16px rgba(255,105,180,.34); color:#241725; font-size:22px; }
       .pet-walker-left .pet-chat-bubble { left:calc(100% - 2px); border-radius:16px 16px 16px 5px; }
@@ -2241,10 +2303,10 @@
       .pet-chat-bubble.is-text { max-width:190px; }
       .pet-chat-bubble.is-text span { max-width:150px; white-space:normal; overflow-wrap:anywhere; font-size:12px; line-height:1.3; }
       @media (max-width:600px) {
-        .pet-walker .pet-chat-bubble { top:38px; width:max-content; max-width:14vw; max-height:68px; overflow-y:auto; box-sizing:border-box; transform:none; }
+        .pet-walker .pet-chat-bubble { top:38px; width:max-content; max-width:32vw; max-height:68px; overflow-y:auto; box-sizing:border-box; }
         .pet-walker-left .pet-chat-bubble { left:auto; right:calc(100% - 2px); border-radius:14px 14px 5px 14px; }
         .pet-walker-right .pet-chat-bubble { left:calc(100% - 2px); right:auto; top:38px; border-radius:14px 14px 14px 5px; }
-        .pet-chat-bubble.is-text { max-width:14vw; max-height:68px; }
+        .pet-chat-bubble.is-text { max-width:32vw; }
         .pet-chat-bubble.is-text span { max-width:100%; }
       }
       .pet-spark { position:absolute; top:13px; right:18px; color:#ffd17a; font-size:17px; pointer-events:none; }

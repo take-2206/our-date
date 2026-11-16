@@ -1,6 +1,11 @@
 // Recycle-bin page for recoverable dates, notes, and photos.
 const trashItems = () => [
-  ...(C.trash?.ev || []).map((item) => ({ kind: 'event', item, label: t('det'), title: tx(item.title) })),
+  ...(C.trash?.ev || []).map((item) => ({
+    kind: 'event',
+    item,
+    label: isFreeDay(item) ? t('freeDay') : t('det'),
+    title: isFreeDay(item) ? t('freeDay') : tx(item.title),
+  })),
   ...(C.trash?.notes || []).map((item) => ({ kind: 'note', item, label: t('notes'), title: item.body })),
   ...(C.trash?.photos || []).map((item) => ({
     kind: 'photo',

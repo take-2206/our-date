@@ -58,10 +58,12 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           const d = new Date(st);
           d.setDate(st.getDate() + i);
           const k = key(d),
-            es = EV().filter((e) => e.date == k),
+            entries = EV().filter((e) => e.date == k),
+            es = entries.filter((e) => !isFreeDay(e)),
+            free = entries.filter(isFreeDay),
             np = photosOn(k).length;
           cells.push(
-            `<button class="cl${d.getMonth() != m ? ' o' : ''}${k == tk ? ' td' : ''}${k == sel ? ' sl' : ''}${es.length ? ' has-plan' : ''}${np ? ' has-ph' : ''}" data-a="day" data-k="${k}" aria-label="${fmt(k, { dateStyle: 'full' })}${es.length ? `, ${es.length} ${t('det')}` : ''}${np ? `, ${np} ${t('phMore')}` : ''}"><span>${d.getDate()}</span>${es.length ? '<span class="heart-light" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>' : ''}${np ? '<i class="ph-dot" aria-hidden="true"></i>' : ''}</button>`,
+            `<button class="cl${d.getMonth() != m ? ' o' : ''}${k == tk ? ' td' : ''}${k == sel ? ' sl' : ''}${es.length ? ' has-plan' : ''}${free.length ? ' has-free' : ''}${np ? ' has-ph' : ''}" data-a="day" data-k="${k}" aria-label="${fmt(k, { dateStyle: 'full' })}${es.length ? `, ${es.length} ${t('det')}` : ''}${free.length ? `, ${free.length} ${t('freeDay')}` : ''}${np ? `, ${np} ${t('phMore')}` : ''}"><span>${d.getDate()}</span>${es.length ? '<span class="heart-light" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>' : ''}${free.length ? `<span class="free-day-markers" aria-hidden="true">${free.slice(0, 2).map(() => '<i>☀</i>').join('')}</span>` : ''}${np ? '<i class="ph-dot" aria-hidden="true"></i>' : ''}</button>`,
           );
         }
         const wk = [...Array(7)]
@@ -70,13 +72,19 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
               `<span class="mono sub">${new Date(2024, 0, 1 + i).toLocaleDateString(loc(), { weekday: 'short' })}</span>`,
           )
           .join('');
-        const day = EV().filter((e) => e.date == sel),
+        const selectedEntries = EV().filter((e) => e.date == sel),
+          day = selectedEntries.filter((e) => !isFreeDay(e)),
+          freeDays = selectedEntries.filter(isFreeDay),
+          freeSection = freeDays.map(freeDayCard).join(''),
+          freeAction = freeDays.some((item) => item.by == S.user.id)
+            ? ''
+            : `<button class="btn b2 free-day-inline" data-a="freeNew"><span aria-hidden="true">☀</span> ${t('freeDayAddThis')}</button>`,
           upcoming = up()
             .filter((e) => e.date != sel)
             .slice(0, 3),
           dph = photosOn(sel),
           photoSec = dph.length
-            ? `<p class="mono sub h2"${day.length ? ' style="margin-top:22px"' : ''}>// ${t('phOfDay')} · ${fmt(sel, { day: 'numeric', month: 'long' })}</p><div class="card cal-ph"><div class="cal-ph-grid">${dph
+            ? `<p class="mono sub h2"${day.length || freeDays.length ? ' style="margin-top:22px"' : ''}>// ${t('phOfDay')} · ${fmt(sel, { day: 'numeric', month: 'long' })}</p><div class="card cal-ph"><div class="cal-ph-grid">${dph
                 .slice(0, 4)
                 .map((p, i) => {
                   const u = pu(p),
@@ -88,15 +96,13 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
                 return pl ? `<p class="sub cal-pl">${I.pin} ${esc(pl)}</p>` : '';
               })()}<button class="btn b2" data-a="goAlbum" data-k="${sel}" style="min-height:40px">${I.photo} ${t('phOpenAlbum')} · ${dph.length}</button></div>`
             : '',
-          side = day.length
-            ? `<p class="mono sub h2">// ${fmt(sel, { day: 'numeric', month: 'long' })}</p>${day.map(evCard).join('')}${photoSec}<p class="mono sub h2" style="margin-top:22px">// ${t('soon')}</p>${upcoming.length ? upcoming.map(evCard).join('') : `<div class="empty">${t('noUpcoming')}</div>`}`
-            : `${photoSec}<p class="mono sub h2"${photoSec ? ' style="margin-top:22px"' : ''}>// ${t('soon')}</p>${up().slice(0, 3).map(evCard).join('') || `<div class="empty">${t('none')}</div>`}`;
+          side = `<p class="mono sub h2">// ${fmt(sel, { day: 'numeric', month: 'long' })}</p>${freeSection}${day.map(evCard).join('')}${photoSec}${freeAction}<p class="mono sub h2" style="margin-top:22px">// ${t('soon')}</p>${upcoming.length ? upcoming.map(evCard).join('') : `<div class="empty">${t('noUpcoming')}</div>`}`;
         return `<div class="main">${head(cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' }), t('shared'))}${dayCard()}${petCardHtml()}<div class="cg"><div class="card cal"><div class="cn"><button class="ib" data-a="mo" data-n="-1" aria-label="prev" style="width:40px;height:40px">${I.back}</button><b>${cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' })}</b><button class="ib" data-a="mo" data-n="1" aria-label="next" style="width:40px;height:40px;transform:scaleX(-1)">${I.back}</button></div><div class="g7 wk">${wk}</div><div class="g7">${cells.join('')}</div></div><div>${side}</div></div></div><button class="fab" data-a="new" aria-label="${t('add')}">+</button>`;
       }
 
-      // ---- Pet: chạm vào đối phương -> đổi sang ảnh boy_act / girl_act ----
+      // Keep the two characters facing inward, including during the tap animation.
       const PET_ACT_MS = 1500;
-      ['boy.png', 'girl.png', 'boy_act.png', 'girl_act.png'].forEach((f) => {
+      ['boy_left.png', 'boy_right.png', 'girl_right.png'].forEach((f) => {
         const im = new Image();
         im.src = './img/pet/' + f;
       });
@@ -134,18 +140,19 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
         ];
         const character = (person, index) => {
           const gender = person.gender == 'm' ? 'm' : 'f';
-          const image = gender == 'm' ? 'boy.png' : 'girl.png';
-          const actImage = gender == 'm' ? 'boy_act.png' : 'girl_act.png';
+          const facesRight = index == 0,
+            image = gender == 'm' ? (facesRight ? 'boy_right.png' : 'boy_left.png') : 'girl_right.png',
+            flip = gender == 'f' && !facesRight ? ' pet-flip' : '';
           const bubble = (pet.reactions || []).find((r) => r.by == person.id);
           const genderLabel = t(gender == 'm' ? 'petMale' : 'petFemale');
           const ownBubble = person.id == user.id;
-          const isTextBubble = bubble && !['❤️', '😂', '🥺', '😴', '✨', '😡', '💔'].includes(bubble.emoji);
+          const isTextBubble = bubble && !reactions.includes(bubble.emoji);
           // Mình: gửi ❤️ như cũ. Đối phương: chạm -> đổi ảnh act.
           const action = ownBubble
             ? 'data-a="petReact" data-emoji="❤️"'
             : 'data-a="petTouch"';
           return `<div class="pet-walker pet-walker-${index == 0 ? 'left' : 'right'}" aria-label="${esc(person.name || genderLabel)}">
-          <button class="pet-character-action" type="button" ${action} data-base="./img/pet/${image}" data-act="./img/pet/${actImage}" aria-label="${esc(t('petSend'))}">
+          <button class="pet-character-action${flip}" type="button" ${action} data-base="./img/pet/${image}" data-act="./img/pet/${image}" aria-label="${esc(t('petSend'))}">
           <img class="pet-character-image" src="./img/pet/${image}" alt="${esc(genderLabel)}"></button>${bubble ? `<div class="pet-chat-bubble${isTextBubble ? ' is-text' : ''}" title="${esc(person.name || '')}"><span>${esc(bubble.emoji)}</span>${ownBubble ? `<button type="button" data-a="petClear" aria-label="${esc(t('petDeleteBubble'))}">×</button>` : ''}</div>` : ''}</div>`;
         };
         return `<section class="pet-card" aria-label="${esc(t('petKicker'))}"><div class="pet-top"><div><p class="pet-kicker">${esc(t('petKicker'))}</p><div class="pet-heading">${esc(pet.name || fallback.name)} <button type="button" class="pet-rename" data-a="petName" aria-label="${esc(t('petRename'))}">✎</button></div><p class="pet-hint">${esc(t('petSub'))}</p></div><span class="pet-hearts">♡ ♡ ♡</span></div><div class="pet-stage">${people.map(character).join('')}<span class="pet-spark">✦</span></div><div class="pet-care"><span class="pet-care-label">${esc(t('petSharedBubbles'))}</span></div><form class="pet-text-form" data-f="petText"><input class="in" type="text" name="text" maxlength="120" autocomplete="off" placeholder="${esc(t('petTextPlaceholder'))}" aria-label="${esc(t('petTextPlaceholder'))}" required><button class="btn b2" type="submit">${esc(t('petTextSend'))}</button></form><div class="pet-reactions">${reactions.map((e) => `<button type="button" data-a="petReact" data-emoji="${e}" aria-label="${esc(t('petReactOption').replace('{emoji}', e))}">${e}</button>`).join('')}</div></section>`;
