@@ -23,3 +23,22 @@ The app remains a no-build static web app. JavaScript files are loaded as classi
 - `js/app.js` — startup and service-worker registration.
 
 Keep `js/app.js` last in the script list because it starts the application after every dependency has loaded.
+
+## Background push deployment
+
+`supabase/functions/send-push/index.ts` handles date activity, reminders, sticky-note activity, and release notifications. Deploy it with gateway JWT verification disabled because reminder and release calls authenticate with `x-push-secret`; the function validates signed-in note senders itself.
+
+```sh
+supabase functions deploy send-push --no-verify-jwt
+```
+
+Set `PUSH_SECRET`, `VAPID_SUBJECT`, `VAPID_PUBLIC_KEY`, and `VAPID_PRIVATE_KEY` as Edge Function secrets. After deploying a new web-app version, notify closed clients with:
+
+```sh
+curl -X POST "https://PROJECT_REF.supabase.co/functions/v1/send-push" \
+  -H "Content-Type: application/json" \
+  -H "x-push-secret: PUSH_SECRET" \
+  -d '{"type":"app_update","version":"v36"}'
+```
+
+Use a unique `version` for each release. New-note and changed-text pushes are invoked automatically by the authenticated sender after the database save succeeds.
