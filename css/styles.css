@@ -1481,6 +1481,38 @@
       .mod .fl {
         min-width: 0;
       }
+      .event-date-time {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .event-place-list {
+        display: grid;
+        gap: 8px;
+      }
+      .event-place-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 40px;
+        gap: 8px;
+      }
+      .event-place-remove {
+        width: 40px;
+        height: 48px;
+        padding: 0;
+        color: var(--pk2);
+      }
+      .event-place-add {
+        width: 100%;
+        margin-top: 8px;
+        color: var(--cy);
+        border-style: dashed;
+      }
+      @media (max-width: 480px) {
+        .event-date-time {
+          grid-template-columns: 1fr;
+          gap: 0;
+        }
+      }
       .mod .dr {
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);

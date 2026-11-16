@@ -17,7 +17,7 @@ function drawLT() {
       esc(tx(e.title)),
       `${t("ltDate")}: ${fmt(e.date, { weekday: "long", day: "numeric", month: "long" })}`,
       `${t("ltTime")}: ${e.time}`,
-      `${t("ltPlace")}: ${esc(tx(e.place))}`,
+      `${t("ltPlace")}: ${esc(eventPlaceText(e.place) || '—')}`,
       t("ltAsk"),
     ];
     h += `<div class="ppr"><img src="${IMG.pp}" alt="">${L.map((x, i) => `<div class="tx${i == 1 ? " ti" : ""}" style="top:calc(var(--t0) + ${i} * var(--pt))">${x}</div>`).join("")}</div>`;

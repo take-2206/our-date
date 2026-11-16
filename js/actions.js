@@ -169,6 +169,27 @@
             });
           return;
         }
+        else if (a == 'placeAdd') {
+          const list = el.closest('form')?.querySelector('.event-place-list');
+          if (!list || list.children.length >= 8) return;
+          list.insertAdjacentHTML('beforeend', eventPlaceInput());
+          list.lastElementChild?.querySelector('input')?.focus();
+          return;
+        }
+        else if (a == 'placeRemove') {
+          const row = el.closest('.event-place-row'),
+            list = row?.parentElement;
+          if (!row || !list) return;
+          if (list.children.length > 1) row.remove();
+          else {
+            const input = row.querySelector('input');
+            if (input) {
+              input.value = '';
+              input.focus();
+            }
+          }
+          return;
+        }
         else if (a == 'new') modal = 'new';
         else if (a == 'edit') modal = 'edit';
         else if (a == 'todoEdit') todoEdit = Number(d.i);
