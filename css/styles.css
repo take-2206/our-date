@@ -650,6 +650,24 @@
       .rw:last-child {
         border: 0;
       }
+      button[data-v='trash'] > span:first-child {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        line-height: 1;
+      }
+      button[data-v='trash'] > span:first-child > svg {
+        display: block;
+        flex: none;
+      }
+      button[data-v='trash'] > .chip {
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+        min-height: 26px;
+        line-height: 1;
+        text-align: center;
+      }
       /* ----- Công tắc bật/tắt thông báo ----- */
       .tg {
         appearance: none;
