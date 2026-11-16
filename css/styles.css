@@ -2212,8 +2212,8 @@
       .pet-hearts { color:#ff8cbd; letter-spacing:3px; font-size:15px; }
       .pet-stage { position:relative; width:100%; height:150px; overflow:hidden; border-radius:70px; background:radial-gradient(ellipse,rgba(255,105,180,.2),transparent 70%); }
       .pet-walker { position:absolute; bottom:3px; width:94px; height:122px; transform:translateX(-50%); }
-      .pet-walker-left { left:32%; }
-      .pet-walker-right { left:68%; }
+      .pet-walker-left { left:36%; }
+      .pet-walker-right { left:64%; }
       .pet-character-action { position:absolute; inset:0; width:100%; height:100%; padding:0; border:0; background:none; cursor:pointer; }
       .pet-character-image { display:block; width:100%; height:100%; object-fit:contain; object-position:bottom; filter:drop-shadow(0 4px 6px rgba(0,0,0,.32)); }
       .pet-chat-bubble { position:absolute; z-index:3; top:30px; display:flex; align-items:center; gap:5px; min-width:42px; min-height:38px; padding:2px 5px 2px 9px; border:1px solid rgba(255,255,255,.68); background:#fff8fc; box-shadow:0 4px 16px rgba(255,105,180,.34); color:#241725; font-size:22px; }
@@ -2222,6 +2222,13 @@
       .pet-chat-bubble button { width:20px; height:20px; padding:0; border:0; border-radius:50%; background:rgba(36,23,37,.12); color:#5f485c; font:700 15px/20px sans-serif; cursor:pointer; }
       .pet-chat-bubble.is-text { max-width:190px; }
       .pet-chat-bubble.is-text span { max-width:150px; white-space:normal; overflow-wrap:anywhere; font-size:12px; line-height:1.3; }
+      @media (max-width:600px) {
+        .pet-walker .pet-chat-bubble { top:38px; width:max-content; max-width:14vw; max-height:68px; overflow-y:auto; box-sizing:border-box; transform:none; }
+        .pet-walker-left .pet-chat-bubble { left:auto; right:calc(100% - 2px); border-radius:14px 14px 5px 14px; }
+        .pet-walker-right .pet-chat-bubble { left:calc(100% - 2px); right:auto; top:38px; border-radius:14px 14px 14px 5px; }
+        .pet-chat-bubble.is-text { max-width:14vw; max-height:68px; }
+        .pet-chat-bubble.is-text span { max-width:100%; }
+      }
       .pet-spark { position:absolute; top:13px; right:18px; color:#ffd17a; font-size:17px; pointer-events:none; }
       .pet-care { min-height:29px; display:flex; align-items:center; justify-content:center; gap:5px; }
       .pet-care-label { color:var(--mut); font-size:11px; }
