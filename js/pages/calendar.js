@@ -35,7 +35,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
             ? `<p class="dc-names">${names.map(esc).join(' <span aria-hidden="true">&#9829;</span> ')}</p>`
             : '';
         if (!sn)
-          return `<div class="card dc"><div class="pair">${av(me(), 44)}${av(pr(), 44)}</div><div class="dcb">${nameLine}<button class="btn b1" data-a="sedit" style="min-height:44px">${t('dcSet')}</button></div></div>`;
+          return `<div class="card dc"><div class="pair couple-pair">${coupleAvatar()}</div><div class="dcb">${nameLine}<button class="btn b1" data-a="sedit" style="min-height:44px">${t('dcSet')}</button></div></div>`;
         const n = Math.round((today0() - parse(sn)) / 864e5) + 1,
           nx = MS.find((x) => x > n) || Math.ceil((n + 1) / 365) * 365,
           sub = `${t('dcFrom')} ${fmt(sn, { day: 'numeric', month: 'numeric', year: 'numeric' })}${n > 0 ? ' · ' + t('dcNext').replace('{n}', nx - n).replace('{m}', nx) : ''}`,
@@ -43,7 +43,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           annText = ann.today
             ? t('dcAnnToday').replace('{n}', ann.years)
             : t('dcAnnNext').replace('{n}', ann.days).replace('{y}', ann.years);
-        return `<div class="card dc"><div class="pair">${av(me(), 44)}${av(pr(), 44)}</div><div class="dcb">${nameLine}<div class="dcv"><b class="px">${Math.max(n, 0)}</b><span>${t('dc')}</span></div><p class="sub mono" style="font-size:12px;margin-top:2px">${sub}</p><p class="dc-ann mono">${annText}</p></div><button class="ib" data-a="sedit" aria-label="${t('dcTtl')}">${sv('<path d="M4 20h4L19 9l-4-4L4 16v4z"/>')}</button></div>`;
+        return `<div class="card dc"><div class="pair couple-pair">${coupleAvatar()}</div><div class="dcb">${nameLine}<div class="dcv"><b class="px">${Math.max(n, 0)}</b><span>${t('dc')}</span></div><p class="sub mono" style="font-size:12px;margin-top:2px">${sub}</p><p class="dc-ann mono">${annText}</p></div><button class="ib" data-a="sedit" aria-label="${t('dcTtl')}">${sv('<path d="M4 20h4L19 9l-4-4L4 16v4z"/>')}</button></div>`;
       }
       function vSince() {
         return `<div class="mod" data-a="sclose"><form class="card" data-f="since" role="dialog" aria-label="${t('dcTtl')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:16px">${t('dcTtl')}</h2><div class="fl"><label class="lb" for="sd">${t('dt')}</label><input class="in" id="sd" name="since" type="date" data-calendar inputmode="none" required max="${key(new Date())}" value="${esc(C.since || '')}"></div><div class="row2"><button type="button" class="btn b2" data-a="sclose">${t('cancel')}</button><button class="btn b1">${t('save')}</button></div></form></div>`;
@@ -201,15 +201,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           walker.style.left = x + '%';
           setPetFrame(walker, Math.floor(petFrameTick / 2));
         });
-        const gap = Math.abs(Number(walkers[0].dataset.x) - Number(walkers[1].dataset.x));
-        if (gap <= Math.max(7, (walkers[0].offsetWidth * 1.15 / stageWidth) * 100) && !stage.dataset.collisionLock) {
-          stage.dataset.collisionLock = '1';
-          walkers.forEach((walker) => {
-            walker.dataset.direction = String(-Number(walker.dataset.direction));
-            petAct(walker);
-          });
-          setTimeout(() => delete stage.dataset.collisionLock, PET_ACT_MS + 450);
-        }
+        // Characters walk through each other; contact alone does not trigger an act pose.
         petFrameTick++;
       }, 180);
 
