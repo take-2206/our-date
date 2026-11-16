@@ -165,6 +165,7 @@
       }
       async function loadC() {
         await purgeExpiredTrash();
+        loadLocalPet();
         const trashCutoff = new Date(Date.now() - 30 * 864e5).toISOString();
         let [ev, nt, pf, cp, notes, ph, trashEv, trashNotes, trashPhotos] = await Promise.all([
           sb.from('events').select('*').is('deleted_at', null).order('date'),
@@ -208,6 +209,51 @@
         photoError = ph.error ? ph.error.message : '';
         C.photos = (ph.data || []).map(toPhoto).sort((a, b) => b.date.localeCompare(a.date) || b.ts - a.ts);
         await signPhotos();
+        await loadPetReactions();
+      }
+      const petLocalKey = () => 'ls_pet_' + (S.user && S.user.couple_id || '');
+      function loadLocalPet() {
+        try {
+          const local = JSON.parse(localStorage.getItem(petLocalKey()) || '{}');
+          PET = { name: local.name || 'Mochi', reactions: local.reactions || [] };
+        } catch (x) { PET = { name: 'Mochi', reactions: [] }; }
+      }
+      async function loadPetReactions() {
+        try {
+          const { data, error } = await sb.from('pet_reactions').select('id, emoji, sender_id, created_at').eq('couple_id', S.user.couple_id).order('created_at', { ascending: true }).limit(2);
+          if (error) return;
+          PET.reactions = (data || []).map((r) => ({ id: r.id, emoji: r.emoji, by: r.sender_id, byName: (P[r.sender_id] || {}).name || '', at: Date.parse(r.created_at) || Date.now() }));
+        } catch (x) {}
+      }
+      async function sendPetReaction(emoji) {
+        const reaction = { id: 'local-' + Date.now(), emoji, by: S.user.id, byName: S.user.name, at: Date.now() };
+        PET.reactions = (PET.reactions || []).filter((r) => r.by != S.user.id).concat(reaction);
+        render();
+        try {
+          const { error } = await sb.from('pet_reactions').upsert({ couple_id: S.user.couple_id, sender_id: S.user.id, emoji, created_at: new Date().toISOString() }, { onConflict: 'couple_id,sender_id' });
+          if (error) throw error;
+          localStorage.setItem(petLocalKey(), JSON.stringify({ name: PET.name, reactions: PET.reactions }));
+        } catch (x) {
+          localStorage.setItem(petLocalKey(), JSON.stringify({ name: PET.name, reactions: PET.reactions }));
+          say('Bubble đã hiện trên máy này. Hãy chạy supabase-pet.sql để đồng bộ cho cả hai.');
+        }
+      }
+      async function clearPetReaction() {
+        PET.reactions = (PET.reactions || []).filter((r) => r.by != S.user.id);
+        render();
+        try {
+          const { error } = await sb.from('pet_reactions').delete().eq('couple_id', S.user.couple_id).eq('sender_id', S.user.id);
+          if (error) throw error;
+          localStorage.setItem(petLocalKey(), JSON.stringify({ name: PET.name, reactions: PET.reactions }));
+        } catch (x) {
+          localStorage.setItem(petLocalKey(), JSON.stringify({ name: PET.name, reactions: PET.reactions }));
+          say('Bubble đã ẩn ở máy này. Hãy chạy supabase-pet.sql để đồng bộ thao tác xóa.');
+        }
+      }
+      function savePetName(name) {
+        PET.name = name;
+        localStorage.setItem(petLocalKey(), JSON.stringify({ name, reactions: PET.reactions || [] }));
+        render();
       }
       // Tải lại dữ liệu rồi vẽ lại màn hình
       async function refresh() {
@@ -336,6 +382,7 @@
           .channel('c-' + S.user.couple_id, { config: { presence: { key: notePresenceKey } } })
           .on('presence', { event: 'sync' }, syncNoteTypingPresence)
           .on('postgres_changes', { event: '*', schema: 'public', table: 'events', filter: f }, refresh)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'pet_reactions', filter: f }, refresh)
           .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'events' }, refresh)
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notes', filter: f }, onNoteInsert)
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notes', filter: f }, onNoteUpdate)

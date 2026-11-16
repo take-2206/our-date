@@ -91,5 +91,25 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           side = day.length
             ? `<p class="mono sub h2">// ${fmt(sel, { day: 'numeric', month: 'long' })}</p>${day.map(evCard).join('')}${photoSec}<p class="mono sub h2" style="margin-top:22px">// ${t('soon')}</p>${upcoming.length ? upcoming.map(evCard).join('') : `<div class="empty">${t('noUpcoming')}</div>`}`
             : `${photoSec}<p class="mono sub h2"${photoSec ? ' style="margin-top:22px"' : ''}>// ${t('soon')}</p>${up().slice(0, 3).map(evCard).join('') || `<div class="empty">${t('none')}</div>`}`;
-        return `<div class="main">${head(cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' }), t('shared'))}${dayCard()}<div class="cg"><div class="card cal"><div class="cn"><button class="ib" data-a="mo" data-n="-1" aria-label="prev" style="width:40px;height:40px">${I.back}</button><b>${cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' })}</b><button class="ib" data-a="mo" data-n="1" aria-label="next" style="width:40px;height:40px;transform:scaleX(-1)">${I.back}</button></div><div class="g7 wk">${wk}</div><div class="g7">${cells.join('')}</div></div><div>${side}</div></div></div><button class="fab" data-a="new" aria-label="${t('add')}">+</button>`;
+        return `<div class="main">${head(cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' }), t('shared'))}${dayCard()}${petCardHtml()}<div class="cg"><div class="card cal"><div class="cn"><button class="ib" data-a="mo" data-n="-1" aria-label="prev" style="width:40px;height:40px">${I.back}</button><b>${cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' })}</b><button class="ib" data-a="mo" data-n="1" aria-label="next" style="width:40px;height:40px;transform:scaleX(-1)">${I.back}</button></div><div class="g7 wk">${wk}</div><div class="g7">${cells.join('')}</div></div><div>${side}</div></div></div><button class="fab" data-a="new" aria-label="${t('add')}">+</button>`;
+      }
+
+      function petCardHtml() {
+        const fallback = { name: 'Mochi', reactions: [] };
+        const pet = PET || fallback;
+        const reactions = ['❤️', '😡', '🥺', '😴', '💔'];
+        const other = partner();
+        const people = [
+          { id: S.user.id, name: S.user.name, gender: S.user.gender || 'f' },
+          other || { id: 'partner', name: t('petPartner'), gender: me() == 'm' ? 'f' : 'm' },
+        ];
+        const character = (person, index) => {
+          const gender = person.gender == 'm' ? 'm' : 'f';
+          const image = gender == 'm' ? 'boy.png' : 'girl.png';
+          const bubble = (pet.reactions || []).find((r) => r.by == person.id);
+          const genderLabel = t(gender == 'm' ? 'petMale' : 'petFemale');
+          const ownBubble = person.id == S.user.id;
+          return `<div class="pet-walker pet-walker-${index == 0 ? 'left' : 'right'}" aria-label="${esc(person.name || genderLabel)}"><button class="pet-character-action" type="button" data-a="petReact" data-emoji="❤️" aria-label="${esc(t('petSend'))}"><img class="pet-character-image" src="./img/pet/${image}" alt="${esc(genderLabel)}"></button>${bubble ? `<div class="pet-chat-bubble" title="${esc(person.name || '')}"><span>${esc(bubble.emoji)}</span>${ownBubble ? `<button type="button" data-a="petClear" aria-label="${esc(t('petDeleteBubble'))}">×</button>` : ''}</div>` : ''}</div>`;
+        };
+        return `<section class="pet-card" aria-label="${esc(t('petKicker'))}"><div class="pet-top"><div><p class="pet-kicker">${esc(t('petKicker'))}</p><div class="pet-heading">${esc(pet.name || fallback.name)} <button type="button" class="pet-rename" data-a="petName" aria-label="${esc(t('petRename'))}">✎</button></div><p class="pet-hint">${esc(t('petSub'))}</p></div><span class="pet-hearts">♡ ♡ ♡</span></div><div class="pet-stage">${people.map(character).join('')}<span class="pet-spark">✦</span></div><div class="pet-care"><span class="pet-care-label">${esc(t('petSharedBubbles'))}</span></div><div class="pet-reactions">${reactions.map((e) => `<button type="button" data-a="petReact" data-emoji="${e}" aria-label="${esc(t('petReactOption').replace('{emoji}', e))}">${e}</button>`).join('')}</div></section>`;
       }
