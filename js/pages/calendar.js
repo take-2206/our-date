@@ -48,6 +48,14 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
       function vSince() {
         return `<div class="mod" data-a="sclose"><form class="card" data-f="since" role="dialog" aria-label="${t('dcTtl')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:16px">${t('dcTtl')}</h2><div class="fl"><label class="lb" for="sd">${t('dt')}</label><input class="in" id="sd" name="since" type="date" data-calendar inputmode="none" required max="${key(new Date())}" value="${esc(C.since || '')}"></div><div class="row2"><button type="button" class="btn b2" data-a="sclose">${t('cancel')}</button><button class="btn b1">${t('save')}</button></div></form></div>`;
       }
+
+      // Icon mini-boy / mini-girl theo giới tính của người đăng ký ngày rảnh.
+      function freeIcon(e) {
+        const owner = P[e.by] || (S.user && S.user.id == e.by ? S.user : {});
+        const g = owner.gender == 'm' ? 'boy' : 'girl';
+        return `<img src="./img/pet/mini_${g}.png" alt="" draggable="false">`;
+      }
+
       function vCal() {
         const y = cur.getFullYear(),
           m = cur.getMonth(),
@@ -63,7 +71,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
             free = entries.filter(isFreeDay),
             np = photosOn(k).length;
           cells.push(
-            `<button class="cl${d.getMonth() != m ? ' o' : ''}${k == tk ? ' td' : ''}${k == sel ? ' sl' : ''}${es.length ? ' has-plan' : ''}${free.length ? ' has-free' : ''}${np ? ' has-ph' : ''}" data-a="day" data-k="${k}" aria-label="${fmt(k, { dateStyle: 'full' })}${es.length ? `, ${es.length} ${t('det')}` : ''}${free.length ? `, ${free.length} ${t('freeDay')}` : ''}${np ? `, ${np} ${t('phMore')}` : ''}"><span>${d.getDate()}</span>${es.length ? '<span class="heart-light" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>' : ''}${free.length ? `<span class="free-day-markers" aria-hidden="true">${free.slice(0, 2).map((item) => `<i class="${freeDayOwnerClass(item.by)}">☀</i>`).join('')}</span>` : ''}${np ? '<i class="ph-dot" aria-hidden="true"></i>' : ''}</button>`,
+            `<button class="cl${d.getMonth() != m ? ' o' : ''}${k == tk ? ' td' : ''}${k == sel ? ' sl' : ''}${es.length ? ' has-plan' : ''}${free.length ? ' has-free' : ''}${np ? ' has-ph' : ''}" data-a="day" data-k="${k}" aria-label="${fmt(k, { dateStyle: 'full' })}${es.length ? `, ${es.length} ${t('det')}` : ''}${free.length ? `, ${free.length} ${t('freeDay')}` : ''}${np ? `, ${np} ${t('phMore')}` : ''}"><span>${d.getDate()}</span>${es.length ? '<span class="heart-light" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>' : ''}${free.length ? `<span class="free-day-markers" aria-hidden="true">${free.slice(0, 2).map((e) => `<i class="${typeof freeDayOwnerClass == 'function' ? freeDayOwnerClass(e.by) : ''}">${freeIcon(e)}</i>`).join('')}</span>` : ''}${np ? '<i class="ph-dot" aria-hidden="true"></i>' : ''}</button>`,
           );
         }
         const wk = [...Array(7)]
@@ -76,9 +84,6 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           day = selectedEntries.filter((e) => !isFreeDay(e)),
           freeDays = selectedEntries.filter(isFreeDay),
           freeSection = freeDays.map(freeDayCard).join(''),
-          freeAction = freeDays.some((item) => item.by == S.user.id)
-            ? ''
-            : `<button class="btn b2 free-day-inline" data-a="freeNew"><span aria-hidden="true">☀</span> ${t('freeDayAddThis')}</button>`,
           upcoming = up()
             .filter((e) => e.date != sel)
             .slice(0, 3),
@@ -96,9 +101,44 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
                 return pl ? `<p class="sub cal-pl">${I.pin} ${esc(pl)}</p>` : '';
               })()}<button class="btn b2" data-a="goAlbum" data-k="${sel}" style="min-height:40px">${I.photo} ${t('phOpenAlbum')} · ${dph.length}</button></div>`
             : '',
-          side = `<p class="mono sub h2">// ${fmt(sel, { day: 'numeric', month: 'long' })}</p>${freeSection}${day.map(evCard).join('')}${photoSec}${freeAction}<p class="mono sub h2" style="margin-top:22px">// ${t('soon')}</p>${upcoming.length ? upcoming.map(evCard).join('') : `<div class="empty">${t('noUpcoming')}</div>`}`;
-        return `<div class="main">${head(cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' }), t('shared'))}${dayCard()}${petCardHtml()}<div class="cg"><div class="card cal"><div class="cn"><button class="ib" data-a="mo" data-n="-1" aria-label="prev" style="width:40px;height:40px">${I.back}</button><b>${cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' })}</b><button class="ib" data-a="mo" data-n="1" aria-label="next" style="width:40px;height:40px;transform:scaleX(-1)">${I.back}</button></div><div class="g7 wk">${wk}</div><div class="g7">${cells.join('')}</div></div><div>${side}</div></div></div><button class="fab" data-a="new" aria-label="${t('add')}">+</button>`;
+          side = `<p class="mono sub h2">// ${fmt(sel, { day: 'numeric', month: 'long' })}</p>${freeSection}${day.map(evCard).join('')}${photoSec}<p class="mono sub h2" style="margin-top:22px">// ${t('soon')}</p>${upcoming.length ? upcoming.map(evCard).join('') : `<div class="empty">${t('noUpcoming')}</div>`}`;
+        return `<div class="main">${head(cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' }), t('shared'))}${dayCard()}${petCardHtml()}<div class="cg"><div class="card cal"><div class="cn"><button class="ib" data-a="mo" data-n="-1" aria-label="prev" style="width:40px;height:40px">${I.back}</button><b>${cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' })}</b><button class="ib" data-a="mo" data-n="1" aria-label="next" style="width:40px;height:40px;transform:scaleX(-1)">${I.back}</button></div><div class="g7 wk">${wk}</div><div class="g7">${cells.join('')}</div></div><div>${side}</div></div></div><button class="fab" data-a="fabMenu" aria-label="${t('add')}">+</button>`;
       }
+
+      // Nút +: chọn "Ngày rảnh" hoặc "Tạo kế hoạch mới".
+      // CSS gợi ý: .fab-sheet-card { display:flex; flex-direction:column; gap:10px; width:min(320px, 90vw); }
+      function closeFabSheet() {
+        const el = document.getElementById('fab-sheet');
+        if (el) el.remove();
+      }
+      document.addEventListener('click', (ev) => {
+        const target = ev.target;
+        if (!target || !target.closest) return;
+        const opener = target.closest('[data-a="fabMenu"]');
+        if (opener) {
+          if (document.getElementById('fab-sheet')) return closeFabSheet();
+          const wrap = document.createElement('div');
+          wrap.id = 'fab-sheet';
+          wrap.className = 'mod';
+          wrap.dataset.a = 'fabClose';
+          const hasFree = C.ev.some((item) => isFreeDay(item) && item.date == sel && item.by == S.user.id);
+          wrap.innerHTML = `<div class="card fab-sheet-card" role="dialog" aria-label="${esc(t('add'))}">
+      <p class="mono sub fab-sheet-date">// ${esc(fmt(sel, { day: 'numeric', month: 'long' }))}</p>
+      <button class="fab-opt" data-a="freeNew"${hasFree ? ' disabled' : ''}><span class="fab-opt-ic" aria-hidden="true">${freeIcon({ by: S.user.id })}</span><span class="fab-opt-tx"><b>${esc(t('freeDay'))}</b><small>${esc(t('freeDayAddThis'))}</small></span></button>
+      <button class="fab-opt" data-a="new"><span class="fab-opt-ic" aria-hidden="true">+</span><span class="fab-opt-tx"><b>${esc(t('add'))}</b></span></button>
+      <button class="btn b2" data-a="fabClose" style="min-height:44px">${esc(t('cancel'))}</button>
+    </div>`;
+          document.body.appendChild(wrap);
+          return;
+        }
+        const sheet = target.closest('#fab-sheet');
+        if (!sheet) return;
+        const act = target.closest('[data-a]');
+        // Bấm vào khoảng trống bên trong card thì không đóng.
+        if (act === sheet && target !== sheet) return;
+        // Đóng sau khi core xử lý xong freeNew / new.
+        setTimeout(closeFabSheet, 0);
+      });
 
       // Keep the two characters facing inward, including during the tap animation.
       const PET_ACT_MS = 1500;
