@@ -235,9 +235,20 @@
           localStorage.setItem(petLocalKey(), JSON.stringify({ name: PET.name, reactions: PET.reactions }));
         } catch (x) {
           localStorage.setItem(petLocalKey(), JSON.stringify({ name: PET.name, reactions: PET.reactions }));
-          say('Bubble đã hiện trên máy này. Hãy chạy supabase-pet.sql để đồng bộ cho cả hai.');
+         say('Bubble đã hiện trên máy này. Không đồng bộ được: ' + (x.message || x));
         }
       }
+      function sendPetTouch() {
+  if (!CH || !S.user || !realtimeReady) return;
+  Promise.resolve(
+    CH.send({ type: 'broadcast', event: 'pet_touch', payload: { from: S.user.id } }),
+  ).catch(() => {});
+}
+function onPetTouch(p) {
+  if (!p || !S.user || p.from == S.user.id || view != 'cal') return;
+  const btn = document.querySelector('.pet-walker-left .pet-character-action');
+  if (btn && typeof petTouch == 'function') petTouch(btn);
+}
       async function clearPetReaction() {
         PET.reactions = (PET.reactions || []).filter((r) => r.by != S.user.id);
         render();
@@ -381,6 +392,8 @@
         CH = sb
           .channel('c-' + S.user.couple_id, { config: { presence: { key: notePresenceKey } } })
           .on('presence', { event: 'sync' }, syncNoteTypingPresence)
+          .on('broadcast', { event: 'pet_touch' }, (m) => onPetTouch(m.payload))
+          .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'pet_reactions' }, refresh)
           .on('postgres_changes', { event: '*', schema: 'public', table: 'events', filter: f }, refresh)
           .on('postgres_changes', { event: '*', schema: 'public', table: 'pet_reactions', filter: f }, refresh)
           .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'events' }, refresh)

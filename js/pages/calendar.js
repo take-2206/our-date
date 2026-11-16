@@ -94,22 +94,58 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
         return `<div class="main">${head(cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' }), t('shared'))}${dayCard()}${petCardHtml()}<div class="cg"><div class="card cal"><div class="cn"><button class="ib" data-a="mo" data-n="-1" aria-label="prev" style="width:40px;height:40px">${I.back}</button><b>${cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' })}</b><button class="ib" data-a="mo" data-n="1" aria-label="next" style="width:40px;height:40px;transform:scaleX(-1)">${I.back}</button></div><div class="g7 wk">${wk}</div><div class="g7">${cells.join('')}</div></div><div>${side}</div></div></div><button class="fab" data-a="new" aria-label="${t('add')}">+</button>`;
       }
 
+      // ---- Pet: chạm vào đối phương -> đổi sang ảnh boy_act / girl_act ----
+      const PET_ACT_MS = 1500;
+      ['boy.png', 'girl.png', 'boy_act.png', 'girl_act.png'].forEach((f) => {
+        const im = new Image();
+        im.src = './img/pet/' + f;
+      });
+
+      function petTouch(btn) {
+        const img = btn && btn.querySelector('img');
+        if (!img || btn.dataset.busy) return;
+        btn.dataset.busy = '1';
+        img.src = btn.dataset.act;
+        btn.classList.add('is-act');
+        setTimeout(() => {
+          img.src = btn.dataset.base;
+          btn.classList.remove('is-act');
+          delete btn.dataset.busy;
+        }, PET_ACT_MS);
+      }
+
+      // Tự xử lý click, không cần sửa file actions/core.
+      document.addEventListener('click', (ev) => {
+        const btn = ev.target.closest && ev.target.closest('[data-a="petTouch"]');
+        if (!btn) return;
+        petTouch(btn);
+        if (typeof sendPetTouch == 'function') sendPetTouch();
+      });
+
       function petCardHtml() {
         const fallback = { name: 'Mochi', reactions: [] };
         const pet = PET || fallback;
         const reactions = ['❤️', '😡', '🥺', '😴', '💔'];
+        const user = S.user || {};
         const other = partner();
         const people = [
-          { id: S.user.id, name: S.user.name, gender: S.user.gender || 'f' },
+          { id: user.id, name: user.name, gender: user.gender || 'f' },
           other || { id: 'partner', name: t('petPartner'), gender: me() == 'm' ? 'f' : 'm' },
         ];
         const character = (person, index) => {
           const gender = person.gender == 'm' ? 'm' : 'f';
           const image = gender == 'm' ? 'boy.png' : 'girl.png';
+          const actImage = gender == 'm' ? 'boy_act.png' : 'girl_act.png';
           const bubble = (pet.reactions || []).find((r) => r.by == person.id);
           const genderLabel = t(gender == 'm' ? 'petMale' : 'petFemale');
-          const ownBubble = person.id == S.user.id;
-          return `<div class="pet-walker pet-walker-${index == 0 ? 'left' : 'right'}" aria-label="${esc(person.name || genderLabel)}"><button class="pet-character-action" type="button" data-a="petReact" data-emoji="❤️" aria-label="${esc(t('petSend'))}"><img class="pet-character-image" src="./img/pet/${image}" alt="${esc(genderLabel)}"></button>${bubble ? `<div class="pet-chat-bubble" title="${esc(person.name || '')}"><span>${esc(bubble.emoji)}</span>${ownBubble ? `<button type="button" data-a="petClear" aria-label="${esc(t('petDeleteBubble'))}">×</button>` : ''}</div>` : ''}</div>`;
+          const ownBubble = person.id == user.id;
+          // Mình: gửi ❤️ như cũ. Đối phương: chạm -> đổi ảnh act.
+          const action = ownBubble
+            ? 'data-a="petReact" data-emoji="❤️"'
+            : 'data-a="petTouch"';
+          return `<div class="pet-walker pet-walker-${index == 0 ? 'left' : 'right'}" aria-label="${esc(person.name || genderLabel)}">
+          <button class="pet-character-action" type="button" ${action} data-base="./img/pet/${image}" data-act="./img/pet/${actImage}" aria-label="${esc(t('petSend'))}">
+          <img class="pet-character-image" src="./img/pet/${image}" alt="${esc(genderLabel)}"></button>${bubble ? `<div class="pet-chat-bubble" title="${esc(person.name || '')}"><span>${esc(bubble.emoji)}</span>${ownBubble ? `<button type="button" data-a="petClear" aria-label="${esc(t('petDeleteBubble'))}">×</button>` : ''}</div>` : ''}</div>`;
         };
         return `<section class="pet-card" aria-label="${esc(t('petKicker'))}"><div class="pet-top"><div><p class="pet-kicker">${esc(t('petKicker'))}</p><div class="pet-heading">${esc(pet.name || fallback.name)} <button type="button" class="pet-rename" data-a="petName" aria-label="${esc(t('petRename'))}">✎</button></div><p class="pet-hint">${esc(t('petSub'))}</p></div><span class="pet-hearts">♡ ♡ ♡</span></div><div class="pet-stage">${people.map(character).join('')}<span class="pet-spark">✦</span></div><div class="pet-care"><span class="pet-care-label">${esc(t('petSharedBubbles'))}</span></div><div class="pet-reactions">${reactions.map((e) => `<button type="button" data-a="petReact" data-emoji="${e}" aria-label="${esc(t('petReactOption').replace('{emoji}', e))}">${e}</button>`).join('')}</div></section>`;
       }

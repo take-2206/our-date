@@ -2141,6 +2141,8 @@
       .pet-reactions { display:flex; gap:7px; justify-content:center; margin-top:3px; }
       .pet-reactions button { width:38px; height:38px; border-radius:13px; border:1px solid rgba(255,105,180,.2); background:rgba(255,255,255,.055); font-size:19px; cursor:pointer; transition:transform .15s,background .15s; }
       .pet-reactions button:hover { transform:translateY(-2px); background:rgba(255,105,180,.15); }
+      .pet-character-action.is-act .pet-character-image { animation: petPop .4s ease; }
+@keyframes petPop { 50% { transform: scale(1.12) translateY(-6px); } }
       @keyframes wig {
         0%,
         100% {
