@@ -573,7 +573,9 @@ let PET = { name: "Mochi", reactions: [] };
           name = person.name || t('you'),
           mine = S.user && e.by == S.user.id,
           saving = String(e.id).startsWith('free-');
-        return `<article class="card free-day-card ${freeDayOwnerClass(e.by)}"><span class="free-day-icon" aria-hidden="true">☀</span><div><span class="chip">${t('freeDay')}</span><h2>${esc(t('freeDayBy').replace('{name}', name))}</h2></div>${mine && !saving ? `<button class="mini danger" data-a="freeRemove" data-id="${e.id}">${t('freeDayRemove')}</button>` : ''}</article>`;
+        return `<article class="card free-day-card ${freeDayOwnerClass(e.by)}">
+        <span class="free-day-icon" aria-hidden="true">${freeIcon(e)}</span>
+        <div><span class="chip">${t('freeDay')}</span><h2>${esc(t('freeDayBy').replace('{name}', name))}</h2></div>${mine && !saving ? `<button class="mini danger" data-a="freeRemove" data-id="${e.id}">${t('freeDayRemove')}</button>` : ''}</article>`;
       };
       /* Thông báo: mine() = do người ấy gửi, isR() = đã đọc chưa, unread() = các cái chưa đọc,
          ntx() = nội dung theo loại (lịch mới / đồng ý / từ chối) */

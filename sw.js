@@ -1,4 +1,4 @@
-const CACHE = 'lovesync-v1.50.6';
+const CACHE = 'lovesync-v1.50.7';
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -34,6 +34,8 @@ const APP_SHELL = [
   "./img/pet/boy_left.png",
   "./img/pet/boy_right.png",
   "./img/pet/girl_right.png",
+  "./img/pet/mini_boy.png",
+  "./img/pet/mini_girl.png",
 ];
 
 self.addEventListener("install", (event) => {
