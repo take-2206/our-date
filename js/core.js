@@ -1,6 +1,6 @@
 // LoveSync core module. Classic scripts share state declared in js/core.js.
 /* ===== 1. NGÔN NGỮ (vi / en). Thêm chữ mới = thêm cùng một khoá ở cả hai bên ===== */
-const APP_VERSION = 'v41';
+const APP_VERSION = 'v42';
 let PET = { name: "Mochi", reactions: [] };
       const D = {
         vi: {
@@ -23,6 +23,8 @@ let PET = { name: "Mochi", reactions: [] };
           dt: 'Ngày',
           tm: 'Giờ',
           pl: 'Địa điểm',
+          addPlace: 'Thêm địa điểm',
+          removePlace: 'Xoá địa điểm',
           save: 'Lưu',
           edit: 'Chỉnh sửa',
           saveChanges: 'Lưu thay đổi',
@@ -207,6 +209,8 @@ let PET = { name: "Mochi", reactions: [] };
           dt: 'Date',
           tm: 'Time',
           pl: 'Place',
+          addPlace: 'Add another place',
+          removePlace: 'Remove place',
           save: 'Save',
           edit: 'Edit',
           saveChanges: 'Save changes',
@@ -465,6 +469,12 @@ let PET = { name: "Mochi", reactions: [] };
       // t("khoá") lấy chữ theo ngôn ngữ; tx() cho phép nội dung dạng {k:"khoá"}; esc() chống chèn HTML
       const t = (k) => D[S.lang][k],
         tx = (v) => (typeof v == 'object' ? t(v.k) : v);
+      const eventPlaces = (value) =>
+          String(tx(value) || '')
+            .split(/\r?\n/)
+            .map((place) => place.trim())
+            .filter((place) => place && place != '—'),
+        eventPlaceText = (value) => eventPlaces(value).join(' · ');
       const esc = (s) =>
         String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
       // Avatar: AVF = ảnh nữ (img/girl.png), AVM = ảnh nam (img/boy.png), AVF0 = ảnh nữ nhúng sẵn dùng khi thiếu file
@@ -535,7 +545,7 @@ let PET = { name: "Mochi", reactions: [] };
           .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
       // Thẻ một buổi hẹn trong danh sách
       const evCard = (e) =>
-        `<button class="card h ev" data-a="ev" data-id="${e.id}"><div class="d">${fmt(e.date, { day: 'numeric' })}<small class="mono">${fmt(e.date, { month: 'short' })}</small></div><div class="i"><h2 style="font-size:15px;font-weight:800">${esc(tx(e.title))}</h2><p class="sub" style="font-size:12px">${e.time} · ${esc(tx(e.place))}</p></div>${e.st == 'pending' ? `<span class="chip">${t('wait')}</span>` : ic('hr')}</button>`;
+        `<button class="card h ev" data-a="ev" data-id="${e.id}"><div class="d">${fmt(e.date, { day: 'numeric' })}<small class="mono">${fmt(e.date, { month: 'short' })}</small></div><div class="i"><h2 style="font-size:15px;font-weight:800">${esc(tx(e.title))}</h2><p class="sub" style="font-size:12px">${e.time} · ${esc(eventPlaceText(e.place) || '—')}</p></div>${e.st == 'pending' ? `<span class="chip">${t('wait')}</span>` : ic('hr')}</button>`;
       /* Thông báo: mine() = do người ấy gửi, isR() = đã đọc chưa, unread() = các cái chưa đọc,
          ntx() = nội dung theo loại (lịch mới / đồng ý / từ chối) */
       const mine = () => C.nt.filter((n) => n.by != S.user.id).sort((a, b) => b.ts - a.ts);

@@ -343,7 +343,8 @@
         e.preventDefault();
         const f = e.target,
           k = f.dataset.f,
-          v = Object.fromEntries(new FormData(f));
+          formData = new FormData(f),
+          v = Object.fromEntries(formData);
         if (k == 'petText') {
           const text = String(v.text || '').trim();
           if (text) sendPetReaction(text);
@@ -352,13 +353,19 @@
           doAuth(f, v);
           return;
         } else if (k == 'ev') {
+          const place = formData
+            .getAll('place')
+            .map((value) => String(value).trim().slice(0, 120))
+            .filter(Boolean)
+            .slice(0, 8)
+            .join('\n');
           if (modal == 'edit') {
             const target = C.ev.find((x) => x.id == open),
               changes = {
                 title: v.title.trim(),
                 date: v.date,
                 time: v.time || '00:00',
-                place: v.place.trim(),
+                place,
               };
             if (!target) return;
             Object.assign(target, changes);
@@ -379,7 +386,7 @@
               title: v.title,
               date: v.date,
               time: v.time || '00:00',
-              place: v.place || '—',
+              place: place || '—',
               status: sd ? 'pending' : 'ok',
             };
           sb.from('events')
