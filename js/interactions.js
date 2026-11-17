@@ -350,7 +350,11 @@
           v = Object.fromEntries(formData);
         if (k == 'petText') {
           const text = String(v.text || '').trim();
-          if (text) sendPetReaction(text);
+          if (text) sendPetMessage(text);
+          return;
+        } else if (k == 'petMessage') {
+          const text = String(v.text || '').trim();
+          if (text) sendPetMessage(text);
           return;
         } else if (k == 'reset') {
           resetPassword(v);
@@ -570,6 +574,7 @@
           pmod = false;
           smod = false;
           dcmod = false;
+          petMessagesOpen = false;
           noteEdit = null;
           noteDraft = null;
           bell = false;

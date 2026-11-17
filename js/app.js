@@ -7,6 +7,10 @@
         }
         view = S.user ? 'cal' : 'auth';
         if (S.user && params.get('view') == 'notes') view = 'notes';
+        if (S.user && params.get('view') == 'pet-messages') {
+          view = 'cal';
+          petMessagesOpen = true;
+        }
         render();
         const q = params.get('ev');
         if (q || params.has('view')) {
@@ -32,7 +36,10 @@ function notifyApp(body, tag, type) {
               icon: './img/icons/app-icon-192.png',
               badge: './img/icons/app-icon-192.png',
               tag,
-              data: { url: type == 'open-notes' ? './?view=notes' : './', type: type || '' },
+              data: {
+                url: type == 'open-notes' ? './?view=notes' : type == 'open-pet-messages' ? './?view=pet-messages' : './',
+                type: type || '',
+              },
             }),
           )
           .catch(() => {});

@@ -19,6 +19,8 @@ function act(a, d, el) {
     return;
   if (a == "sclose" && el.classList.contains("mod") && event.target !== el)
     return;
+  if (a == "petMessagesClose" && el.classList.contains("mod") && event.target !== el)
+    return;
   if (a == "dcClose" && el.classList.contains("mod") && event.target !== el)
     return;
   if (a == "uclose" && el.classList.contains("mod") && event.target !== el)
@@ -55,6 +57,11 @@ function act(a, d, el) {
     return;
   } else if (a == "petReactionsToggle") {
     petReactionsOpen = !petReactionsOpen;
+  } else if (a == "petMessagesOpen") {
+    petMessagesOpen = true;
+    petReactionsOpen = false;
+  } else if (a == "petMessagesClose") {
+    petMessagesOpen = false;
   } else if (a == "petClear") {
     clearPetReaction();
     return;
