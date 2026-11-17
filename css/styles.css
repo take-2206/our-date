@@ -2765,10 +2765,29 @@ body.note-resizing * {
 }
 .pet-message-row {
   display: flex;
+  align-items: flex-end;
+  gap: 7px;
   justify-content: flex-start;
 }
 .pet-message-row.is-own {
   justify-content: flex-end;
+}
+.pet-message-avatar {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 105, 180, 0.28);
+  border-radius: 50%;
+  background: rgba(255, 105, 180, 0.1);
+}
+.pet-message-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.pet-message-row.is-own .pet-message-avatar {
+  order: 2;
 }
 .pet-message-bubble {
   max-width: 78%;
