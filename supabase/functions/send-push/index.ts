@@ -21,8 +21,16 @@ type Sub = {
 };
 type Ev = { id: number; couple_id: string; title: string; date: string; time: string | null; place: string | null; status: string | null };
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-push-secret',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
 const json = (o: unknown, status = 200) =>
-  new Response(JSON.stringify(o), { status, headers: { 'Content-Type': 'application/json' } });
+  new Response(JSON.stringify(o), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
 
 async function send(sub: Sub, payload: Record<string, unknown>) {
   try {
@@ -248,6 +256,7 @@ async function reminders() {
 }
 
 Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   const body = await req.json().catch(() => ({}));
   try {
     if (body.type === 'note') return json(await onNote(req, body));
