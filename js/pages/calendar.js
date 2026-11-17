@@ -162,6 +162,17 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
 
       // Walk the two characters across the stage using the supplied sprite frames.
       const PET_ACT_MS = 900;
+      const petWalkerState = [
+        { x: 31, direction: 1, frame: 0, actUntil: 0 },
+        { x: 69, direction: -1, frame: 0, actUntil: 0 },
+      ];
+      const petSnowTiming = [
+        [9, 4], [15, 10], [23, 17], [12, 9.5], [18, 3.5], [27, 8],
+      ];
+      function petSnowHtml() {
+        const now = performance.now() / 1000;
+        return `<div class="pet-snow" aria-hidden="true">${petSnowTiming.map(([duration, offset]) => `<i style="animation-delay:-${(now + offset).toFixed(3)}s;animation-duration:${duration}s"></i>`).join('')}</div>`;
+      }
       const petFrames = {
         m: { left: ['boy_walk_left_0.png', 'boy_walk_left_1.png', 'boy_walk_left_2.png'], right: ['boy_walk_right_0.png', 'boy_walk_right_1.png', 'boy_walk_right_2.png'], act: 'boy_act.png' },
         f: { left: ['girl_walk_left_0.png', 'girl_walk_left_1.png', 'girl_walk_left_2.png'], right: ['girl_walk_right_0.png', 'girl_walk_right_1.png', 'girl_walk_right_2.png'], act: 'girl_act.png' },
@@ -173,9 +184,11 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
 
       function setPetFrame(walker, frameIndex = 0) {
         const image = walker.querySelector('.pet-character-image');
-        if (!image || walker.dataset.touching) return;
+        const state = petWalkerState[Number(walker.dataset.index)];
+        if (!image || !state || state.actUntil > Date.now()) return;
         const frames = petFrames[walker.dataset.gender] || petFrames.f;
-        const direction = Number(walker.dataset.direction) > 0 ? 'right' : 'left';
+        const direction = state.direction > 0 ? 'right' : 'left';
+        state.frame = frameIndex % frames[direction].length;
         const frame = frames[direction][frameIndex % frames[direction].length];
         image.src = './img/pet/' + frame;
         const button = walker.querySelector('.pet-character-action');
@@ -183,17 +196,20 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
       }
 
       function petAct(walker) {
-        if (!walker || walker.dataset.touching) return;
+        const index = Number(walker && walker.dataset.index),
+          state = petWalkerState[index];
+        if (!walker || !state || state.actUntil > Date.now()) return;
         const frames = petFrames[walker.dataset.gender] || petFrames.f;
         const image = walker.querySelector('.pet-character-image');
         if (!image) return;
-        walker.dataset.touching = '1';
+        state.actUntil = Date.now() + PET_ACT_MS;
         image.src = './img/pet/' + frames.act;
         walker.querySelector('.pet-character-action')?.classList.add('is-act');
         setTimeout(() => {
-          delete walker.dataset.touching;
-          walker.querySelector('.pet-character-action')?.classList.remove('is-act');
-          setPetFrame(walker);
+          state.actUntil = 0;
+          const current = document.querySelector(`.pet-walker[data-index="${index}"]`);
+          current?.querySelector('.pet-character-action')?.classList.remove('is-act');
+          if (current) setPetFrame(current, state.frame);
         }, PET_ACT_MS);
       }
 
@@ -203,19 +219,17 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
         if (!stage) return;
         const walkers = [...stage.querySelectorAll('.pet-walker')];
         if (walkers.length !== 2) return;
-        const stageWidth = stage.clientWidth || 1;
         walkers.forEach((walker, index) => {
-          if (walker.dataset.x == null) {
-            walker.dataset.x = index === 0 ? '31' : '69';
-            walker.dataset.direction = index === 0 ? '1' : '-1';
-          }
-          let x = Number(walker.dataset.x);
-          let direction = Number(walker.dataset.direction);
+          const state = petWalkerState[index];
+          let x = state.x;
+          let direction = state.direction;
           x += direction * 0.48;
           if (x <= 18 || x >= 82) {
             direction *= -1;
             x = Math.max(18, Math.min(82, x));
           }
+          state.x = x;
+          state.direction = direction;
           walker.dataset.x = String(x);
           walker.dataset.direction = String(direction);
           walker.style.left = x + '%';
@@ -251,8 +265,10 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
         ];
         const character = (person, index) => {
           const gender = person.gender == 'm' ? 'm' : 'f';
-          const direction = index == 0 ? '1' : '-1';
-          const image = petFrames[gender][index == 0 ? 'right' : 'left'][0];
+          const state = petWalkerState[index];
+          const direction = state.direction > 0 ? 'right' : 'left';
+          const acting = state.actUntil > Date.now();
+          const image = acting ? petFrames[gender].act : petFrames[gender][direction][state.frame % 3];
           const bubble = (pet.reactions || []).find((r) => r.by == person.id);
           const genderLabel = t(gender == 'm' ? 'petMale' : 'petFemale');
           const ownBubble = person.id == user.id;
@@ -261,12 +277,12 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           const action = ownBubble
             ? 'data-a="petReact" data-emoji="❤️"'
             : 'data-a="petTouch"';
-          return `<div class="pet-walker pet-walker-${index == 0 ? 'left' : 'right'}" data-gender="${gender}" data-x="${index == 0 ? '31' : '69'}" data-direction="${direction}" aria-label="${esc(person.name || genderLabel)}">
+          return `<div class="pet-walker pet-walker-${index == 0 ? 'left' : 'right'}" style="left:${state.x}%" data-index="${index}" data-gender="${gender}" data-x="${state.x}" data-direction="${state.direction}" aria-label="${esc(person.name || genderLabel)}">
           <button class="pet-character-action" type="button" ${action} data-base="./img/pet/${image}" data-act="./img/pet/${gender == 'm' ? 'boy_act.png' : 'girl_act.png'}" aria-label="${esc(t('petSend'))}">
           <img class="pet-character-image" src="./img/pet/${image}" alt="${esc(genderLabel)}"></button>${bubble ? `<div class="pet-chat-bubble${isTextBubble ? ' is-text' : ''}" title="${esc(person.name || '')}"><span>${esc(bubble.emoji)}</span>${ownBubble ? `<button type="button" data-a="petClear" aria-label="${esc(t('petDeleteBubble'))}">×</button>` : ''}</div>` : ''}</div>`;
         };
         return `<section class="pet-card" aria-label="${esc(t('petKicker'))}">
-          <div class="pet-snow" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          ${petSnowHtml()}
           <div class="pet-top"><div><p class="pet-kicker">${esc(t('petKicker'))}</p><div class="pet-heading">${esc(pet.name || fallback.name)} <button type="button" class="pet-rename" data-a="petName" aria-label="${esc(t('petRename'))}">&#9998;</button></div><p class="pet-hint">${esc(t('petSub'))}</p></div><span class="pet-hearts">&#9825; &#9825; &#9825;</span></div>
           <div class="pet-stage">${people.map(character).join('')}</div>
           <div class="pet-chat">
