@@ -475,6 +475,67 @@ button {
 .t:hover {
   filter: drop-shadow(0 0 8px var(--pk));
 }
+
+/* Tic Tac Toe */
+.ttt-card {
+  width: min(100%, 540px);
+  margin: 0 auto;
+  padding: clamp(16px, 4vw, 26px);
+  border-radius: 22px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(255, 105, 180, 0.13), transparent 70%), var(--card);
+}
+.ttt-scoreboard {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+}
+.ttt-score-player,
+.ttt-score-draw {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.035);
+}
+.ttt-score-player:last-child { justify-content: flex-end; }
+.ttt-score-player.active { border-color: var(--pk); box-shadow: 0 0 14px rgba(255, 105, 180, 0.16); }
+.ttt-mark { width: 34px; height: 34px; flex: none; object-fit: contain; }
+.ttt-x { color: var(--cy); }
+.ttt-o { color: var(--pk); }
+.ttt-player-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 800; }
+.ttt-score-player b, .ttt-score-draw b { margin-left: auto; font-family: var(--mono, monospace); color: var(--pk); }
+.ttt-score-draw { flex-direction: column; gap: 1px; padding: 7px 10px; color: var(--mut); font-size: 10px; }
+.ttt-score-draw b { margin: 0; }
+.ttt-status { min-height: 24px; margin: 20px 0 12px; text-align: center; color: var(--pk2); font-weight: 800; }
+.ttt-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; width: min(100%, 360px); margin: 0 auto; }
+.ttt-cell { aspect-ratio: 1; display: grid; place-items: center; padding: 0; border: 1px solid var(--line); border-radius: 17px; background: rgba(255,255,255,.045); color: #fff; font-size: clamp(44px, 14vw, 70px); line-height: 1; font-weight: 900; cursor: pointer; transition: background .16s, border-color .16s, transform .16s; }
+.ttt-cell:not(:disabled):hover { transform: translateY(-2px); border-color: var(--pk); background: rgba(255,105,180,.1); }
+.ttt-cell:disabled { cursor: default; }
+.ttt-cell.ttt-x { color: var(--cy); }
+.ttt-cell.ttt-o { color: var(--pk); }
+.ttt-token { width: 76%; height: 76%; object-fit: contain; pointer-events: none; }
+.ttt-cell.win { border-color: var(--pk); background: rgba(255,105,180,.17); box-shadow: 0 0 18px rgba(255,105,180,.22); }
+.ttt-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+.ttt-actions .btn { min-height: 42px; }
+.ttt-actions .btn:disabled { opacity: .55; cursor: wait; box-shadow: none; }
+.ttt-setup h2 { color: var(--pk2); font-size: 16px; }
+.ttt-setup p { margin-top: 12px; overflow-wrap: anywhere; font-size: 12px; }
+@media (max-width: 600px) {
+  .tb .t { flex: 1; min-width: 0; padding-inline: 1px; font-size: 9px; }
+  .tb .t-label { font-size: 9px; white-space: nowrap; }
+  .ttt-card { padding: 14px; }
+  .ttt-scoreboard { gap: 5px; }
+  .ttt-score-player { gap: 5px; padding: 8px 6px; }
+  .ttt-mark { width: 27px; height: 27px; }
+  .ttt-player-name { font-size: 10px; }
+  .ttt-score-draw { padding-inline: 6px; }
+  .ttt-board { gap: 7px; }
+  .ttt-cell { border-radius: 13px; }
+}
 .cg {
   display: grid;
   gap: 16px;
