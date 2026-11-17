@@ -11,19 +11,20 @@
       function vAlbum() {
         const h = head(t('album'), t('albumSub'));
         if (photoError) return `<div class="main">${h}<div class="card note-error">${t('phSetup')}</div></div>`;
-        if (albumSel && !albums().includes(albumSel)) albumSel = '';
-        const list = phs(),
+        if (albumSel && !albums().includes(albumSel)) albumSel = null;
+        const list = albumSel === null ? [] : phs(),
           chips = `<div class="ab-bar" role="group" aria-label="${t('album')}">${['', ...albums()]
             .map((a) => {
               const n = a ? C.photos.filter((p) => p.album == a).length : C.photos.length;
-              return `<button class="ab-chip${albumSel == a ? ' on' : ''}" data-a="albumSel" data-al="${esc(a)}" aria-pressed="${albumSel == a}">${a ? esc(a) : t('phAll')} · ${n}</button>`;
+              const name = a || t('phAll');
+              return `<button class="ab-folder${albumSel === a ? ' on' : ''}" data-a="albumSel" data-al="${esc(a)}" aria-label="${esc(name)} · ${n}" aria-pressed="${albumSel === a}"><img src="./img/file.png" alt=""><span>${esc(name)}</span><small>${n}</small></button>`;
             })
             .join('')}</div>`,
           prog = upBusy
             ? `<div class="card ab-prog" role="status"><span>${t('phBusy')}</span><div class="ab-meter"><i style="width:${Math.round((upBusy.n / upBusy.total) * 100)}%"></i></div><span class="mono">${upBusy.n}/${upBusy.total}</span></div>`
             : '',
           days = [...new Set(list.map((p) => p.date))],
-          grid = list.length
+          grid = albumSel === null ? '' : list.length
             ? days
                 .map((k) => {
                   const g = list.filter((p) => p.date == k),
@@ -37,12 +38,12 @@
                 })
                 .join('')
             : `<div class="card ab-empty">${I.photo}<h2 style="font-size:16px;font-weight:800">${t('phNone')}</h2><p class="sub" style="font-size:13px">${t('phNoneH')}</p></div>`;
-        return `<div class="main">${h}<div class="ab-act"><button class="btn b1" data-a="pick"${upBusy ? ' disabled' : ''}>${I.photo} ${t('phAdd')}</button></div>${prog}${C.photos.length ? chips : ''}${grid}</div>`;
+        return `<div class="main">${h}<div class="ab-act"><button class="btn b1" data-a="pick"${upBusy ? ' disabled' : ''}>${I.photo} ${t('phAdd')}</button></div>${prog}${chips}${grid}</div>`;
       }
       // Form chọn album + chú thích trước khi tải ảnh lên
       function vUp() {
         const n = umod.files.length;
-        return `<div class="mod" data-a="uclose"><form class="card" data-f="photo" role="dialog" aria-label="${t('phAdd')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:6px">${t('phAdd')}</h2><p class="sub" style="font-size:12px;margin-bottom:14px">${t('phN').replace('{n}', n)}</p><div class="ab-prev">${umod.urls.map((u) => `<img src="${u}" alt="">`).join('')}${n > umod.urls.length ? `<b>+${n - umod.urls.length}</b>` : ''}</div><div class="fl"><label class="lb" for="pa">${t('phAlbum')}</label><input class="in" id="pa" name="album" list="ab-list" maxlength="30" autocomplete="off" value="${esc(albumSel)}" placeholder="${t('phAlbumPh')}"><datalist id="ab-list">${albums()
+        return `<div class="mod" data-a="uclose"><form class="card" data-f="photo" role="dialog" aria-label="${t('phAdd')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:6px">${t('phAdd')}</h2><p class="sub" style="font-size:12px;margin-bottom:14px">${t('phN').replace('{n}', n)}</p><div class="ab-prev">${umod.urls.map((u) => `<img src="${u}" alt="">`).join('')}${n > umod.urls.length ? `<b>+${n - umod.urls.length}</b>` : ''}</div><div class="fl"><label class="lb" for="pa">${t('phAlbum')}</label><input class="in" id="pa" name="album" list="ab-list" maxlength="30" autocomplete="off" value="${esc(albumSel || String())}" placeholder="${t('phAlbumPh')}"><datalist id="ab-list">${albums()
           .map((a) => `<option value="${esc(a)}"></option>`)
           .join('')}</datalist></div><div class="fl"><label class="lb" for="pd">${t('phDate')}</label><input class="in" id="pd" name="date" type="date" data-calendar inputmode="none" required value="${key(new Date())}"></div><div class="fl"><label class="lb" for="pp">${t('phPlace')}</label><input class="in" id="pp" name="place" maxlength="60" autocomplete="off" list="pl-list" placeholder="${t('phPlaceIPh')}"><datalist id="pl-list">${[...new Set(C.photos.map((x) => x.place).filter(Boolean))].map((a) => `<option value="${esc(a)}"></option>`).join('')}</datalist></div>${n == 1 ? `<div class="fl"><label class="lb" for="pc">${t('phCap')}</label><input class="in" id="pc" name="caption" maxlength="120" placeholder="${t('phCapPh')}"></div>` : ''}<div class="row2"><button type="button" class="btn b2" data-a="uclose">${t('cancel')}</button><button class="btn b1">${t('save')}</button></div></form></div>`;
       }

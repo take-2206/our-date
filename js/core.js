@@ -1,7 +1,8 @@
 // LoveSync core module. Classic scripts share state declared in js/core.js.
 /* ===== 1. NGÔN NGỮ (vi / en). Thêm chữ mới = thêm cùng một khoá ở cả hai bên ===== */
 const APP_VERSION = '1.50.6';
-let PET = { name: "Mochi", reactions: [] };
+let PET = { name: "MINI CHIBI", reactions: [] };
+let petReactionsOpen = false;
       const D = {
         vi: {
           cal: 'Lịch',
@@ -45,7 +46,6 @@ let PET = { name: "Mochi", reactions: [] };
           acc: 'tài khoản',
           nt: 'thông báo',
           n1: 'Nhắc trước 1 ngày',
-          n2: 'Nhắc trước 1 giờ',
           n3: 'Tin từ người ấy',
           pushT: 'Thông báo về điện thoại',
           pushHint: 'Nhắc hẹn và tin từ người ấy sẽ gửi về máy này, kể cả khi đã đóng app.',
@@ -66,6 +66,7 @@ let PET = { name: "Mochi", reactions: [] };
           dn: 'Tên hiển thị',
           pfFail: 'Không lưu được. Hãy kiểm tra quyền UPDATE của bảng profiles trên Supabase.',
           dc: 'ngày bên nhau',
+          dcUnit: 'ngày',
           dcSet: 'Đặt ngày bắt đầu yêu',
           dcFrom: 'từ',
           dcNext: 'còn {n} ngày nữa đến ngày thứ {m}',
@@ -186,10 +187,10 @@ let PET = { name: "Mochi", reactions: [] };
           petMale: 'Nhân vật nam',
           petFemale: 'Nhân vật nữ',
           petSend: 'Gửi cảm xúc cho pet',
+          petReactionsToggle: 'Mở cảm xúc',
           petReactOption: 'Gửi {emoji}',
           petNamePrompt: 'Đặt tên cho pet chung của hai bạn:',
           petDeleteBubble: 'Xóa bubble của bạn',
-          petSharedBubbles: 'Mỗi người có bubble riêng — cả hai cùng thấy',
           petTextPlaceholder: 'Nhắn lời gì cho pet...',
           petTextSend: 'Gửi',
           cfg: 'Chưa điền SUPABASE_URL và SUPABASE_KEY trong js/core.js.',
@@ -236,7 +237,6 @@ let PET = { name: "Mochi", reactions: [] };
           acc: 'account',
           nt: 'notifications',
           n1: 'Remind 1 day before',
-          n2: 'Remind 1 hour before',
           n3: 'Messages from partner',
           pushT: 'Phone notifications',
           pushHint: 'Reminders and messages from your partner are sent to this device, even when the app is closed.',
@@ -257,6 +257,7 @@ let PET = { name: "Mochi", reactions: [] };
           dn: 'Display name',
           pfFail: 'Could not save. Check the UPDATE policy on the profiles table in Supabase.',
           dc: 'days together',
+          dcUnit: 'days',
           dcSet: 'Set your start date',
           dcFrom: 'since',
           dcNext: '{n} days until day {m}',
@@ -377,10 +378,11 @@ let PET = { name: "Mochi", reactions: [] };
           petMale: 'Male character',
           petFemale: 'Female character',
           petSend: 'Send a reaction to the pet',
+          petReactionsToggle: 'Show reactions',
           petReactOption: 'Send {emoji}',
           petNamePrompt: 'Name your shared pet:',
           petDeleteBubble: 'Remove your bubble',
-          petSharedBubbles: 'Each person has a bubble — both can see them',
+
           petTextPlaceholder: 'Write a message for your pet...',
           petTextSend: 'Send',
           cfg: 'SUPABASE_URL and SUPABASE_KEY are not set in js/core.js.',
@@ -423,7 +425,8 @@ let PET = { name: "Mochi", reactions: [] };
       try {
         S = JSON.parse(localStorage.getItem('ls')) || {};
       } catch (e) {}
-      S = { lang: S.lang || 'vi', n: S.v == 2 ? S.n : [1, 1, 1], user: null };
+      S = { lang: S.lang || 'vi', n: S.v == 2 && Array.isArray(S.n) ? S.n : [1, 0, 1], user: null };
+      S.n[1] = 0;
       // Buổi hẹn được phép hiện: đã đồng ý, hoặc đang chờ nhưng do chính mình tạo (bị từ chối thì ẩn)
       const FREE_DAY_TITLE = '__LOVESYNC_FREE_DAY__',
         isFreeDay = (event) => event && event.title == FREE_DAY_TITLE,
@@ -443,6 +446,7 @@ let PET = { name: "Mochi", reactions: [] };
           localStorage.setItem('ls', JSON.stringify({ v: 2, lang: S.lang, n: S.n }));
         } catch (e) {}
       };
+      save();
       /* Trạng thái giao diện:
          view = màn hình (boot/auth/cal/det/set), msg = lỗi trên form, P = hồ sơ hai người,
          CH = kênh realtime, mode = tab đăng nhập/đăng ký, cur = tháng đang xem,
@@ -476,7 +480,7 @@ let PET = { name: "Mochi", reactions: [] };
         appUpdateReady = false,
         appUpdateApplying = false,
         appUpdateRegistration = null,
-        albumSel = '',
+        albumSel = null,
         albumFocus = null,
         pushOn = false,
         pushBusy = false,
@@ -594,13 +598,13 @@ let PET = { name: "Mochi", reactions: [] };
             : f.format(Math.round(m / 1440), 'day');
       };
       // Phần đầu mỗi màn hình: tiêu đề + chuông (số chưa đọc) + avatar hai người
-      const head = (title, sub) => {
+      const head = (title, sub, coupleExtra = '') => {
         const u = unread().length,
           ups = up()
             .filter((e) => (parse(e.date) - today0()) / 864e5 <= 7)
             .slice(0, 3),
           ms = mine().slice(0, 5);
-        return `<header class="top"><div><p class="mono sub" style="font-size:11px">&gt; ${sub}</p><h1 class="px">${title}</h1></div><div class="r"><button class="ib" data-a="bell" aria-label="${t('nt')}${u ? ' (' + u + ')' : ''}" aria-expanded="${bell}">${I.bell}${u ? `<i class="bd">${u}</i>` : ''}</button><div class="pair couple-pair">${coupleAvatar()}</div>${
+        return `<header class="top"><div><p class="mono sub" style="font-size:11px">&gt; ${sub}</p><h1 class="px">${title}</h1></div><div class="r"><button class="ib" data-a="bell" aria-label="${t('nt')}${u ? ' (' + u + ')' : ''}" aria-expanded="${bell}">${I.bell}${u ? `<i class="bd">${u}</i>` : ''}</button><div class="pair couple-pair${coupleExtra ? ' head-couple' : ''}">${coupleAvatar()}${coupleExtra}</div>${
           bell
             ? `<div class="card pop" role="dialog">${
                 ms

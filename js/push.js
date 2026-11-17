@@ -29,7 +29,7 @@ const VAPID_PUBLIC = 'BIol42oCVVxoqcBVueyTLai3kV8qseeVBYozCu5SiUqb_0G33VrVVec7dF
             p_lang: S.lang,
             p_tz: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Ho_Chi_Minh',
             p_n1: !!S.n[0],
-            p_n2: !!S.n[1],
+            p_n2: false,
             p_n3: !!S.n[2],
           });
         if (r.error) throw r.error;
