@@ -5898,8 +5898,11 @@ body.note-resizing * {
 }
 
 /* Keep the pet messenger above the pet scene and centered in the viewport. */
-.mod.pet-message-modal {
+.mod {
   z-index: 50;
+}
+.mod.pet-message-modal {
+  z-index: 60;
   align-items: center;
   justify-content: center;
   padding: max(12px, env(safe-area-inset-top)) 12px
