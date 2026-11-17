@@ -264,6 +264,17 @@ function act(a, d, el) {
       .update({ deleted_at: new Date().toISOString(), deleted_by: S.user.id })
       .eq("id", freeDay.id)
       .then(({ error }) => (error ? say(error.message) : refresh()));
+  } else if (a == "tttMove") {
+    const index = Number(d.i);
+    if (!Number.isInteger(index) || index < 0 || index > 8 || !TTT.ready || !TTT.playerO) return;
+    playTttMove(index);
+    return;
+  } else if (a == "tttNewRound") {
+    startTttRound(false);
+    return;
+  } else if (a == "tttResetScore") {
+    startTttRound(true);
+    return;
   } else if (a == "new") modal = "new";
   else if (a == "edit") modal = "edit";
   else if (a == "todoEdit") todoEdit = Number(d.i);

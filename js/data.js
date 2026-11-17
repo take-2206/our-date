@@ -171,6 +171,53 @@
           }
         } catch (x) {}
       }
+      function applyTttGame(game) {
+        if (!game || !Array.isArray(game.board) || game.board.length != 9) return;
+        TTT = {
+          ...TTT,
+          board: game.board.map((mark) => (mark == 'X' || mark == 'O' ? mark : '')),
+          turn: game.turn == 'O' ? 'O' : 'X',
+          winner: game.winner || '',
+          draw: !!game.is_draw,
+          winLine: Array.isArray(game.win_line) ? game.win_line.map(Number) : [],
+          scores: { X: 0, O: 0, draws: 0, ...(game.scores || {}) },
+          playerX: game.player_x || null,
+          playerO: game.player_o || null,
+          ready: true,
+          busy: TTT.busy,
+          error: '',
+        };
+      }
+      async function loadTttGame() {
+        try {
+          const { data, error } = await sb.rpc('ttt_get_or_create_game');
+          if (error) throw error;
+          applyTttGame(data);
+        } catch (error) {
+          TTT.ready = false;
+          TTT.error = error.message || String(error);
+        }
+      }
+      async function updateTttGame(rpc, args) {
+        if (!TTT.ready || TTT.busy) return;
+        TTT.busy = true;
+        render();
+        try {
+          const { data, error } = await sb.rpc(rpc, args);
+          if (error) throw error;
+          applyTttGame(data);
+        } catch (error) {
+          TTT.busy = false;
+          say(error.message || String(error));
+        }
+        render();
+      }
+      function playTttMove(cell) {
+        return updateTttGame('ttt_make_move', { p_cell: cell });
+      }
+      function startTttRound(resetScore = false) {
+        return updateTttGame('ttt_new_round', { p_reset_score: resetScore });
+      }
       async function loadC() {
         await Promise.all([purgeExpiredTrash(), purgeExpiredFreeDays()]);
         loadLocalPet();
@@ -205,6 +252,7 @@
         C.since = (!cp.error && cp.data && cp.data.start_date) || ls || '';
         P = {};
         (pf.data || []).forEach((x) => (P[x.id] = x));
+        await loadTttGame();
         C.ev = (ev.data || []).map(toE);
         C.nt = (nt.data || []).map(toN);
         C.notes = (notes.data || []).map(toNote);
@@ -432,6 +480,14 @@ function onPetTouch(p) {
           .on('presence', { event: 'sync' }, syncNoteTypingPresence)
           .on('broadcast', { event: 'pet_touch' }, (m) => onPetTouch(m.payload))
           .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'pet_reactions' }, refresh)
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tic_tac_toe_games', filter: f }, (change) => {
+            applyTttGame(change.new);
+            if (view == 'game') render();
+          })
+          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tic_tac_toe_games', filter: f }, (change) => {
+            applyTttGame(change.new);
+            if (view == 'game') render();
+          })
           .on('postgres_changes', { event: '*', schema: 'public', table: 'events', filter: f }, refresh)
           .on('postgres_changes', { event: '*', schema: 'public', table: 'pet_reactions', filter: f }, refresh)
           .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'events' }, refresh)
