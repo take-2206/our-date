@@ -1,5 +1,6 @@
 // LoveSync render module. Classic scripts share state declared in js/core.js.
 function render() {
+        if (typeof consumeDeferredRefresh == 'function') consumeDeferredRefresh();
         document.documentElement.lang = S.lang;
         const content =
           view == 'boot'

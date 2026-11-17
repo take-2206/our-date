@@ -2588,6 +2588,14 @@ body.note-resizing * {
   position: relative;
   z-index: 2;
 }
+.pet-card .pet-chat {
+  z-index: 10;
+}
+.pet-card .pet-reactions,
+.pet-card .pet-reactions button,
+.pet-card .pet-reactions-toggle {
+  pointer-events: auto;
+}
 .pet-snow {
   position: absolute;
   z-index: 1;
