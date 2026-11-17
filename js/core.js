@@ -1,6 +1,6 @@
 // LoveSync core module. Classic scripts share state declared in js/core.js.
 /* ===== 1. NGÔN NGỮ (vi / en). Thêm chữ mới = thêm cùng một khoá ở cả hai bên ===== */
-const APP_VERSION = '1.50.6';
+const APP_VERSION = '1.50.7';
 let PET = { name: "MINI CHIBI", reactions: [] };
 let petReactionsOpen = false;
       const D = {
@@ -14,6 +14,16 @@ let petReactionsOpen = false;
           em: 'Email',
           pw: 'Mật khẩu',
           forgot: 'Quên mật khẩu?',
+          resetTitle: 'Đặt lại mật khẩu',
+          resetIntro: 'Nhập tên đăng nhập và mã kết nối của hai bạn để chọn mật khẩu mới.',
+          resetCode: 'Mã kết nối',
+          newPw: 'Mật khẩu mới',
+          confirmPw: 'Nhập lại mật khẩu mới',
+          resetAction: 'Đổi mật khẩu',
+          resetBack: 'Quay lại đăng nhập',
+          resetSuccess: 'Đã đổi mật khẩu. Bạn có thể đăng nhập ngay.',
+          resetMismatch: 'Hai mật khẩu chưa khớp.',
+          resetFailed: 'Không thể xác minh tên đăng nhập và mã kết nối.',
           invite: 'Nhập mã mời của người ấy',
           soon: 'sắp tới',
           noUpcoming: 'Không còn buổi hẹn sắp tới',
@@ -205,6 +215,16 @@ let petReactionsOpen = false;
           em: 'Email',
           pw: 'Password',
           forgot: 'Forgot password?',
+          resetTitle: 'Reset password',
+          resetIntro: 'Enter your username and your shared invite code to choose a new password.',
+          resetCode: 'Invite code',
+          newPw: 'New password',
+          confirmPw: 'Confirm new password',
+          resetAction: 'Change password',
+          resetBack: 'Back to log in',
+          resetSuccess: 'Password changed. You can log in now.',
+          resetMismatch: 'The passwords do not match.',
+          resetFailed: 'We could not verify that username and invite code.',
           invite: 'Enter your partner’s invite code',
           soon: 'upcoming',
           noUpcoming: 'No more upcoming dates',

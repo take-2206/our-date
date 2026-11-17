@@ -497,6 +497,40 @@ function onPetTouch(p) {
         }
         render();
       }
+
+      async function resetPassword(v) {
+        msg = '';
+        if (!CFG) {
+          msg = t('cfg');
+          return render();
+        }
+        const username = String(v.username || '').trim(),
+          code = String(v.code || '').trim().toUpperCase(),
+          password = String(v.password || ''),
+          confirm = String(v.confirm || '');
+        if (slug(username).length < 3) {
+          msg = t('badName');
+          return render();
+        }
+        if (password !== confirm) {
+          msg = t('resetMismatch');
+          return render();
+        }
+        try {
+          const { error } = await sb.functions.invoke('reset-password', {
+            body: { username, code, password },
+          });
+          if (error) {
+            msg = t('resetFailed');
+            return render();
+          }
+          mode = 'in';
+          msg = t('resetSuccess');
+        } catch (x) {
+          msg = t('resetFailed');
+        }
+        render();
+      }
       /* ===== THÔNG BÁO ĐẨY (Web Push) =====
          Dán khóa công khai VAPID (tạo bằng: npx web-push generate-vapid-keys) vào VAPID_PUBLIC.
          Máy được đăng ký qua hàm save_push_subscription trong Supabase (xem supabase-push.sql). */

@@ -240,9 +240,8 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           <img class="pet-character-image" src="./img/pet/${image}" alt="${esc(genderLabel)}"></button>${bubble ? `<div class="pet-chat-bubble${isTextBubble ? ' is-text' : ''}" title="${esc(person.name || '')}"><span>${esc(bubble.emoji)}</span>${ownBubble ? `<button type="button" data-a="petClear" aria-label="${esc(t('petDeleteBubble'))}">×</button>` : ''}</div>` : ''}</div>`;
         };
         return `<section class="pet-card" aria-label="${esc(t('petKicker'))}">
-          <div class="pet-top"><div><p class="pet-kicker">${esc(t('petKicker'))}</p><div class="pet-heading">${esc(pet.name || fallback.name)} <button type="button" class="pet-rename" data-a="petName" aria-label="${esc(t('petRename'))}">✎</button></div><p class="pet-hint">${esc(t('petSub'))}</p></div><span class="pet-hearts">❤️❤️❤️</span></div>
+          <div class="pet-top"><div><p class="pet-kicker">${esc(t('petKicker'))}</p><div class="pet-heading">${esc(pet.name || fallback.name)} <button type="button" class="pet-rename" data-a="petName" aria-label="${esc(t('petRename'))}">&#9998;</button></div><p class="pet-hint">${esc(t('petSub'))}</p></div><span class="pet-hearts">&#9825; &#9825; &#9825;</span></div>
           <div class="pet-stage">${people.map(character).join('')}</div>
-          <div class="pet-care"></div>
           <div class="pet-chat">
             <form class="pet-text-form" data-f="petText">
               <input class="in" type="text" name="text" maxlength="120" autocomplete="off" placeholder="${esc(t('petTextPlaceholder'))}" aria-label="${esc(t('petTextPlaceholder'))}" required>
