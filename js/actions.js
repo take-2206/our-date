@@ -37,6 +37,12 @@ function act(a, d, el) {
   } else if (a == "mode") {
     mode = d.m;
     msg = "";
+  } else if (a == "forgot") {
+    mode = "reset";
+    msg = "";
+  } else if (a == "resetBack") {
+    mode = "in";
+    msg = "";
   } else if (a == "day") {
     sel = d.k;
     const p = parse(d.k);

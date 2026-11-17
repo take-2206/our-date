@@ -1545,6 +1545,18 @@ body.note-resizing * {
   margin: 0;
   width: auto;
 }
+
+.auth-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--pk);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .pop {
   max-height: 70vh;
   overflow: auto;
