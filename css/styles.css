@@ -5985,3 +5985,8 @@ body.note-resizing * {
     animation: none !important;
   }
 }
+
+/* Keep dialogs and the calendar add sheet above the pet chat composer. */
+.mod {
+  z-index: 100;
+}
