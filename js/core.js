@@ -3,11 +3,37 @@
 const APP_VERSION = '1.50.21';
 let PET = { name: "MINI CHIBI", reactions: [] };
 let petReactionsOpen = false;
+let TTT = {
+  board: Array(9).fill(''),
+  turn: 'X',
+  winner: '',
+  draw: false,
+  winLine: [],
+  scores: { X: 0, O: 0, draws: 0 },
+  playerX: null,
+  playerO: null,
+  ready: false,
+  busy: false,
+  error: '',
+};
       const D = {
         vi: {
           cal: 'Lịch',
           det: 'Buổi hẹn',
           notes: 'Ghi chú',
+          game: 'Trò chơi',
+          gameSub: 'Chơi cùng người ấy trên hai thiết bị khác nhau.',
+          gameSetup: 'Chạy tệp supabase-tictactoe.sql trong Supabase SQL Editor để bật game online.',
+          gameWaitPartner: 'Đang chờ người ấy mở game lần đầu…',
+          gameYourTurn: 'Đến lượt bạn! Hãy chọn một ô.',
+          gameTurn: 'Lượt của {name}',
+          gameWin: '{name} thắng!',
+          gameDraw: 'Ván này hòa.',
+          gameScore: 'Điểm',
+          gameDraws: 'Hòa',
+          gameNewRound: 'Ván mới',
+          gameResetScore: 'Xóa điểm',
+          gameCell: 'Ô {n}',
           set: 'Cài đặt',
           in: 'Đăng nhập',
           up: 'Đăng ký',
@@ -211,6 +237,19 @@ let petReactionsOpen = false;
           cal: 'Calendar',
           det: 'Dates',
           notes: 'Notes',
+          game: 'Games',
+          gameSub: 'Play together from two different devices.',
+          gameSetup: 'Run supabase-tictactoe.sql in the Supabase SQL Editor to enable online play.',
+          gameWaitPartner: 'Waiting for your partner to open the game for the first time…',
+          gameYourTurn: 'Your turn! Choose a square.',
+          gameTurn: "{name}'s turn",
+          gameWin: '{name} wins!',
+          gameDraw: 'This round is a draw.',
+          gameScore: 'Score',
+          gameDraws: 'Draws',
+          gameNewRound: 'New round',
+          gameResetScore: 'Reset score',
+          gameCell: 'Cell {n}',
           set: 'Settings',
           in: 'Log in',
           up: 'Sign up',
@@ -562,6 +601,7 @@ let petReactionsOpen = false;
       const I = {
         cal: sv('<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 11h18"/>'),
         note: sv('<path d="M5 3h14a2 2 0 012 2v10l-6 6H5a2 2 0 01-2-2V5a2 2 0 012-2z"/><path d="M15 21v-5a1 1 0 011-1h5M7 8h10M7 12h7"/>'),
+        game: sv('<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>'),
         set: sv(
           '<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
         ),
@@ -648,6 +688,7 @@ let petReactionsOpen = false;
           ['cal', I.cal],
           ['det', ic('hr')],
           ['notes', I.note],
+          ['game', I.game],
           ['album', I.photo],
           ['set', I.set],
         ]
