@@ -157,7 +157,10 @@
         if (Date.now() - freeDayPurgeAt < 3600000) return;
         freeDayPurgeAt = Date.now();
         try {
-          await sb.from('events').delete().eq('title', FREE_DAY_TITLE).lt('date', key(new Date()));
+          const { data, error } = await sb.from('events').select('id,title').lt('date', key(new Date()));
+          if (error) return;
+          const expiredIds = (data || []).filter(isFreeDay).map((event) => event.id);
+          if (expiredIds.length) await sb.from('events').delete().in('id', expiredIds);
         } catch (x) {}
       }
       async function purgeExpiredTrash() {
@@ -171,7 +174,7 @@
           }
         } catch (x) {}
       }
-      function applyTttGame(game) {
+      function applyTttGame(game, preserveBusy = false) {
         if (!game || !Array.isArray(game.board) || game.board.length != 9) return;
         TTT = {
           ...TTT,
@@ -184,7 +187,7 @@
           playerX: game.player_x || null,
           playerO: game.player_o || null,
           ready: true,
-          busy: TTT.busy,
+          busy: preserveBusy && TTT.busy,
           error: '',
         };
       }
@@ -192,8 +195,9 @@
         try {
           const { data, error } = await sb.rpc('ttt_get_or_create_game');
           if (error) throw error;
-          applyTttGame(data);
+          applyTttGame(data, true);
         } catch (error) {
+          TTT.busy = false;
           TTT.ready = false;
           TTT.error = error.message || String(error);
         }
@@ -202,15 +206,19 @@
         if (!TTT.ready || TTT.busy) return;
         TTT.busy = true;
         render();
+        let failure = '';
         try {
           const { data, error } = await sb.rpc(rpc, args);
           if (error) throw error;
+          if (!data || !Array.isArray(data.board)) throw new Error('Game returned an invalid board state.');
           applyTttGame(data);
         } catch (error) {
+          failure = error.message || String(error);
+        } finally {
           TTT.busy = false;
-          say(error.message || String(error));
+          render();
         }
-        render();
+        if (failure) say(failure);
       }
       function playTttMove(cell) {
         return updateTttGame('ttt_make_move', { p_cell: cell });
@@ -454,11 +462,11 @@ function onPetTouch(p) {
           .on('broadcast', { event: 'pet_touch' }, (m) => onPetTouch(m.payload))
           .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'pet_reactions' }, refresh)
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tic_tac_toe_games', filter: f }, (change) => {
-            applyTttGame(change.new);
+            applyTttGame(change.new, true);
             if (view == 'game') render();
           })
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tic_tac_toe_games', filter: f }, (change) => {
-            applyTttGame(change.new);
+            applyTttGame(change.new, true);
             if (view == 'game') render();
           })
           .on('postgres_changes', { event: '*', schema: 'public', table: 'events', filter: f }, refresh)
@@ -477,6 +485,7 @@ function onPetTouch(p) {
           .subscribe((status) => {
             realtimeReady = status == 'SUBSCRIBED';
             if (realtimeReady && localTypingNote) sendNoteTyping(localTypingNote, true);
+            if (realtimeReady) loadTttGame().then(() => { if (view == 'game') render(); });
           });
       }
       // Sau khi đăng nhập: lấy hồ sơ + mã cặp đôi, tải dữ liệu, bật realtime

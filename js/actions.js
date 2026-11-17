@@ -219,10 +219,14 @@ function act(a, d, el) {
       )
     )
       return;
-    const tempId = "free-" + Date.now(),
+    const enteredTitle = prompt(t("freeDayTitlePrompt"), t("freeDay"));
+    if (enteredTitle === null) return;
+    const customTitle = enteredTitle.trim().slice(0, 80),
+      savedTitle = makeFreeDayTitle(customTitle && customTitle != t("freeDay") ? customTitle : ""),
+      tempId = "free-" + Date.now(),
       optimistic = {
         id: tempId,
-        title: FREE_DAY_TITLE,
+        title: savedTitle,
         date: sel,
         time: "00:00",
         place: "—",
@@ -234,7 +238,7 @@ function act(a, d, el) {
     sb.from("events")
       .insert({
         couple_id: S.user.couple_id,
-        title: FREE_DAY_TITLE,
+        title: savedTitle,
         date: sel,
         time: "00:00",
         place: "—",
