@@ -279,7 +279,10 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           { id: user.id, name: user.name, gender: user.gender || 'f' },
           other || { id: 'partner', name: t('petPartner'), gender: me() == 'm' ? 'f' : 'm' },
         ];
-        const latestMessage = (pet.messages || [])[(pet.messages || []).length - 1];
+        const latestMessageByUser = {};
+        (pet.messages || []).forEach((message) => {
+          if (message && message.by) latestMessageByUser[message.by] = message;
+        });
         const character = (person, index) => {
           const gender = person.gender == 'm' ? 'm' : 'f';
           const state = petWalkerState[index];
@@ -287,7 +290,8 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           const acting = state.actUntil > Date.now();
           const image = acting ? petFrames[gender].act : petFrames[gender][direction][state.frame % 3];
           const reaction = (pet.reactions || []).find((r) => r.by == person.id && reactions.includes(r.emoji));
-          const bubble = latestMessage && latestMessage.by == person.id
+          const latestMessage = latestMessageByUser[person.id];
+          const bubble = latestMessage
             ? { emoji: latestMessage.text, by: latestMessage.by, isMessage: true }
             : reaction;
           const genderLabel = t(gender == 'm' ? 'petMale' : 'petFemale');

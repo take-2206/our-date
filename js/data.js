@@ -348,7 +348,7 @@
           petMessageError = '';
           saveLocalPet();
           render();
-          if (typeof pushPetMessage == 'function') pushPetMessage(data.id);
+          if (typeof pushPetMessage == 'function') await pushPetMessage(data.id);
         } catch (x) {
           petMessageError = x.message || String(x);
           saveLocalPet();
