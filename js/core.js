@@ -1,6 +1,6 @@
 // LoveSync core module. Classic scripts share state declared in js/core.js.
 /* ===== 1. NGÔN NGỮ (vi / en). Thêm chữ mới = thêm cùng một khoá ở cả hai bên ===== */
-const APP_VERSION = '1.50.35';
+const APP_VERSION = '1.50.37';
 let PET = { name: "MINI CHIBI", reactions: [], messages: [] };
 let petReactionsOpen = false;
 let petMessagesOpen = false;
@@ -239,6 +239,9 @@ let TTT = {
           petMessagesEmpty: 'Chưa có tin nhắn nào. Hãy gửi lời đầu tiên nhé!',
           petMessagesSetup: 'Lịch sử tin nhắn chưa được thiết lập. Hãy chạy lại supabase-pet.sql trong Supabase.',
           petMessageReceived: '{name} vừa gửi: {message}',
+          petOnline: 'Đang online',
+          petOffline: 'Ngoại tuyến',
+          petTyping: '{name} đang nhập…',
           cfg: 'Chưa điền SUPABASE_URL và SUPABASE_KEY trong js/core.js.',
         },
         en: {
@@ -461,6 +464,9 @@ let TTT = {
           petMessagesEmpty: 'No messages yet. Send the first one!',
           petMessagesSetup: 'Message history is not set up. Run supabase-pet.sql in Supabase again.',
           petMessageReceived: '{name} sent: {message}',
+          petOnline: 'Online',
+          petOffline: 'Offline',
+          petTyping: '{name} is typing…',
           cfg: 'SUPABASE_URL and SUPABASE_KEY are not set in js/core.js.',
         },
       };
@@ -552,10 +558,15 @@ let TTT = {
         noteResize = null,
         noteTypers = {},
         notePresenceKey = Math.random().toString(36).slice(2),
+        partnerOnline = false,
+        partnerPetTyping = false,
         realtimeReady = false,
         localTypingNote = null,
         localTypingTimer = null,
         localTypingSentAt = 0,
+        localPetTyping = false,
+        localPetTypingTimer = null,
+        localPetTypingSentAt = 0,
         pendingNoteSave = Promise.resolve(),
         appUpdateReady = false,
         appUpdateApplying = false,
