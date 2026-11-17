@@ -115,11 +115,18 @@ const VAPID_PUBLIC = 'BIol42oCVVxoqcBVueyTLai3kV8qseeVBYozCu5SiUqb_0G33VrVVec7dF
       }
       async function pushPetMessage(messageId) {
         if (!S.user || !messageId) return false;
+        const { data: sessionData } = await sb.auth.getSession(),
+          accessToken = sessionData && sessionData.session && sessionData.session.access_token;
+        if (!accessToken) {
+          console.warn('Pet message push skipped: no signed-in session token');
+          return false;
+        }
         let lastError = null;
         for (let attempt = 0; attempt < 2; attempt++) {
           try {
             const { data, error } = await sb.functions.invoke('send-push', {
               body: { type: 'pet_message', message_id: Number(messageId) },
+              headers: { Authorization: `Bearer ${accessToken}` },
             });
             if (!error && !(data && data.error)) return true;
             lastError = error || new Error(data.error);
