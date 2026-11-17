@@ -232,7 +232,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
         const character = (person, index) => {
           const gender = person.gender == 'm' ? 'm' : 'f';
           const direction = index == 0 ? '1' : '-1';
-          const image = gender + '_walk_' + (index == 0 ? 'right' : 'left') + '_0.png';
+          const image = petFrames[gender][index == 0 ? 'right' : 'left'][0];
           const bubble = (pet.reactions || []).find((r) => r.by == person.id);
           const genderLabel = t(gender == 'm' ? 'petMale' : 'petFemale');
           const ownBubble = person.id == user.id;
