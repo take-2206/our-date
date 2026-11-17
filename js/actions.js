@@ -48,8 +48,11 @@ function act(a, d, el) {
     const p = parse(d.k);
     cur = new Date(p.getFullYear(), p.getMonth(), 1);
   } else if (a == "petReact") {
+    petReactionsOpen = false;
     sendPetReaction(d.emoji || "❤️");
     return;
+  } else if (a == "petReactionsToggle") {
+    petReactionsOpen = !petReactionsOpen;
   } else if (a == "petClear") {
     clearPetReaction();
     return;
@@ -284,7 +287,7 @@ function act(a, d, el) {
     PU = {};
     pv = null;
     pvDay = null;
-    albumSel = "";
+    albumSel = null;
     closeUp();
     view = "auth";
     msg = "";

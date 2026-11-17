@@ -48,14 +48,12 @@ const T = {
     ok: (n: string) => `${n} đã đồng ý lịch hẹn`,
     no: (n: string) => `${n} đã từ chối lịch hẹn`,
     day: (title: string) => `Ngày mai: ${title}`,
-    hour: (title: string) => `Còn 1 giờ nữa: ${title}`,
   },
   en: {
     new: (n: string) => `${n} sent a new date`,
     ok: (n: string) => `${n} accepted the date`,
     no: (n: string) => `${n} declined the date`,
     day: (title: string) => `Tomorrow: ${title}`,
-    hour: (title: string) => `In 1 hour: ${title}`,
   },
 } as const;
 const tt = (lang: string) => (lang === 'en' ? T.en : T.vi);
@@ -179,7 +177,7 @@ function zoned(date: string, time: string, tz: string) {
 }
 
 async function reminders() {
-  const { data: subs } = await db.from('push_subscriptions').select('*').or('n1.eq.true,n2.eq.true');
+  const { data: subs } = await db.from('push_subscriptions').select('*').eq('n1', true);
   if (!subs?.length) return { sent: 0 };
   const now = Date.now();
   const lo = new Date(now - 864e5).toISOString().slice(0, 10);
@@ -193,9 +191,8 @@ async function reminders() {
     for (const e of okEvs.filter((x) => x.couple_id === s.couple_id)) {
       const t = zoned(e.date, e.time || '09:00', s.tz);
       const diff = t - now;
-      const kinds: ('day' | 'hour')[] = [];
+      const kinds: 'day'[] = [];
       if (s.n1 && diff <= 24 * 3600e3 && diff > 24 * 3600e3 - 20 * 60e3) kinds.push('day');
-      if (s.n2 && e.time && diff <= 3600e3 && diff > 40 * 60e3) kinds.push('hour');
       for (const kind of kinds) {
         const { error } = await db.from('push_sent').insert({
           sub_id: s.id, event_id: e.id, kind, stamp: `${e.date} ${e.time ?? ''}`,

@@ -34,6 +34,7 @@ const APP_SHELL = [
   "./img/LoveSync-Rounded/LoveSync-Rounded-Icon-Light.svg",
   "./img/pet/boy_act.png",
   "./img/pet/girl_act.png",
+  "./img/pet/pet-bg.jpg",
   "./img/pet/boy_walk_left_0.png",
   "./img/pet/boy_walk_left_1.png",
   "./img/pet/boy_walk_left_2.png",
