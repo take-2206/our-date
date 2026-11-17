@@ -71,6 +71,13 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
         return `<img src="./img/pet/mini_${g}.png" alt="" draggable="false">`;
       }
 
+      function heartLightHtml(dateKey) {
+        const now = performance.now() / 1000,
+          datePhase = Number(String(dateKey).slice(-2) || 0) * 0.037,
+          offsets = [0, 1.21, 1.17, 1.13, 1.09, 1.05];
+        return `<span class="heart-light" aria-hidden="true">${offsets.map((offset) => `<i style="animation-delay:-${(now + datePhase + offset).toFixed(3)}s"></i>`).join('')}</span>`;
+      }
+
       function upcomingPrepCard(e) {
         const items = Array.isArray(e.todo) ? e.todo : [];
         return `<section class="card upcoming-prep" aria-label="${esc(t('prep'))}"><div class="upcoming-prep-head"><div><p class="mono sub">// ${esc(t('prep'))}</p><b>${esc(tx(e.title))}</b></div><button type="button" class="mini" data-a="ev" data-id="${e.id}" aria-label="${esc(items.length ? t('edit') : t('addTodo'))}">${items.length ? esc(t('edit')) : '+ ' + esc(t('addTodo'))}</button></div>${items.length ? `<div class="upcoming-prep-items">${items.map((item, i) => `<label class="upcoming-prep-item"><input type="checkbox" data-a="chk" data-id="${e.id}" data-i="${i}" ${item.d ? 'checked' : ''}><span class="${item.d ? 'x' : ''}">${esc(tx(item.t))}</span></label>`).join('')}</div>` : `<p class="sub upcoming-prep-empty">${esc(t('prepEmpty'))}</p>`}</section>`;
@@ -91,7 +98,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
             free = entries.filter(isFreeDay),
             np = photosOn(k).length;
           cells.push(
-            `<button class="cl${d.getMonth() != m ? ' o' : ''}${k == tk ? ' td' : ''}${k == sel ? ' sl' : ''}${es.length ? ' has-plan' : ''}${free.length ? ' has-free' : ''}${np ? ' has-ph' : ''}" data-a="day" data-k="${k}" aria-label="${fmt(k, { dateStyle: 'full' })}${es.length ? `, ${es.length} ${t('det')}` : ''}${free.length ? `, ${free.length} ${t('freeDay')}` : ''}${np ? `, ${np} ${t('phMore')}` : ''}"><span>${d.getDate()}</span>${es.length ? '<span class="heart-light" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>' : ''}${free.length ? `<span class="free-day-markers" aria-hidden="true">${free.slice(0, 2).map((e) => `<i class="${typeof freeDayOwnerClass == 'function' ? freeDayOwnerClass(e.by) : ''}">${freeIcon(e)}</i>`).join('')}</span>` : ''}${np ? '<i class="ph-dot" aria-hidden="true"></i>' : ''}</button>`,
+            `<button class="cl${d.getMonth() != m ? ' o' : ''}${k == tk ? ' td' : ''}${k == sel ? ' sl' : ''}${es.length ? ' has-plan' : ''}${free.length ? ' has-free' : ''}${np ? ' has-ph' : ''}" data-a="day" data-k="${k}" aria-label="${fmt(k, { dateStyle: 'full' })}${es.length ? `, ${es.length} ${t('det')}` : ''}${free.length ? `, ${free.length} ${t('freeDay')}` : ''}${np ? `, ${np} ${t('phMore')}` : ''}"><span>${d.getDate()}</span>${es.length ? heartLightHtml(k) : ''}${free.length ? `<span class="free-day-markers" aria-hidden="true">${free.slice(0, 2).map((e) => `<i class="${typeof freeDayOwnerClass == 'function' ? freeDayOwnerClass(e.by) : ''}">${freeIcon(e)}</i>`).join('')}</span>` : ''}${np ? '<i class="ph-dot" aria-hidden="true"></i>' : ''}</button>`,
           );
         }
         const wk = [...Array(7)]
@@ -256,7 +263,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
       function petCardHtml() {
         const fallback = { name: 'MINI CHIBI', reactions: [] };
         const pet = PET || fallback;
-        const reactions = ['❤️', '😡', '🥺', '😴', '💔'];
+        const reactions = ['❤️', '🥰', '😘', '😍', '🤗', '😂', '🥺', '😭', '😡', '😴', '😎', '💔', '✨', '🎉', '🔥'];
         const user = S.user || {};
         const other = partner();
         const people = [

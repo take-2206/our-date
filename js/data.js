@@ -332,6 +332,36 @@ function onPetTouch(p) {
         localStorage.setItem(petLocalKey(), JSON.stringify({ name, reactions: PET.reactions || [] }));
         render();
       }
+      let deferredRefreshPending = false,
+        deferredRefreshTimer = null;
+      function interactionInProgress() {
+        const active = document.activeElement,
+          editing = active && active !== document.body && active.matches &&
+            active.matches('input, textarea, select, [contenteditable="true"]');
+        return !!(
+          uiPointerActive || editing || noteDrag || noteResize || modal || pmod || smod || umod || pv != null || noteEdit || noteDraft
+        );
+      }
+      function consumeDeferredRefresh() {
+        deferredRefreshPending = false;
+        clearTimeout(deferredRefreshTimer);
+        deferredRefreshTimer = null;
+      }
+      function paintDeferredRefresh() {
+        deferredRefreshTimer = null;
+        if (!deferredRefreshPending) return;
+        if (interactionInProgress()) {
+          deferredRefreshTimer = setTimeout(paintDeferredRefresh, 300);
+          return;
+        }
+        deferredRefreshPending = false;
+        render();
+        if (LT) drawLT();
+      }
+      function requestDeferredRefresh() {
+        deferredRefreshPending = true;
+        if (!deferredRefreshTimer) deferredRefreshTimer = setTimeout(paintDeferredRefresh, 300);
+      }
       // Tải lại dữ liệu rồi vẽ lại màn hình
       async function refresh() {
         if (!S.user) return;
@@ -340,16 +370,13 @@ function onPetTouch(p) {
             ? { id: String(ae.dataset.id), body: ae.value }
             : null;
         await loadC();
-        // Keep a live sticky-note editor in place. Replacing it here loses the cursor and unsaved text.
+        // Keep live sticky-note text in memory while background data is merged.
         if (activeNote && ae.isConnected && document.activeElement === ae) {
           const note = C.notes.find((item) => String(item.id) == activeNote.id);
           if (note) note.body = activeNote.body;
-          return;
         }
-        // Đang nhập / chọn ngày giờ trong form: đã tải dữ liệu mới nhưng chưa vẽ lại để không làm đóng bộ chọn
-        if (ae && ae.matches && ae.matches('.mod input, .mod textarea')) return;
-        render();
-        if (LT) drawLT();
+        // Data is current now; DOM replacement waits until the user's action is finished.
+        requestDeferredRefresh();
       }
       // Có thông báo mới từ người ấy -> tải lại và hiện toast
       async function onNotif(n) {
