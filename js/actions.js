@@ -19,6 +19,8 @@ function act(a, d, el) {
     return;
   if (a == "sclose" && el.classList.contains("mod") && event.target !== el)
     return;
+  if (a == "dcClose" && el.classList.contains("mod") && event.target !== el)
+    return;
   if (a == "uclose" && el.classList.contains("mod") && event.target !== el)
     return;
   if (a == "go") {
@@ -96,6 +98,12 @@ function act(a, d, el) {
     mine().forEach((n) => markRead(n));
   } else if (a == "sedit") smod = true;
   else if (a == "sclose") smod = false;
+  else if (a == "dcOpen") dcmod = !dcmod;
+  else if (a == "dcClose") dcmod = false;
+  else if (a == "dcEdit") {
+    dcmod = false;
+    smod = true;
+  }
   else if (a == "pedit") pmod = true;
   else if (a == "pclose") pmod = false;
   else if (a == "noteEdit") {
