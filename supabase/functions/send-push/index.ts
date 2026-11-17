@@ -23,7 +23,7 @@ type Ev = { id: number; couple_id: string; title: string; date: string; time: st
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-push-secret',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-push-secret, x-user-token',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 const json = (o: unknown, status = 200) =>
@@ -139,9 +139,11 @@ async function onNotif(r: { couple_id: string; event_id: number | null; kind: st
 }
 
 async function caller(req: Request) {
-  const token = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
+  const token = (req.headers.get('x-user-token') || req.headers.get('authorization') || '')
+    .replace(/^Bearer\s+/i, '');
   if (!token) return null;
   const { data, error } = await db.auth.getUser(token);
+  if (error) console.error('caller auth failed:', error.message);
   return error ? null : data.user;
 }
 
