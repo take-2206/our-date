@@ -4,7 +4,7 @@ const trashItems = () => [
     kind: 'event',
     item,
     label: isFreeDay(item) ? t('freeDay') : t('det'),
-    title: isFreeDay(item) ? t('freeDay') : tx(item.title),
+    title: isFreeDay(item) ? freeDayCustomTitle(item) || t('freeDay') : tx(item.title),
   })),
   ...(C.trash?.notes || []).map((item) => ({ kind: 'note', item, label: t('notes'), title: item.body })),
   ...(C.trash?.photos || []).map((item) => ({
