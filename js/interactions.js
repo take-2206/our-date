@@ -243,6 +243,7 @@
       const pickerInput = (el) =>
         el.matches('input[type="date"][data-calendar], input[type="time"][data-clock]');
       document.addEventListener('pointerdown', (e) => {
+        uiPointerActive = true;
         if (startNoteResize(e)) return;
         startNoteDrag(e);
       });
@@ -260,10 +261,12 @@
         { passive: false },
       );
       window.addEventListener('pointerup', (e) => {
+        uiPointerActive = false;
         finishNoteResize(e);
         finishNoteDrag(e);
       });
       window.addEventListener('pointercancel', (e) => {
+        uiPointerActive = false;
         finishNoteResize(e);
         finishNoteDrag(e);
       });
