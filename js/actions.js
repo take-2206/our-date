@@ -310,9 +310,10 @@ function act(a, d, el) {
     pushResync();
     return;
   } else if (a == "chk") {
-    const e = C.ev.find((x) => x.id == open),
-      o = e.todo[d.i];
-    o.d = o.d ? 0 : 1;
+    const e = C.ev.find((x) => x.id == (d.id != null ? d.id : open)),
+      o = e && e.todo && e.todo[d.i];
+    if (!o) return;
+    o.d = el.checked ? 1 : 0;
     sb.from("events")
       .update({ todo: e.todo })
       .eq("id", e.id)
