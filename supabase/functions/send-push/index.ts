@@ -73,6 +73,40 @@ const PT = {
 } as const;
 const pt = (lang: string) => (lang === 'en' ? PT.en : PT.vi);
 
+async function onPetMessage(req: Request, body: { message_id?: number }) {
+  const user = await caller(req),
+    messageId = Number(body.message_id);
+  if (!user || !messageId) throw new Error('unauthorized');
+  const [{ data: message }, { data: profile }] = await Promise.all([
+    db.from('pet_messages').select('id,couple_id,body,sender_id').eq('id', messageId).maybeSingle(),
+    db.from('profiles').select('name,couple_id').eq('id', user.id).maybeSingle(),
+  ]);
+  if (!message || !profile || message.sender_id !== user.id || message.couple_id !== profile.couple_id)
+    throw new Error('forbidden');
+  const { data: subs } = await db
+    .from('push_subscriptions')
+    .select('*')
+    .eq('couple_id', message.couple_id)
+    .neq('user_id', user.id)
+    .eq('n3', true);
+  const preview = String(message.body || '').replace(/\s+/g, ' ').trim().slice(0, 140);
+  let sent = 0;
+  for (const s of (subs ?? []) as Sub[]) {
+    const title = s.lang === 'en'
+      ? `${profile.name || 'Your partner'} sent a pet message`
+      : `${profile.name || 'Người ấy'} vừa gửi tin nhắn cho thú cưng`;
+    const ok = await send(s, {
+      title,
+      body: preview,
+      url: './?view=pet-messages',
+      type: 'open-pet-messages',
+      tag: `pet-message-${message.id}`,
+    });
+    if (ok) sent++;
+  }
+  return { sent };
+}
+
 // ---- 1) Thông báo từ người ấy ----
 async function onNotif(r: { couple_id: string; event_id: number | null; kind: string; from_id: string }) {
   const [{ data: subs }, { data: from }, { data: ev }] = await Promise.all([
@@ -217,6 +251,7 @@ Deno.serve(async (req) => {
   const body = await req.json().catch(() => ({}));
   try {
     if (body.type === 'note') return json(await onNote(req, body));
+    if (body.type === 'pet_message') return json(await onPetMessage(req, body));
     if (!SECRET || req.headers.get('x-push-secret') !== SECRET) return json({ error: 'forbidden' }, 403);
     if (body.type === 'reminders') return json(await reminders());
     if (body.type === 'notif' && body.record) return json(await onNotif(body.record));
