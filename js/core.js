@@ -1,6 +1,6 @@
 // LoveSync core module. Classic scripts share state declared in js/core.js.
 /* ===== 1. NGÔN NGỮ (vi / en). Thêm chữ mới = thêm cùng một khoá ở cả hai bên ===== */
-const APP_VERSION = '1.50.7';
+const APP_VERSION = '1.50.20';
 let PET = { name: "MINI CHIBI", reactions: [] };
 let petReactionsOpen = false;
       const D = {
@@ -77,6 +77,7 @@ let petReactionsOpen = false;
           dn: 'Tên hiển thị',
           pfFail: 'Không lưu được. Hãy kiểm tra quyền UPDATE của bảng profiles trên Supabase.',
           dc: 'ngày bên nhau',
+          dcDetails: 'Chi tiết ngày bên nhau',
           dcUnit: 'ngày',
           dcSet: 'Đặt ngày bắt đầu yêu',
           dcFrom: 'từ',
@@ -279,6 +280,7 @@ let petReactionsOpen = false;
           dn: 'Display name',
           pfFail: 'Could not save. Check the UPDATE policy on the profiles table in Supabase.',
           dc: 'days together',
+          dcDetails: 'Days together details',
           dcUnit: 'days',
           dcSet: 'Set your start date',
           dcFrom: 'since',
@@ -485,6 +487,7 @@ let petReactionsOpen = false;
         modal = false,
         pmod = false,
         smod = false,
+        dcmod = false,
         todoEdit = null,
         noteEdit = null,
         noteError = '',
@@ -626,7 +629,7 @@ let petReactionsOpen = false;
             .filter((e) => (parse(e.date) - today0()) / 864e5 <= 7)
             .slice(0, 3),
           ms = mine().slice(0, 5);
-        return `<header class="top"><div><p class="mono sub" style="font-size:11px">&gt; ${sub}</p><h1 class="px">${title}</h1></div><div class="r"><button class="ib" data-a="bell" aria-label="${t('nt')}${u ? ' (' + u + ')' : ''}" aria-expanded="${bell}">${I.bell}${u ? `<i class="bd">${u}</i>` : ''}</button><div class="pair couple-pair${coupleExtra ? ' head-couple' : ''}">${coupleAvatar()}${coupleExtra}</div>${
+        return `<header class="top"><div><p class="mono sub" style="font-size:11px">&gt; ${sub}</p><h1 class="px">${title}</h1></div><div class="r"><button class="ib" data-a="bell" aria-label="${t('nt')}${u ? ' (' + u + ')' : ''}" aria-expanded="${bell}">${I.bell}${u ? `<i class="bd">${u}</i>` : ''}</button><div class="pair couple-pair${coupleExtra ? ' head-couple' : ''}">${coupleExtra ? `<button type="button" class="couple-profile-button" data-a="dcOpen" aria-label="${esc(t('dcDetails'))}" aria-haspopup="dialog" aria-expanded="${dcmod}">${coupleAvatar()}</button>` : coupleAvatar()}${coupleExtra}</div>${
           bell
             ? `<div class="card pop" role="dialog">${
                 ms
@@ -637,7 +640,7 @@ let petReactionsOpen = false;
                   .join('') || `<div class="sub">${t('empN')}</div>`
               }${ups.length ? `<p class="mono sub h2" style="padding:10px 12px 0">// ${t('remind')}</p>` + ups.map((e) => `<div><b>${esc(tx(e.title))}</b><p class="sub mono" style="font-size:12px">${rel(e.date)} · ${e.time}</p></div>`).join('') : ''}${u ? `<button class="btn b2" data-a="read" style="min-height:40px;margin-top:6px">${t('readAll')}</button>` : ''}</div>`
             : ''
-        }</div></header>`;
+        }${coupleExtra && dcmod ? vDaysTogether() : ''}</div></header>`;
       };
       // Thanh tab: Lịch / Buổi hẹn / Cài đặt
       const nav = () =>

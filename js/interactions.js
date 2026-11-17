@@ -416,6 +416,7 @@
           if (!v.since) return;
           C.since = v.since;
           smod = false;
+          dcmod = false;
           try {
             localStorage.setItem('ls_since_' + S.user.couple_id, v.since);
           } catch (x) {}
@@ -565,6 +566,7 @@
           modal = false;
           pmod = false;
           smod = false;
+          dcmod = false;
           noteEdit = null;
           noteDraft = null;
           bell = false;

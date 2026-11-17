@@ -1648,6 +1648,98 @@ body.note-resizing * {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+.couple-profile-button {
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+.couple-profile-button:focus-visible {
+  outline: 3px solid var(--cy);
+  outline-offset: 3px;
+}
+.dc-detail {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 12px);
+  right: 0;
+  display: grid;
+  width: min(360px, calc(100vw - 40px));
+  gap: 10px;
+  justify-items: center;
+  padding: 26px 24px 22px;
+  border-color: var(--pk);
+  box-shadow: 0 12px 34px rgba(255, 105, 180, 0.34);
+  text-align: center;
+  transform-origin: top right;
+  animation: dc-pop 0.16s ease-out;
+}
+@keyframes dc-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.dc-detail::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  right: 27px;
+  width: 12px;
+  height: 12px;
+  transform: rotate(45deg);
+  border-top: 1px solid var(--pk);
+  border-left: 1px solid var(--pk);
+  background: var(--card);
+}
+.dc-detail .dc-detail-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+.dc-detail-avatar .couple-avatar {
+  width: 92px;
+  height: 92px;
+}
+.dc-detail h2 {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--pk);
+  font-size: clamp(11px, 4vw, 19px);
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dc-name-heart {
+  display: inline-block;
+  margin: 0 5px;
+  color: var(--pk);
+  font-family: sans-serif;
+  text-shadow: 0 0 10px var(--pk);
+}
+.dc-detail-count {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 4px;
+}
+.dc-detail-count b {
+  color: var(--pk);
+  font-size: 46px;
+  line-height: 1;
+  text-shadow: 0 0 16px var(--pk);
+}
+.dc-detail .btn {
+  margin-top: 8px;
+}
 .pop {
   max-height: 70vh;
   overflow: auto;
@@ -2484,8 +2576,130 @@ body.note-resizing * {
   border-radius: 22px;
   background:
     linear-gradient(rgba(20, 14, 24, 0.46), rgba(20, 14, 24, 0.54)),
-    url("../img/pet/pet-bg.jpg") center bottom / cover no-repeat;
+    url("../img/pet/pet-bg-wide.png") center bottom / cover no-repeat;
   border: 1px solid rgba(255, 105, 180, 0.32);
+}
+.pet-card {
+  overflow: hidden;
+}
+.pet-top,
+.pet-stage,
+.pet-chat {
+  position: relative;
+  z-index: 2;
+}
+.pet-snow {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.pet-snow i {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background-repeat: no-repeat;
+  will-change: background-position;
+}
+.pet-snow i:nth-child(1),
+.pet-snow i:nth-child(4) {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.96) 0 0),
+    linear-gradient(rgba(225, 234, 255, 0.86) 0 0),
+    linear-gradient(rgba(255, 255, 255, 0.92) 0 0),
+    linear-gradient(rgba(218, 229, 255, 0.82) 0 0),
+    linear-gradient(rgba(255, 255, 255, 0.98) 0 0),
+    linear-gradient(rgba(232, 239, 255, 0.8) 0 0),
+    linear-gradient(rgba(255, 255, 255, 0.9) 0 0),
+    linear-gradient(rgba(219, 230, 255, 0.84) 0 0),
+    linear-gradient(rgba(255, 255, 255, 0.94) 0 0),
+    linear-gradient(rgba(226, 235, 255, 0.78) 0 0);
+  background-size: 4px 4px, 2px 2px, 6px 6px, 3px 3px, 5px 5px, 2px 2px, 4px 4px, 3px 3px, 5px 5px, 2px 2px;
+  animation: petSnowNear 9s linear -4s infinite;
+}
+.pet-snow i:nth-child(2),
+.pet-snow i:nth-child(5) {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.78) 0 0),
+    linear-gradient(rgba(214, 226, 255, 0.72) 0 0),
+    linear-gradient(rgba(255, 255, 255, 0.82) 0 0),
+    linear-gradient(rgba(220, 231, 255, 0.68) 0 0),
+    linear-gradient(rgba(255, 255, 255, 0.74) 0 0),
+    linear-gradient(rgba(211, 224, 255, 0.7) 0 0),
+    linear-gradient(rgba(255, 255, 255, 0.8) 0 0),
+    linear-gradient(rgba(222, 232, 255, 0.66) 0 0),
+    linear-gradient(rgba(255, 255, 255, 0.76) 0 0),
+    linear-gradient(rgba(215, 227, 255, 0.7) 0 0),
+    linear-gradient(rgba(255, 255, 255, 0.84) 0 0),
+    linear-gradient(rgba(224, 234, 255, 0.66) 0 0);
+  background-size: 2px 2px, 3px 3px, 2px 2px, 4px 4px, 2px 2px, 3px 3px, 2px 2px, 3px 3px, 4px 4px, 2px 2px, 3px 3px, 2px 2px;
+  animation: petSnowMid 15s linear -10s infinite;
+}
+.pet-snow i:nth-child(3),
+.pet-snow i:nth-child(6) {
+  background-image:
+    linear-gradient(rgba(232, 239, 255, 0.5) 0 0),
+    linear-gradient(rgba(255, 255, 255, 0.56) 0 0),
+    linear-gradient(rgba(218, 229, 255, 0.46) 0 0),
+    linear-gradient(rgba(255, 255, 255, 0.52) 0 0),
+    linear-gradient(rgba(225, 234, 255, 0.48) 0 0),
+    linear-gradient(rgba(255, 255, 255, 0.58) 0 0),
+    linear-gradient(rgba(215, 227, 255, 0.44) 0 0),
+    linear-gradient(rgba(255, 255, 255, 0.54) 0 0),
+    linear-gradient(rgba(228, 236, 255, 0.5) 0 0),
+    linear-gradient(rgba(255, 255, 255, 0.46) 0 0),
+    linear-gradient(rgba(220, 231, 255, 0.52) 0 0),
+    linear-gradient(rgba(255, 255, 255, 0.5) 0 0),
+    linear-gradient(rgba(214, 226, 255, 0.44) 0 0),
+    linear-gradient(rgba(255, 255, 255, 0.56) 0 0);
+  background-size: 1px 1px, 2px 2px, 1px 1px, 2px 2px, 1px 1px, 2px 2px, 1px 1px, 2px 2px, 1px 1px, 2px 2px, 1px 1px, 2px 2px, 1px 1px, 2px 2px;
+  animation: petSnowFar 23s linear -17s infinite;
+}
+.pet-snow i:nth-child(4) {
+  opacity: 0.82;
+  animation-duration: 12s;
+  animation-delay: -9.5s;
+}
+.pet-snow i:nth-child(5) {
+  opacity: 0.66;
+  animation-duration: 18s;
+  animation-delay: -3.5s;
+}
+.pet-snow i:nth-child(6) {
+  opacity: 0.52;
+  animation-duration: 27s;
+  animation-delay: -8s;
+}
+@keyframes petSnowNear {
+  from {
+    background-position: 4% -15%, 18% -55%, 31% -5%, 45% -80%, 59% -30%, 72% -65%, 84% -10%, 96% -45%, 39% -110%, 66% -125%;
+  }
+  to {
+    background-position: 11% 115%, 11% 128%, 38% 122%, 39% 118%, 66% 135%, 67% 120%, 91% 130%, 88% 116%, 48% 108%, 59% 140%;
+  }
+}
+@keyframes petSnowMid {
+  from {
+    background-position: 2% -8%, 12% -72%, 23% -26%, 35% -104%, 47% -48%, 57% -14%, 68% -90%, 77% -37%, 88% -118%, 98% -61%, 29% -138%, 63% -152%;
+  }
+  to {
+    background-position: -3% 124%, 18% 112%, 18% 139%, 42% 120%, 41% 128%, 64% 119%, 61% 134%, 84% 114%, 81% 126%, 104% 132%, 35% 108%, 57% 141%;
+  }
+}
+@keyframes petSnowFar {
+  from {
+    background-position: 5% -42%, 14% -9%, 22% -96%, 30% -57%, 38% -131%, 46% -24%, 54% -76%, 62% -113%, 70% -4%, 78% -68%, 86% -145%, 94% -35%, 34% -165%, 73% -184%;
+  }
+  to {
+    background-position: 1% 118%, 19% 132%, 18% 116%, 35% 139%, 33% 121%, 51% 127%, 49% 114%, 68% 136%, 65% 123%, 83% 117%, 81% 140%, 99% 126%, 39% 109%, 68% 132%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pet-snow i {
+    animation: none !important;
+  }
 }
 .pet-top {
   display: flex;
@@ -2796,6 +3010,18 @@ body.note-resizing * {
     transform: none;
   }
 }
+
+/* Keep the mobile composer below characters that extend past the stage. */
+@media (max-width: 600px) {
+  .pet-card .pet-stage {
+    margin-bottom: 58px;
+  }
+  .pet-card .pet-chat {
+    position: relative;
+    z-index: 5;
+  }
+}
+
 /* Tôn trọng người dùng tắt hiệu ứng chuyển động */
 @media (prefers-reduced-motion: reduce) {
   * {
@@ -2807,6 +3033,7 @@ body.note-resizing * {
     animation: none !important;
   }
 }
+
 .ab-folder {
   flex: none;
   display: grid;
@@ -5264,7 +5491,7 @@ body.note-resizing * {
   border-radius: 22px;
   background:
     linear-gradient(rgba(20, 14, 24, 0.46), rgba(20, 14, 24, 0.54)),
-    url("../img/pet/pet-bg.jpg") center bottom / cover no-repeat;
+    url("../img/pet/pet-bg-wide.png") center bottom / cover no-repeat;
   border: 1px solid rgba(255, 105, 180, 0.32);
 }
 .pet-top {

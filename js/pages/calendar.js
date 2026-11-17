@@ -43,6 +43,27 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
         return `<div class="mod" data-a="sclose"><form class="card" data-f="since" role="dialog" aria-label="${t('dcTtl')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:16px">${t('dcTtl')}</h2><div class="fl"><label class="lb" for="sd">${t('dt')}</label><input class="in" id="sd" name="since" type="date" data-calendar inputmode="none" required max="${key(new Date())}" value="${esc(C.since || '')}"></div><div class="row2"><button type="button" class="btn b2" data-a="sclose">${t('cancel')}</button><button class="btn b1">${t('save')}</button></div></form></div>`;
       }
 
+      function vDaysTogether() {
+        const since = C.since,
+          people = Object.values(P),
+          names = people.map((person) => person.name).filter(Boolean),
+          nameHtml = names.length
+            ? names.map((name) => esc(name)).join('<span class="dc-name-heart" aria-hidden="true">♥</span>')
+            : esc((S.user && S.user.name) || t('you'));
+        let details = `<p class="sub">${esc(t('dcSet'))}</p>`;
+        if (since) {
+          const days = Math.max(Math.round((today0() - parse(since)) / 864e5) + 1, 0),
+            next = MS.find((value) => value > days) || Math.ceil((days + 1) / 365) * 365,
+            ann = anniversaryInfo(since),
+            anniversary = ann.today
+              ? t('dcAnnToday').replace('{n}', ann.years)
+              : t('dcAnnNext').replace('{n}', ann.days).replace('{y}', ann.years),
+            milestone = t('dcNext').replace('{n}', Math.max(next - days, 0)).replace('{m}', next);
+          details = `<div class="dc-detail-count"><b class="px">${days}</b><span>${esc(t('dc'))}</span></div><p class="sub mono">${esc(t('dcFrom'))} ${esc(fmt(since, { dateStyle: 'long' }))}</p><p class="dc-ann mono">${esc(anniversary)}</p><p class="sub mono">${esc(milestone)}</p>`;
+        }
+        return `<section class="card dc-detail" role="dialog" aria-labelledby="dc-detail-title"><button type="button" class="ib dc-detail-close" data-a="dcClose" aria-label="${esc(t('close'))}">${I.x}</button><div class="dc-detail-avatar">${coupleAvatar()}</div><h2 id="dc-detail-title" class="px">${nameHtml}</h2>${details}<button type="button" class="btn b1" data-a="dcEdit">${esc(since ? t('edit') : t('dcSet'))}</button></section>`;
+      }
+
       // Icon mini-boy / mini-girl theo giới tính của người đăng ký ngày rảnh.
       function freeIcon(e) {
         const owner = P[e.by] || (S.user && S.user.id == e.by ? S.user : {});
@@ -245,6 +266,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           <img class="pet-character-image" src="./img/pet/${image}" alt="${esc(genderLabel)}"></button>${bubble ? `<div class="pet-chat-bubble${isTextBubble ? ' is-text' : ''}" title="${esc(person.name || '')}"><span>${esc(bubble.emoji)}</span>${ownBubble ? `<button type="button" data-a="petClear" aria-label="${esc(t('petDeleteBubble'))}">×</button>` : ''}</div>` : ''}</div>`;
         };
         return `<section class="pet-card" aria-label="${esc(t('petKicker'))}">
+          <div class="pet-snow" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
           <div class="pet-top"><div><p class="pet-kicker">${esc(t('petKicker'))}</p><div class="pet-heading">${esc(pet.name || fallback.name)} <button type="button" class="pet-rename" data-a="petName" aria-label="${esc(t('petRename'))}">&#9998;</button></div><p class="pet-hint">${esc(t('petSub'))}</p></div><span class="pet-hearts">&#9825; &#9825; &#9825;</span></div>
           <div class="pet-stage">${people.map(character).join('')}</div>
           <div class="pet-chat">
