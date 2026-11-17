@@ -50,6 +50,11 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
         return `<img src="./img/pet/mini_${g}.png" alt="" draggable="false">`;
       }
 
+      function upcomingPrepCard(e) {
+        const items = Array.isArray(e.todo) ? e.todo : [];
+        return `<section class="card upcoming-prep" aria-label="${esc(t('prep'))}"><div class="upcoming-prep-head"><div><p class="mono sub">// ${esc(t('prep'))}</p><b>${esc(tx(e.title))}</b></div><button type="button" class="mini" data-a="ev" data-id="${e.id}" aria-label="${esc(items.length ? t('edit') : t('addTodo'))}">${items.length ? esc(t('edit')) : '+ ' + esc(t('addTodo'))}</button></div>${items.length ? `<div class="upcoming-prep-items">${items.map((item, i) => `<label class="upcoming-prep-item"><input type="checkbox" data-a="chk" data-id="${e.id}" data-i="${i}" ${item.d ? 'checked' : ''}><span class="${item.d ? 'x' : ''}">${esc(tx(item.t))}</span></label>`).join('')}</div>` : `<p class="sub upcoming-prep-empty">${esc(t('prepEmpty'))}</p>`}</section>`;
+      }
+
       function vCal() {
         const y = cur.getFullYear(),
           m = cur.getMonth(),
@@ -95,7 +100,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
                 return pl ? `<p class="sub cal-pl">${I.pin} ${esc(pl)}</p>` : '';
               })()}<button class="btn b2" data-a="goAlbum" data-k="${sel}" style="min-height:40px">${I.photo} ${t('phOpenAlbum')} · ${dph.length}</button></div>`
             : '',
-          side = `<p class="mono sub h2">// ${fmt(sel, { day: 'numeric', month: 'long' })}</p>${freeSection}${day.map(evCard).join('')}${photoSec}<p class="mono sub h2" style="margin-top:22px">// ${t('soon')}</p>${upcoming.length ? upcoming.map(evCard).join('') : `<div class="empty">${t('noUpcoming')}</div>`}`;
+          side = `<p class="mono sub h2">// ${fmt(sel, { day: 'numeric', month: 'long' })}</p>${freeSection}${day.map(evCard).join('')}${photoSec}<p class="mono sub h2" style="margin-top:22px">// ${t('soon')}</p>${upcoming.length ? evCard(upcoming[0]) + upcomingPrepCard(upcoming[0]) : `<div class="empty">${t('noUpcoming')}</div>`}`;
         return `<div class="main">${head(cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' }), t('shared'), dayHeadBadge())}${petCardHtml()}<div class="cg"><div class="card cal"><div class="cn"><button class="ib" data-a="mo" data-n="-1" aria-label="prev" style="width:40px;height:40px">${I.back}</button><b>${cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' })}</b><button class="ib" data-a="mo" data-n="1" aria-label="next" style="width:40px;height:40px;transform:scaleX(-1)">${I.back}</button></div><div class="g7 wk">${wk}</div><div class="g7">${cells.join('')}</div></div><div>${side}</div></div></div><button class="fab" data-a="fabMenu" aria-label="${t('add')}">+</button>`;
       }
 
