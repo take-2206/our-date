@@ -1,6 +1,6 @@
 // LoveSync core module. Classic scripts share state declared in js/core.js.
 /* ===== 1. NGÔN NGỮ (vi / en). Thêm chữ mới = thêm cùng một khoá ở cả hai bên ===== */
-const APP_VERSION = '1.50.29';
+const APP_VERSION = '1.50.32';
 let PET = { name: "MINI CHIBI", reactions: [], messages: [] };
 let petReactionsOpen = false;
 let petMessagesOpen = false;

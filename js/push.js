@@ -114,12 +114,22 @@ const VAPID_PUBLIC = 'BIol42oCVVxoqcBVueyTLai3kV8qseeVBYozCu5SiUqb_0G33VrVVec7dF
         } catch (x) {}
       }
       async function pushPetMessage(messageId) {
-        if (!S.user || !messageId) return;
-        try {
-          await sb.functions.invoke('send-push', {
-            body: { type: 'pet_message', message_id: Number(messageId) },
-          });
-        } catch (x) {}
+        if (!S.user || !messageId) return false;
+        let lastError = null;
+        for (let attempt = 0; attempt < 2; attempt++) {
+          try {
+            const { data, error } = await sb.functions.invoke('send-push', {
+              body: { type: 'pet_message', message_id: Number(messageId) },
+            });
+            if (!error && !(data && data.error)) return true;
+            lastError = error || new Error(data.error);
+          } catch (x) {
+            lastError = x;
+          }
+          if (!attempt) await new Promise((resolve) => setTimeout(resolve, 700));
+        }
+        console.warn('Pet message push failed:', lastError);
+        return false;
       }
       function pushNote() {
         const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
