@@ -60,6 +60,7 @@ let TTT = {
           none: 'Chưa có buổi hẹn nào',
           add: 'Thêm buổi hẹn',
           freeDay: 'Ngày rảnh',
+          freeDayTitlePrompt: 'Nhập tiêu đề cho ngày rảnh:',
           freeDayAdd: 'Thêm ngày rảnh',
           freeDayAddThis: 'Đánh dấu ngày này là ngày rảnh',
           freeDayBy: '{name} rảnh ngày này',
@@ -280,6 +281,7 @@ let TTT = {
           none: 'No dates yet',
           add: 'Add a date',
           freeDay: 'Free day',
+          freeDayTitlePrompt: 'Enter a title for this free day:',
           freeDayAdd: 'Add a free day',
           freeDayAddThis: 'Add this day as a free day',
           freeDayBy: '{name} is free this day',
@@ -503,7 +505,10 @@ let TTT = {
       S.n[1] = 0;
       // Buổi hẹn được phép hiện: đã đồng ý, hoặc đang chờ nhưng do chính mình tạo (bị từ chối thì ẩn)
       const FREE_DAY_TITLE = '__LOVESYNC_FREE_DAY__',
-        isFreeDay = (event) => event && event.title == FREE_DAY_TITLE,
+        FREE_DAY_PREFIX = FREE_DAY_TITLE + ':',
+        isFreeDay = (event) => event && (event.title == FREE_DAY_TITLE || String(event.title || '').startsWith(FREE_DAY_PREFIX)),
+        freeDayCustomTitle = (event) => String(event?.title || '').startsWith(FREE_DAY_PREFIX) ? String(event.title).slice(FREE_DAY_PREFIX.length).trim() : '',
+        makeFreeDayTitle = (title) => title ? FREE_DAY_PREFIX + title : FREE_DAY_TITLE,
         freeDayOwnerClass = (userId) => {
           const ids = [...new Set([...Object.keys(P), S.user && S.user.id].filter(Boolean).map(String))].sort();
           return ids.indexOf(String(userId)) == 1 ? 'free-owner-b' : 'free-owner-a';
@@ -652,11 +657,12 @@ let TTT = {
       const freeDayCard = (e) => {
         const person = P[e.by] || (S.user && e.by == S.user.id ? S.user : {}),
           name = person.name || t('you'),
+          customTitle = freeDayCustomTitle(e),
           mine = S.user && e.by == S.user.id,
           saving = String(e.id).startsWith('free-');
         return `<article class="card free-day-card ${freeDayOwnerClass(e.by)}">
         <span class="free-day-icon" aria-hidden="true">${freeIcon(e)}</span>
-        <div><span class="chip">${t('freeDay')}</span><h2>${esc(t('freeDayBy').replace('{name}', name))}</h2></div>${mine && !saving ? `<button class="mini danger" data-a="freeRemove" data-id="${e.id}">${t('freeDayRemove')}</button>` : ''}</article>`;
+        <div><span class="chip">${t('freeDay')}</span><h2>${esc(customTitle || t('freeDayBy').replace('{name}', name))}</h2>${customTitle ? `<small class="sub">${esc(name)}</small>` : ''}</div>${mine && !saving ? `<button class="mini danger" data-a="freeRemove" data-id="${e.id}">${t('freeDayRemove')}</button>` : ''}</article>`;
       };
       /* Thông báo: mine() = do người ấy gửi, isR() = đã đọc chưa, unread() = các cái chưa đọc,
          ntx() = nội dung theo loại (lịch mới / đồng ý / từ chối) */

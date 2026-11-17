@@ -78,7 +78,7 @@ declare
   v_scores jsonb;
 begin
   if auth.uid() is null then raise exception 'Sign in to play.'; end if;
-  if p_cell < 0 or p_cell > 8 then raise exception 'Invalid cell.'; end if;
+  if p_cell is null or p_cell < 0 or p_cell > 8 then raise exception 'Invalid cell.'; end if;
 
   select * into v_game from public.tic_tac_toe_games
   where couple_id = (select couple_id from public.profiles where id = auth.uid())
