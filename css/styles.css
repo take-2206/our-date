@@ -2509,9 +2509,11 @@ body.note-resizing * {
   max-width: 190px;
 }
 .pet-chat-bubble.is-text span {
+  min-width: 0;
   max-width: 150px;
-  white-space: normal;
-  overflow-wrap: anywhere;
+  overflow-x: auto;
+  overflow-wrap: normal;
+  white-space: nowrap;
   font-size: 12px;
   line-height: 1.3;
 }
@@ -5196,9 +5198,11 @@ body.note-resizing * {
   max-width: 190px;
 }
 .pet-chat-bubble.is-text span {
+  min-width: 0;
   max-width: 150px;
-  white-space: normal;
-  overflow-wrap: anywhere;
+  overflow-x: auto;
+  overflow-wrap: normal;
+  white-space: nowrap;
   font-size: 12px;
   line-height: 1.3;
 }
