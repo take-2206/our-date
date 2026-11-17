@@ -2657,6 +2657,110 @@ body.note-resizing * {
 .pet-card .pet-reactions-toggle {
   pointer-events: auto;
 }
+.pet-card .pet-chat .pet-text-form {
+  grid-template-columns: minmax(0, 1fr) 40px 48px minmax(72px, auto);
+}
+.pet-card .pet-messages-open {
+  width: auto;
+  min-width: 72px;
+  padding: 0 10px;
+}
+.pet-message-modal {
+  z-index: 40;
+}
+.pet-message-window {
+  display: flex;
+  width: min(500px, 100%);
+  max-height: min(720px, calc(100dvh - 40px));
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  overflow: hidden;
+  border-color: var(--pk);
+}
+.pet-message-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.pet-message-head h2 {
+  margin-top: 3px;
+  color: var(--pk);
+  font-size: 19px;
+}
+.pet-message-error {
+  padding: 9px 11px;
+  border: 1px solid rgba(255, 105, 180, 0.28);
+  border-radius: 10px;
+  color: var(--pk2);
+}
+.pet-message-thread {
+  display: flex;
+  min-height: 260px;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px 4px;
+}
+.pet-message-row {
+  display: flex;
+  justify-content: flex-start;
+}
+.pet-message-row.is-own {
+  justify-content: flex-end;
+}
+.pet-message-bubble {
+  max-width: 78%;
+  padding: 9px 11px 7px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 15px 15px 15px 4px;
+  background: rgba(255, 255, 255, 0.075);
+}
+.pet-message-row.is-own .pet-message-bubble {
+  border-color: rgba(255, 105, 180, 0.34);
+  border-radius: 15px 15px 4px 15px;
+  background: rgba(255, 105, 180, 0.16);
+}
+.pet-message-bubble p {
+  overflow-wrap: anywhere;
+}
+.pet-message-bubble small {
+  display: block;
+  margin-top: 3px;
+  color: var(--mut);
+  font-size: 9px;
+}
+.pet-message-compose {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+.pet-message-compose .btn {
+  width: auto;
+  padding: 0 16px;
+}
+@media (max-width: 600px) {
+  .pet-card .pet-chat .pet-text-form {
+    grid-template-columns: minmax(0, 1fr) 36px 44px 46px;
+  }
+  .pet-card .pet-messages-open {
+    min-width: 46px;
+    padding: 0 5px;
+    overflow: hidden;
+    font-size: 9px;
+    text-overflow: ellipsis;
+  }
+  .pet-message-window {
+    max-height: calc(100dvh - 24px);
+    padding: 14px;
+  }
+  .pet-message-thread {
+    min-height: 220px;
+  }
+}
 .pet-snow {
   position: absolute;
   z-index: 1;
@@ -5769,6 +5873,28 @@ body.note-resizing * {
   border-radius: 15px;
   background: rgba(24, 17, 26, 0.96);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.42);
+}
+
+/* Keep the pet messenger above the pet scene and centered in the viewport. */
+.mod.pet-message-modal {
+  z-index: 50;
+  align-items: center;
+  justify-content: center;
+  padding: max(12px, env(safe-area-inset-top)) 12px
+    max(12px, env(safe-area-inset-bottom));
+}
+.pet-message-modal .pet-message-window {
+  width: min(500px, 100%);
+  max-height: calc(100dvh - 24px);
+  margin: 0 auto;
+}
+.pet-message-modal .pet-message-compose {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
 }
 .pet-reactions button {
   width: 38px;

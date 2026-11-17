@@ -113,6 +113,14 @@ const VAPID_PUBLIC = 'BIol42oCVVxoqcBVueyTLai3kV8qseeVBYozCu5SiUqb_0G33VrVVec7dF
           });
         } catch (x) {}
       }
+      async function pushPetMessage(messageId) {
+        if (!S.user || !messageId) return;
+        try {
+          await sb.functions.invoke('send-push', {
+            body: { type: 'pet_message', message_id: Number(messageId) },
+          });
+        } catch (x) {}
+      }
       function pushNote() {
         const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
         const m = !pushOK()
@@ -146,6 +154,10 @@ const VAPID_PUBLIC = 'BIol42oCVVxoqcBVueyTLai3kV8qseeVBYozCu5SiUqb_0G33VrVVec7dF
           if (e.data && e.data.type == 'open-event') openFromUrl(e.data.id);
           else if (e.data && e.data.type == 'open-notes' && S.user) {
             view = 'notes';
+            render();
+          } else if (e.data && e.data.type == 'open-pet-messages' && S.user) {
+            view = 'cal';
+            petMessagesOpen = true;
             render();
           } else if (e.data && e.data.type == 'check-update')
             navigator.serviceWorker.getRegistration().then((registration) => registration?.update()).catch(() => {});

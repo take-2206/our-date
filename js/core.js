@@ -1,8 +1,10 @@
 // LoveSync core module. Classic scripts share state declared in js/core.js.
 /* ===== 1. NGÔN NGỮ (vi / en). Thêm chữ mới = thêm cùng một khoá ở cả hai bên ===== */
-const APP_VERSION = '1.50.25';
-let PET = { name: "MINI CHIBI", reactions: [] };
+const APP_VERSION = '1.50.29';
+let PET = { name: "MINI CHIBI", reactions: [], messages: [] };
 let petReactionsOpen = false;
+let petMessagesOpen = false;
+let petMessageError = '';
 let uiPointerActive = false;
 let TTT = {
   board: Array(9).fill(''),
@@ -233,6 +235,10 @@ let TTT = {
           petDeleteBubble: 'Xóa bubble của bạn',
           petTextPlaceholder: 'Nhắn lời gì cho pet...',
           petTextSend: 'Gửi',
+          petMessages: 'Tin nhắn',
+          petMessagesEmpty: 'Chưa có tin nhắn nào. Hãy gửi lời đầu tiên nhé!',
+          petMessagesSetup: 'Lịch sử tin nhắn chưa được thiết lập. Hãy chạy lại supabase-pet.sql trong Supabase.',
+          petMessageReceived: '{name} vừa gửi: {message}',
           cfg: 'Chưa điền SUPABASE_URL và SUPABASE_KEY trong js/core.js.',
         },
         en: {
@@ -451,6 +457,10 @@ let TTT = {
 
           petTextPlaceholder: 'Write a message for your pet...',
           petTextSend: 'Send',
+          petMessages: 'Messages',
+          petMessagesEmpty: 'No messages yet. Send the first one!',
+          petMessagesSetup: 'Message history is not set up. Run supabase-pet.sql in Supabase again.',
+          petMessageReceived: '{name} sent: {message}',
           cfg: 'SUPABASE_URL and SUPABASE_KEY are not set in js/core.js.',
         },
       };

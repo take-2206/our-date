@@ -273,21 +273,54 @@
         photoError = ph.error ? ph.error.message : '';
         C.photos = (ph.data || []).map(toPhoto).sort((a, b) => b.date.localeCompare(a.date) || b.ts - a.ts);
         await signPhotos();
-        await loadPetReactions();
+        await Promise.all([loadPetReactions(), loadPetMessages()]);
       }
       const petLocalKey = () => 'ls_pet_' + (S.user && S.user.couple_id || '');
+      function saveLocalPet() {
+        try {
+          localStorage.setItem(petLocalKey(), JSON.stringify({
+            name: PET.name,
+            reactions: PET.reactions || [],
+            messages: PET.messages || [],
+          }));
+        } catch (x) {}
+      }
       function loadLocalPet() {
         try {
           const local = JSON.parse(localStorage.getItem(petLocalKey()) || '{}');
-          PET = { name: local.name || 'Mochi', reactions: local.reactions || [] };
-        } catch (x) { PET = { name: 'Mochi', reactions: [] }; }
+          PET = { name: local.name || 'Mochi', reactions: local.reactions || [], messages: local.messages || [] };
+        } catch (x) { PET = { name: 'Mochi', reactions: [], messages: [] }; }
       }
       async function loadPetReactions() {
         try {
           const { data, error } = await sb.from('pet_reactions').select('id, emoji, sender_id, created_at').eq('couple_id', S.user.couple_id).order('created_at', { ascending: true }).limit(2);
           if (error) return;
           PET.reactions = (data || []).map((r) => ({ id: r.id, emoji: r.emoji, by: r.sender_id, byName: (P[r.sender_id] || {}).name || '', at: Date.parse(r.created_at) || Date.now() }));
+          saveLocalPet();
         } catch (x) {}
+      }
+      const toPetMessage = (row) => ({
+        id: row.id,
+        text: row.body,
+        by: row.sender_id,
+        byName: (P[row.sender_id] || {}).name || '',
+        at: Date.parse(row.created_at) || Date.now(),
+      });
+      async function loadPetMessages() {
+        try {
+          const { data, error } = await sb
+            .from('pet_messages')
+            .select('id, body, sender_id, created_at')
+            .eq('couple_id', S.user.couple_id)
+            .order('created_at', { ascending: false })
+            .limit(100);
+          if (error) throw error;
+          PET.messages = (data || []).reverse().map(toPetMessage);
+          petMessageError = '';
+          saveLocalPet();
+        } catch (x) {
+          petMessageError = x.message || String(x);
+        }
       }
       async function sendPetReaction(message) {
         const emoji = String(message || '').trim().slice(0, 120);
@@ -298,11 +331,48 @@
         try {
           const { error } = await sb.from('pet_reactions').upsert({ couple_id: S.user.couple_id, sender_id: S.user.id, emoji, created_at: new Date().toISOString() }, { onConflict: 'couple_id,sender_id' });
           if (error) throw error;
-          localStorage.setItem(petLocalKey(), JSON.stringify({ name: PET.name, reactions: PET.reactions }));
+          saveLocalPet();
         } catch (x) {
-          localStorage.setItem(petLocalKey(), JSON.stringify({ name: PET.name, reactions: PET.reactions }));
+          saveLocalPet();
          say('Bubble đã hiện trên máy này. Không đồng bộ được: ' + (x.message || x));
         }
+      }
+      async function sendPetMessage(message) {
+        const text = String(message || '').trim().slice(0, 120);
+        if (!text || !S.user) return;
+        const localId = 'local-message-' + Date.now(),
+          local = { id: localId, text, by: S.user.id, byName: S.user.name, at: Date.now() };
+        PET.messages = (PET.messages || []).concat(local).slice(-100);
+        saveLocalPet();
+        render();
+        try {
+          const { data, error } = await sb
+            .from('pet_messages')
+            .insert({ couple_id: S.user.couple_id, sender_id: S.user.id, body: text })
+            .select('id, body, sender_id, created_at')
+            .single();
+          if (error) throw error;
+          PET.messages = (PET.messages || []).map((item) => item.id == localId ? toPetMessage(data) : item);
+          petMessageError = '';
+          saveLocalPet();
+          render();
+          if (typeof pushPetMessage == 'function') pushPetMessage(data.id);
+        } catch (x) {
+          petMessageError = x.message || String(x);
+          saveLocalPet();
+          say(t('petMessagesSetup'));
+          render();
+        }
+      }
+      async function onPetMessageInsert(change) {
+        const incoming = change && change.new;
+        await refresh();
+        if (!incoming || !S.user || incoming.sender_id == S.user.id) return;
+        const name = (P[incoming.sender_id] || {}).name || t('pt'),
+          preview = String(incoming.body || '').replace(/\s+/g, ' ').trim().slice(0, 80),
+          message = t('petMessageReceived').replace('{name}', name).replace('{message}', preview);
+        if (pushOn) say(message);
+        else notifyApp(message, 'pet-message-' + incoming.id, 'open-pet-messages');
       }
       function sendPetTouch() {
   if (!CH || !S.user || !realtimeReady) return;
@@ -321,15 +391,15 @@ function onPetTouch(p) {
         try {
           const { error } = await sb.from('pet_reactions').delete().eq('couple_id', S.user.couple_id).eq('sender_id', S.user.id);
           if (error) throw error;
-          localStorage.setItem(petLocalKey(), JSON.stringify({ name: PET.name, reactions: PET.reactions }));
+          saveLocalPet();
         } catch (x) {
-          localStorage.setItem(petLocalKey(), JSON.stringify({ name: PET.name, reactions: PET.reactions }));
+          saveLocalPet();
           say('Bubble đã ẩn ở máy này. Hãy chạy supabase-pet.sql để đồng bộ thao tác xóa.');
         }
       }
       function savePetName(name) {
         PET.name = name;
-        localStorage.setItem(petLocalKey(), JSON.stringify({ name, reactions: PET.reactions || [] }));
+        saveLocalPet();
         render();
       }
       let deferredRefreshPending = false,
@@ -483,7 +553,7 @@ function onPetTouch(p) {
         localTypingSentAt = 0;
         if (CH) sb.removeChannel(CH);
         const f = 'couple_id=eq.' + S.user.couple_id;
-        CH = sb
+        let channel = sb
           .channel('c-' + S.user.couple_id, { config: { presence: { key: notePresenceKey } } })
           .on('presence', { event: 'sync' }, syncNoteTypingPresence)
           .on('broadcast', { event: 'pet_touch' }, (m) => onPetTouch(m.payload))
@@ -497,7 +567,14 @@ function onPetTouch(p) {
             if (view == 'game') render();
           })
           .on('postgres_changes', { event: '*', schema: 'public', table: 'events', filter: f }, refresh)
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'pet_reactions', filter: f }, refresh)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'pet_reactions', filter: f }, refresh);
+        if (!petMessageError) {
+          channel = channel
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pet_messages', filter: f }, onPetMessageInsert)
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pet_messages', filter: f }, refresh)
+            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'pet_messages' }, refresh);
+        }
+        CH = channel
           .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'events' }, refresh)
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notes', filter: f }, onNoteInsert)
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notes', filter: f }, onNoteUpdate)

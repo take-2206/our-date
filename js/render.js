@@ -15,6 +15,8 @@ function render() {
                 (pv != null ? vPv() : '') +
                 toastPrompt();
         $('#app').innerHTML = content + appUpdatePrompt();
+        const petThread = document.querySelector('.pet-message-thread');
+        if (petThread) requestAnimationFrame(() => (petThread.scrollTop = petThread.scrollHeight));
         // Từ lịch bấm "Mở trong album" (hoặc vừa thêm ảnh): cuộn tới đúng ngày trong album
         if (albumFocus && view == 'album') {
           const el = document.getElementById('ad-' + albumFocus);
