@@ -1,0 +1,4 @@
+project_id = "our-date"
+
+[functions.reset-password]
+verify_jwt = false

@@ -349,6 +349,9 @@
           const text = String(v.text || '').trim();
           if (text) sendPetReaction(text);
           return;
+        } else if (k == 'reset') {
+          resetPassword(v);
+          return;
         } else if (k == 'auth') {
           doAuth(f, v);
           return;
