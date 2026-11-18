@@ -135,6 +135,41 @@ $$;
 revoke execute on function public.ack_pet_messages(bigint[], bigint[]) from public, anon;
 grant execute on function public.ack_pet_messages(bigint[], bigint[]) to authenticated;
 
+-- Short-lived foreground chat sessions used to decide whether to send a push.
+create table if not exists public.pet_chat_sessions (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  session_id uuid not null,
+  expires_at timestamptz not null,
+  primary key (user_id, session_id)
+);
+alter table public.pet_chat_sessions enable row level security;
+revoke all on public.pet_chat_sessions from public, anon, authenticated;
+grant select on public.pet_chat_sessions to service_role;
+
+create or replace function public.set_pet_chat_active(p_session_id uuid, p_active boolean)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  caller_id uuid := auth.uid();
+begin
+  if caller_id is null then return; end if;
+  delete from public.pet_chat_sessions
+  where user_id = caller_id
+    and (expires_at <= now() or (not p_active and session_id = p_session_id));
+  if p_active then
+    insert into public.pet_chat_sessions (user_id, session_id, expires_at)
+    values (caller_id, p_session_id, now() + interval '15 seconds')
+    on conflict (user_id, session_id) do update set expires_at = excluded.expires_at;
+  end if;
+end;
+$$;
+
+revoke execute on function public.set_pet_chat_active(uuid, boolean) from public, anon;
+grant execute on function public.set_pet_chat_active(uuid, boolean) to authenticated;
+
 do $$
 begin
   if not exists (

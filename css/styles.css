@@ -2837,6 +2837,7 @@ body.note-resizing * {
 }
 .pet-message-bubble p {
   overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 .pet-message-bubble small {
   display: block;
@@ -6116,4 +6117,19 @@ body.note-resizing * {
 /* Keep dialogs and the calendar add sheet above the pet chat composer. */
 .mod {
   z-index: 100;
+}
+
+.pet-text-form textarea.in,
+.pet-message-compose textarea.in {
+  display: block;
+  min-width: 0;
+  padding: 4px 12px;
+  font-size: 16px;
+  line-height: 18px;
+  resize: none;
+}
+.pet-chat-bubble.is-text span {
+  max-height: 3.9em;
+  overflow-y: auto;
+  white-space: pre;
 }

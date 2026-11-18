@@ -353,12 +353,8 @@
           k = f.dataset.f,
           formData = new FormData(f),
           v = Object.fromEntries(formData);
-        if (k == 'petText') {
-          const text = String(v.text || '').trim();
-          stopLocalPetTyping();
-          if (text) sendPetMessage(text);
-          return;
-        } else if (k == 'petMessage') {
+        if (k == 'petText' || k == 'petMessage') {
+          if (!e.submitter?.matches('button[type="submit"]')) return;
           const text = String(v.text || '').trim();
           stopLocalPetTyping();
           if (text) sendPetMessage(text);
