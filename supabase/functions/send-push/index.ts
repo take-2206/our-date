@@ -118,8 +118,16 @@ async function onPetMessage(req: Request, body: { message_id?: number }) {
     .neq('user_id', user.id)
     .eq('n3', true);
   const preview = String(message.body || '').replace(/\s+/g, ' ').trim().slice(0, 140);
+  const recipientIds = [...new Set((subs ?? []).map((sub) => sub.user_id))];
+  const activeUsers = new Set<string>();
+  if (recipientIds.length) {
+    const { data: activeChats } = await db.from('pet_chat_sessions').select('user_id')
+      .in('user_id', recipientIds).gt('expires_at', new Date().toISOString());
+    for (const chat of activeChats ?? []) activeUsers.add(chat.user_id);
+  }
   let sent = 0;
   for (const s of (subs ?? []) as Sub[]) {
+    if (activeUsers.has(s.user_id)) continue;
     const title = s.lang === 'en'
       ? `${profile.name || 'Your partner'} sent a pet message`
       : `${profile.name || 'Người ấy'} vừa gửi tin nhắn cho thú cưng`;

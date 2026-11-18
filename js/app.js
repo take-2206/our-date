@@ -1,4 +1,10 @@
 // LoveSync app module. Classic scripts share state declared in js/core.js.
+const petChatSessionId = globalThis.crypto?.randomUUID?.();
+let petChatPublishedFor = null,
+    petChatPublishedAt = 0,
+    petChatPublishBusy = false,
+    petChatDesiredState = false;
+
 (async () => {
         const params = new URLSearchParams(location.search);
         if (CFG) {
@@ -21,7 +27,32 @@
         }
       })();
 
+function petChatIsActive() {
+        return !!(S.user && view == 'cal' && petMessagesOpen && document.visibilityState == 'visible');
+      }
+
+async function publishPetChatActivity(active = petChatIsActive()) {
+        petChatDesiredState = active;
+        const user = S.user;
+        if (!user || !petChatSessionId || petChatPublishBusy) return;
+        if (active && petChatPublishedFor === user.id && Date.now() - petChatPublishedAt < 5000) return;
+        if (!active && petChatPublishedFor !== user.id) return;
+        petChatPublishBusy = true;
+        petChatPublishedFor = active ? user.id : null;
+        petChatPublishedAt = Date.now();
+        try {
+          await sb.rpc('set_pet_chat_active', { p_session_id: petChatSessionId, p_active: active });
+        } catch (error) {
+          // The server expires the record if a disconnect prevents clearing it.
+        } finally {
+          petChatPublishBusy = false;
+          if (S.user === user && petChatDesiredState !== active)
+            void publishPetChatActivity(petChatDesiredState);
+        }
+      }
+
 function notifyApp(body, tag, type, title = 'LoveSync') {
+        if (type == 'open-pet-messages' && petChatIsActive()) return;
         say(body);
         if (
           !('Notification' in window) ||
@@ -30,8 +61,9 @@ function notifyApp(body, tag, type, title = 'LoveSync') {
         )
           return;
         navigator.serviceWorker.ready
-          .then((registration) =>
-            registration.showNotification(title, {
+          .then((registration) => {
+            if (type == 'open-pet-messages' && petChatIsActive()) return;
+            return registration.showNotification(title, {
               body,
               icon: './img/icons/app-icon-192.png',
               badge: './img/icons/app-icon-192.png',
@@ -43,8 +75,8 @@ function notifyApp(body, tag, type, title = 'LoveSync') {
                 url: type == 'open-notes' ? './?view=notes' : type == 'open-pet-messages' ? './?view=pet-messages' : './',
                 type: type || '',
               },
-            }),
-          )
+            });
+          })
           .catch(() => {});
       }
 
@@ -113,6 +145,7 @@ document.addEventListener('scroll', (event) => {
 
 document.addEventListener('visibilitychange', () => {
         if (!S.user) return;
+        void publishPetChatActivity();
         if (typeof sendRealtimeOnlineState == 'function')
           sendRealtimeOnlineState(document.visibilityState == 'visible');
         if (document.visibilityState != 'visible' || typeof refresh != 'function') return;
@@ -122,13 +155,16 @@ document.addEventListener('visibilitychange', () => {
       });
 
 addEventListener('pagehide', () => {
+        void publishPetChatActivity(false);
         if (S.user && typeof sendRealtimeOnlineState == 'function') sendRealtimeOnlineState(false);
       });
 addEventListener('pageshow', () => {
+        void publishPetChatActivity();
         if (S.user && typeof sendRealtimeOnlineState == 'function') sendRealtimeOnlineState(true);
       });
 
 setInterval(() => {
+        if (petChatIsActive()) void publishPetChatActivity();
         if (document.visibilityState == 'visible' && S.user && typeof sendRealtimeOnlineState == 'function')
           sendRealtimeOnlineState(true);
         if (typeof expireRealtimeOnlineState == 'function') expireRealtimeOnlineState();
