@@ -179,6 +179,9 @@ const VAPID_PUBLIC = 'BIol42oCVVxoqcBVueyTLai3kV8qseeVBYozCu5SiUqb_0G33VrVVec7dF
             view = 'cal';
             petMessagesOpen = true;
             render();
+            syncPetMessagesLive();
+          } else if (e.data && e.data.type == 'sync-pet-messages' && S.user) {
+            syncPetMessagesLive();
           } else if (e.data && e.data.type == 'check-update')
             navigator.serviceWorker.getRegistration().then((registration) => registration?.update()).catch(() => {});
         });

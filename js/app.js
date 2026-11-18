@@ -107,9 +107,34 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
         });
       }
 
+document.addEventListener('scroll', (event) => {
+        if (event.target.matches?.('.pet-message-thread')) acknowledgePetMessages();
+      }, true);
+
 document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState != 'visible' || !S.user || typeof refresh != 'function') return;
+        if (!S.user) return;
+        if (typeof sendRealtimeOnlineState == 'function')
+          sendRealtimeOnlineState(document.visibilityState == 'visible');
+        if (document.visibilityState != 'visible' || typeof refresh != 'function') return;
         refresh().then(() => {
           if (typeof paintPetMessages == 'function') paintPetMessages();
         }).catch(() => {});
       });
+
+addEventListener('pagehide', () => {
+        if (S.user && typeof sendRealtimeOnlineState == 'function') sendRealtimeOnlineState(false);
+      });
+addEventListener('pageshow', () => {
+        if (S.user && typeof sendRealtimeOnlineState == 'function') sendRealtimeOnlineState(true);
+      });
+
+setInterval(() => {
+        if (document.visibilityState == 'visible' && S.user && typeof sendRealtimeOnlineState == 'function')
+          sendRealtimeOnlineState(true);
+        if (typeof expireRealtimeOnlineState == 'function') expireRealtimeOnlineState();
+      }, 5000);
+
+setInterval(() => {
+        if (document.visibilityState == 'visible' && S.user && petMessagesOpen)
+          syncPetMessagesLive();
+      }, 2500);

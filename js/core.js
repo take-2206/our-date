@@ -1,10 +1,11 @@
 // LoveSync core module. Classic scripts share state declared in js/core.js.
 /* ===== 1. NGÔN NGỮ (vi / en). Thêm chữ mới = thêm cùng một khoá ở cả hai bên ===== */
-const APP_VERSION = '1.50.44';
+const APP_VERSION = '1.50.48';
 let PET = { name: "MINI CHIBI", reactions: [], messages: [] };
 let petReactionsOpen = false;
 let petMessagesOpen = false;
 let petMessageError = '';
+let petMessageSyncBusy = false;
 let uiPointerActive = false;
 let TTT = {
   board: Array(9).fill(''),
@@ -240,6 +241,11 @@ let TTT = {
           petMessagesEmpty: 'Chưa có tin nhắn nào. Hãy gửi lời đầu tiên nhé!',
           petMessagesSetup: 'Lịch sử tin nhắn chưa được thiết lập. Hãy chạy lại supabase-pet.sql trong Supabase.',
           petMessageReceived: '{name} vừa gửi: {message}',
+          petReceiptSending: 'Đang gửi',
+          petReceiptSent: 'Đã gửi',
+          petReceiptReceived: 'Đã nhận',
+          petReceiptRead: 'Đã đọc',
+          petReceiptLocal: 'Đã lưu trên thiết bị',
           petOnline: 'Đang online',
           petOffline: 'Ngoại tuyến',
           petTyping: '{name} đang nhập…',
@@ -466,6 +472,11 @@ let TTT = {
           petMessagesEmpty: 'No messages yet. Send the first one!',
           petMessagesSetup: 'Message history is not set up. Run supabase-pet.sql in Supabase again.',
           petMessageReceived: '{name} sent: {message}',
+          petReceiptSending: 'Sending',
+          petReceiptSent: 'Sent',
+          petReceiptReceived: 'Received',
+          petReceiptRead: 'Read',
+          petReceiptLocal: 'Saved on this device',
           petOnline: 'Online',
           petOffline: 'Offline',
           petTyping: '{name} is typing…',
@@ -561,6 +572,7 @@ let TTT = {
         noteTypers = {},
         notePresenceKey = Math.random().toString(36).slice(2),
         partnerOnline = false,
+        partnerOnlineLastSeen = 0,
         partnerPetTyping = false,
         realtimeReady = false,
         localTypingNote = null,

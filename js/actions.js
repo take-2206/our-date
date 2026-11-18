@@ -62,6 +62,7 @@ function act(a, d, el) {
     petReactionsOpen = false;
     bell = false;
     dcmod = false;
+    syncPetMessagesLive();
   } else if (a == "petMessagesClose") {
     petMessagesOpen = false;
   } else if (a == "petClear") {

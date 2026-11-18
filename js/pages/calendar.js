@@ -95,7 +95,10 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           const k = key(d),
             entries = EV().filter((e) => e.date == k),
             es = entries.filter((e) => !isFreeDay(e)),
-            free = entries.filter(isFreeDay),
+            freeDaysForCell = entries.filter(isFreeDay),
+            matchedFreeDay = new Set(freeDaysForCell.map((e) => e.by).filter(Boolean)).size > 1,
+            hasConfirmedDate = es.some((e) => !e.st || e.st == 'ok'),
+            free = matchedFreeDay && hasConfirmedDate ? [] : freeDaysForCell,
             np = photosOn(k).length;
           cells.push(
             `<button class="cl${d.getMonth() != m ? ' o' : ''}${k == tk ? ' td' : ''}${k == sel ? ' sl' : ''}${es.length ? ' has-plan' : ''}${free.length ? ' has-free' : ''}${np ? ' has-ph' : ''}" data-a="day" data-k="${k}" aria-label="${fmt(k, { dateStyle: 'full' })}${es.length ? `, ${es.length} ${t('det')}` : ''}${free.length ? `, ${free.length} ${t('freeDay')}` : ''}${np ? `, ${np} ${t('phMore')}` : ''}"><span>${d.getDate()}</span>${es.length ? heartLightHtml(k) : ''}${free.length ? `<span class="free-day-markers" aria-hidden="true">${free.slice(0, 2).map((e) => `<i class="${typeof freeDayOwnerClass == 'function' ? freeDayOwnerClass(e.by) : ''}">${freeIcon(e)}</i>`).join('')}</span>` : ''}${np ? '<i class="ph-dot" aria-hidden="true"></i>' : ''}</button>`,
@@ -265,7 +268,16 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           person = P[message.by] || (own ? S.user : {}),
           name = own ? t('you') : person.name || t('petPartner'),
           gender = person.gender || (own ? me() : pr());
-        return `<article class="pet-message-row${own ? ' is-own' : ''}"><span class="pet-message-avatar" aria-hidden="true"><img src="./img/pet/mini_${gender == 'm' ? 'boy' : 'girl'}.png" alt=""></span><div class="pet-message-bubble"><p>${esc(message.text)}</p><small>${esc(name)} · ${new Date(message.at).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' })}</small></div></article>`;
+        let status = '';
+        if (own) {
+          if (message.readAt) status = 'petReceiptRead';
+          else if (message.receivedAt) status = 'petReceiptReceived';
+          else if (message.failed) status = 'petReceiptLocal';
+          else if (String(message.id).startsWith('local-')) status = 'petReceiptSending';
+          else status = 'petReceiptSent';
+        }
+        const receipt = status ? ` · <span class="pet-message-receipt${message.readAt ? ' is-read' : ''}">${esc(t(status))}</span>` : '';
+        return `<article class="pet-message-row${own ? ' is-own' : ''}" data-pet-message-id="${esc(message.id)}"><span class="pet-message-avatar" aria-hidden="true"><img src="./img/pet/mini_${gender == 'm' ? 'boy' : 'girl'}.png" alt=""></span><div class="pet-message-bubble"><p>${esc(message.text)}</p><small>${esc(name)} · ${new Date(message.at).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' })}${receipt}</small></div></article>`;
       }
 
       function petMessageListHtml() {
@@ -277,9 +289,15 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
 
       function paintPetMessages() {
         document.querySelectorAll('[data-pet-message-list]').forEach((list) => {
-          list.innerHTML = petMessageListHtml();
           const thread = list.closest('.pet-message-thread');
-          if (thread) requestAnimationFrame(() => (thread.scrollTop = thread.scrollHeight));
+          const atBottom = thread && thread.scrollHeight - thread.scrollTop - thread.clientHeight < 32;
+          const html = petMessageListHtml();
+          if (list.petMessageHtml !== html) {
+            list.innerHTML = html;
+            list.petMessageHtml = html;
+            if (atBottom) thread.scrollTop = thread.scrollHeight;
+          }
+          requestAnimationFrame(acknowledgePetMessages);
         });
       }
 
