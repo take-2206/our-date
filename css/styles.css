@@ -2765,32 +2765,35 @@ body.note-resizing * {
 }
 .pet-message-row {
   display: flex;
+  width: 100%;
   align-items: flex-end;
-  gap: 7px;
+  gap: 8px;
   justify-content: flex-start;
 }
 .pet-message-row.is-own {
-  justify-content: flex-end;
+  justify-content: flex-start;
+  flex-direction: row-reverse;
 }
 .pet-message-avatar {
-  width: 30px;
-  height: 30px;
-  flex: 0 0 30px;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  place-items: end center;
   overflow: hidden;
-  border: 1px solid rgba(255, 105, 180, 0.28);
+  border: 1px solid rgba(255, 105, 180, 0.42);
   border-radius: 50%;
-  background: rgba(255, 105, 180, 0.1);
+  background: #241821;
 }
 .pet-message-avatar img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: contain;
-}
-.pet-message-row.is-own .pet-message-avatar {
-  order: 2;
+  object-position: bottom;
 }
 .pet-message-bubble {
-  max-width: 78%;
+  max-width: min(78%, calc(100% - 42px));
   padding: 9px 11px 7px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 15px 15px 15px 4px;
