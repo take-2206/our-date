@@ -2789,6 +2789,11 @@ body.note-resizing * {
 .pet-message-thread::-webkit-scrollbar-corner {
   background: transparent;
 }
+.pet-message-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 .pet-message-row {
   display: flex;
   width: 100%;
@@ -5985,6 +5990,13 @@ body.note-resizing * {
 }
 
 /* Keep the pet messenger above the pet scene and centered in the viewport. */
+.top {
+  position: relative;
+  z-index: 30;
+}
+.top .pop {
+  z-index: 50;
+}
 .mod {
   z-index: 50;
 }

@@ -1,4 +1,4 @@
-const CACHE = 'lovesync-v1.50.46';
+const CACHE = 'lovesync-v1.50.51';
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -134,6 +134,9 @@ self.addEventListener("push", (event) => {
       icon: "./img/icons/app-icon-192.png",
       badge: "./img/icons/app-icon-192.png",
       tag: d.tag || undefined,
+      renotify: !!d.tag,
+      requireInteraction: d.type === 'app-update',
+      vibrate: d.type === 'app-update' ? [180, 80, 180] : undefined,
       lang: d.lang || undefined,
       data: { url: d.url || './', id: d.id || null, type: d.type || '' },
     }),

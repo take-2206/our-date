@@ -356,6 +356,7 @@
           petMessageError = '';
           saveLocalPet();
           render();
+          sendPetMessageBroadcast(data);
           if (typeof pushPetMessage == 'function') await pushPetMessage(data.id);
         } catch (x) {
           petMessageError = x.message || String(x);
@@ -366,13 +367,30 @@
       }
       async function onPetMessageInsert(change) {
         const incoming = change && change.new;
-        await refresh();
-        if (!incoming || !S.user || incoming.sender_id == S.user.id) return;
+        if (!incoming || !S.user) return;
+        const messageRow = toPetMessage(incoming),
+          existed = (PET.messages || []).some((item) => String(item.id) == String(messageRow.id));
+        PET.messages = existed
+          ? (PET.messages || []).map((item) => String(item.id) == String(messageRow.id) ? messageRow : item)
+          : (PET.messages || []).concat(messageRow).slice(-100);
+        saveLocalPet();
+        if (typeof paintPetMessages == 'function') paintPetMessages();
+        requestDeferredRefresh();
+        if (incoming.sender_id == S.user.id || existed) return;
         const name = (P[incoming.sender_id] || {}).name || t('pt'),
           preview = String(incoming.body || '').replace(/\s+/g, ' ').trim().slice(0, 80),
           message = t('petMessageReceived').replace('{name}', name).replace('{message}', preview);
         if (pushOn) say(message);
         else notifyApp(message, 'pet-message-' + incoming.id, 'open-pet-messages');
+      }
+      function sendPetMessageBroadcast(row) {
+        if (!CH || !S.user || !realtimeReady || !row) return;
+        Promise.resolve(
+          CH.send({ type: 'broadcast', event: 'pet_message', payload: { row } }),
+        ).catch(() => {});
+      }
+      function onPetMessageBroadcast(payload) {
+        if (payload && payload.row) onPetMessageInsert({ new: payload.row });
       }
       function sendPetTouch() {
   if (!CH || !S.user || !realtimeReady) return;
@@ -614,6 +632,7 @@ function onPetTouch(p) {
           .channel('c-' + S.user.couple_id, { config: { presence: { key: notePresenceKey } } })
           .on('presence', { event: 'sync' }, syncNoteTypingPresence)
           .on('broadcast', { event: 'pet_touch' }, (m) => onPetTouch(m.payload))
+          .on('broadcast', { event: 'pet_message' }, (m) => onPetMessageBroadcast(m.payload))
           .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'pet_reactions' }, refresh)
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tic_tac_toe_games', filter: f }, (change) => {
             applyTttGame(change.new, true);

@@ -21,7 +21,7 @@
         }
       })();
 
-function notifyApp(body, tag, type) {
+function notifyApp(body, tag, type, title = 'LoveSync') {
         say(body);
         if (
           !('Notification' in window) ||
@@ -31,11 +31,14 @@ function notifyApp(body, tag, type) {
           return;
         navigator.serviceWorker.ready
           .then((registration) =>
-            registration.showNotification('LoveSync', {
+            registration.showNotification(title, {
               body,
               icon: './img/icons/app-icon-192.png',
               badge: './img/icons/app-icon-192.png',
               tag,
+              renotify: !!tag,
+              requireInteraction: type == 'app-update',
+              vibrate: type == 'app-update' ? [180, 80, 180] : undefined,
               data: {
                 url: type == 'open-notes' ? './?view=notes' : type == 'open-pet-messages' ? './?view=pet-messages' : './',
                 type: type || '',
@@ -51,7 +54,8 @@ function offerAppUpdate(registration) {
         appUpdateRegistration = registration;
         appUpdateReady = true;
         paintAppUpdatePrompt();
-        if (firstNotice) notifyApp(t('updateAvailable'), 'app-update', 'app-update');
+        if (firstNotice)
+          notifyApp(t('updateAvailable'), 'app-update', 'app-update', t('updateNotificationTitle'));
       }
 
 async function applyAppUpdate() {
@@ -87,13 +91,25 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
                 if (worker.state == 'installed') offerAppUpdate(registration);
               });
             });
-            const checkForUpdate = () => {
-              if (document.visibilityState != 'visible' || Date.now() - lastUpdateCheck < 300000) return;
+            const checkForUpdate = (force = false) => {
+              if (!force && Date.now() - lastUpdateCheck < 30000) return;
               lastUpdateCheck = Date.now();
-              registration.update().catch(() => {});
+              registration.update().then(() => offerAppUpdate(registration)).catch(() => {});
             };
-            document.addEventListener('visibilitychange', checkForUpdate);
-            setInterval(checkForUpdate, 3600000);
+            document.addEventListener('visibilitychange', () => {
+              if (document.visibilityState == 'visible') checkForUpdate(true);
+            });
+            addEventListener('focus', () => checkForUpdate(true));
+            addEventListener('online', () => checkForUpdate(true));
+            checkForUpdate(true);
+            setInterval(checkForUpdate, 30000);
           } catch (x) {}
         });
       }
+
+document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState != 'visible' || !S.user || typeof refresh != 'function') return;
+        refresh().then(() => {
+          if (typeof paintPetMessages == 'function') paintPetMessages();
+        }).catch(() => {});
+      });
