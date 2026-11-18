@@ -2844,6 +2844,9 @@ body.note-resizing * {
   color: var(--mut);
   font-size: 9px;
 }
+.pet-message-receipt.is-read {
+  color: var(--pk2);
+}
 .pet-message-compose {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

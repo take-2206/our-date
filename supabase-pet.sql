@@ -88,6 +88,10 @@ create table if not exists public.pet_messages (
 create index if not exists pet_messages_couple_created_idx
   on public.pet_messages (couple_id, created_at desc);
 
+alter table public.pet_messages
+  add column if not exists received_at timestamptz,
+  add column if not exists read_at timestamptz;
+
 alter table public.pet_messages enable row level security;
 grant select, insert on public.pet_messages to authenticated;
 grant usage, select on sequence public.pet_messages_id_seq to authenticated;
@@ -103,10 +107,33 @@ create policy "Couple members can read pet messages"
 drop policy if exists "Couple members can send pet messages" on public.pet_messages;
 create policy "Couple members can send pet messages"
   on public.pet_messages for insert to authenticated
-  with check (sender_id = auth.uid() and exists (
+  with check (sender_id = auth.uid() and received_at is null and read_at is null and exists (
     select 1 from public.profiles p
     where p.id = auth.uid() and p.couple_id = pet_messages.couple_id
   ));
+
+-- Only the recipient can acknowledge messages in their own couple.
+create or replace function public.ack_pet_messages(p_received bigint[], p_read bigint[])
+returns table (id bigint, received_at timestamptz, read_at timestamptz)
+language sql
+security definer
+set search_path = ''
+as $$
+  update public.pet_messages as m
+  set received_at = coalesce(m.received_at, now()),
+      read_at = case when m.id = any(p_read) then coalesce(m.read_at, now()) else m.read_at end
+  where m.sender_id <> auth.uid()
+    and exists (
+      select 1 from public.profiles p
+      where p.id = auth.uid() and p.couple_id = m.couple_id
+    )
+    and ((m.received_at is null and m.id = any(p_received))
+      or (m.read_at is null and m.id = any(p_read)))
+  returning m.id, m.received_at, m.read_at;
+$$;
+
+revoke execute on function public.ack_pet_messages(bigint[], bigint[]) from public, anon;
+grant execute on function public.ack_pet_messages(bigint[], bigint[]) to authenticated;
 
 do $$
 begin
