@@ -23,7 +23,7 @@ type Ev = { id: number; couple_id: string; title: string; date: string; time: st
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-push-secret',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-push-secret, x-user-token',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 const json = (o: unknown, status = 200) =>
@@ -33,19 +33,39 @@ const json = (o: unknown, status = 200) =>
   });
 
 async function send(sub: Sub, payload: Record<string, unknown>) {
-  try {
-    await webpush.sendNotification(
-      { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-      JSON.stringify({ ...payload, lang: sub.lang }),
-      { TTL: 3600, urgency: 'high' },
-    );
-    return true;
-  } catch (e) {
-    const code = (e as { statusCode?: number }).statusCode;
-    if (code === 404 || code === 410) await db.from('push_subscriptions').delete().eq('id', sub.id); // máy đã gỡ
-    else console.error('push failed', code, (e as Error).message);
-    return false;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      await webpush.sendNotification(
+        { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+        JSON.stringify({ ...payload, lang: sub.lang }),
+        { TTL: 3600, urgency: 'high' },
+      );
+      return true;
+    } catch (e) {
+      const failure = e as { statusCode?: number; body?: string; message?: string },
+        code = failure.statusCode || 0;
+      if (code === 404 || code === 410) {
+        await db.from('push_subscriptions').delete().eq('id', sub.id);
+        return false;
+      }
+      const retryable = code === 408 || code === 429 || code >= 500;
+      if (retryable && attempt < 2) {
+        await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
+        continue;
+      }
+      let host = 'unknown';
+      try { host = new URL(sub.endpoint).host; } catch (_) {}
+      console.error('push failed', {
+        code,
+        provider: host,
+        message: failure.message || String(e),
+        body: String(failure.body || '').slice(0, 300),
+        attempts: attempt + 1,
+      });
+      return false;
+    }
   }
+  return false;
 }
 
 const hm = (t: string | null) => (t ? t.slice(0, 5) : '');
@@ -139,9 +159,11 @@ async function onNotif(r: { couple_id: string; event_id: number | null; kind: st
 }
 
 async function caller(req: Request) {
-  const token = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
+  const token = (req.headers.get('x-user-token') || req.headers.get('authorization') || '')
+    .replace(/^Bearer\s+/i, '');
   if (!token) return null;
   const { data, error } = await db.auth.getUser(token);
+  if (error) console.error('caller auth failed:', error.message);
   return error ? null : data.user;
 }
 

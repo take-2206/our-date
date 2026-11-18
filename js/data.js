@@ -493,18 +493,38 @@ function onPetTouch(p) {
           el.closest('.sticky')?.classList.toggle('partner-typing', !!text);
         });
       }
-      function sendNoteTyping(noteId, typing) {
+      function sendLocalPresence(noteId, noteTyping, petTyping = localPetTyping) {
         if (!CH || !S.user || !realtimeReady) return;
-        const request = typing
-          ? CH.track({
-              noteId: String(noteId),
-              userId: S.user.id,
-              name: S.user.name || t('you'),
-              typing: true,
-              at: Date.now(),
-            })
-          : CH.untrack();
+        const request = CH.track({
+          noteId: noteTyping && noteId != null ? String(noteId) : '',
+          userId: S.user.id,
+          name: S.user.name || t('you'),
+          online: true,
+          typing: !!noteTyping,
+          petTyping: !!petTyping,
+          at: Date.now(),
+        });
         Promise.resolve(request).catch(() => {});
+      }
+      function sendNoteTyping(noteId, typing) {
+        sendLocalPresence(noteId, typing);
+      }
+      function startLocalPetTyping() {
+        const now = Date.now();
+        localPetTyping = true;
+        if (now - localPetTypingSentAt > 600) {
+          sendLocalPresence(localTypingNote, !!localTypingNote, true);
+          localPetTypingSentAt = now;
+        }
+        clearTimeout(localPetTypingTimer);
+        localPetTypingTimer = setTimeout(stopLocalPetTyping, 1400);
+      }
+      function stopLocalPetTyping() {
+        clearTimeout(localPetTypingTimer);
+        if (localPetTyping) sendLocalPresence(localTypingNote, !!localTypingNote, false);
+        localPetTyping = false;
+        localPetTypingTimer = null;
+        localPetTypingSentAt = 0;
       }
       function startLocalNoteTyping(noteId) {
         const id = String(noteId),
@@ -530,9 +550,15 @@ function onPetTouch(p) {
         if (!CH || !S.user) return;
         const previous = Object.keys(noteTypers),
           next = {};
+        let nextPartnerOnline = false,
+          nextPartnerPetTyping = false;
         Object.values(CH.presenceState() || {})
           .flat()
           .forEach((presence) => {
+            if (presence && presence.userId && presence.userId != S.user.id)
+              nextPartnerOnline = true;
+            if (presence && presence.userId != S.user.id && presence.petTyping)
+              nextPartnerPetTyping = true;
             const id = !presence || presence.noteId == null ? '' : String(presence.noteId);
             if (!id || !presence.typing || presence.userId == S.user.id) return;
             next[id] = {
@@ -541,16 +567,47 @@ function onPetTouch(p) {
             };
           });
         noteTypers = next;
+        partnerOnline = nextPartnerOnline;
+        partnerPetTyping = nextPartnerPetTyping;
         new Set(previous.concat(Object.keys(next))).forEach(paintNoteTyping);
+        paintPetMessagePresence();
+        paintPetMessageTyping();
+      }
+      function paintPetMessagePresence() {
+        const other = partner(),
+          name = (other && other.name) || t('petPartner');
+        document.querySelectorAll('[data-pet-presence]').forEach((el) => {
+          el.textContent = `${name} · ${t(partnerOnline ? 'petOnline' : 'petOffline')}`;
+          el.classList.toggle('is-online', partnerOnline);
+        });
+      }
+      function paintPetMessageTyping() {
+        const other = partner(),
+          name = (other && other.name) || t('petPartner');
+        document.querySelectorAll('[data-pet-typing]').forEach((el) => {
+          el.hidden = !partnerPetTyping;
+          const text = el.querySelector('[data-pet-typing-text]');
+          if (text) text.textContent = t('petTyping').replace('{name}', name);
+          if (partnerPetTyping) {
+            const thread = el.closest('.pet-message-thread');
+            if (thread) thread.scrollTop = thread.scrollHeight;
+          }
+        });
       }
       // Realtime: nghe thay đổi của events / notifs để hai máy đồng bộ ngay
       function subscribe() {
         clearTimeout(localTypingTimer);
         noteTypers = {};
+        partnerOnline = false;
+        partnerPetTyping = false;
         realtimeReady = false;
         localTypingNote = null;
         localTypingTimer = null;
         localTypingSentAt = 0;
+        clearTimeout(localPetTypingTimer);
+        localPetTyping = false;
+        localPetTypingTimer = null;
+        localPetTypingSentAt = 0;
         if (CH) sb.removeChannel(CH);
         const f = 'couple_id=eq.' + S.user.couple_id;
         let channel = sb
@@ -588,7 +645,13 @@ function onPetTouch(p) {
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notifs', filter: f }, refresh)
           .subscribe((status) => {
             realtimeReady = status == 'SUBSCRIBED';
-            if (realtimeReady && localTypingNote) sendNoteTyping(localTypingNote, true);
+            if (realtimeReady) sendLocalPresence(localTypingNote, !!localTypingNote, localPetTyping);
+            else {
+              partnerOnline = false;
+              partnerPetTyping = false;
+              paintPetMessagePresence();
+              paintPetMessageTyping();
+            }
             if (realtimeReady) loadTttGame().then(() => { if (view == 'game') render(); });
           });
       }

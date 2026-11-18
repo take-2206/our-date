@@ -126,7 +126,10 @@ const VAPID_PUBLIC = 'BIol42oCVVxoqcBVueyTLai3kV8qseeVBYozCu5SiUqb_0G33VrVVec7dF
           try {
             const { data, error } = await sb.functions.invoke('send-push', {
               body: { type: 'pet_message', message_id: Number(messageId) },
-              headers: { Authorization: `Bearer ${accessToken}` },
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'x-user-token': accessToken,
+              },
             });
             if (!error && !(data && data.error)) return true;
             lastError = error || new Error(data.error);

@@ -261,14 +261,16 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
       });
 
       function petMessagesHtml() {
-        const messages = PET.messages || [];
-        return `<div class="mod pet-message-modal" data-a="petMessagesClose"><section class="card pet-message-window" role="dialog" aria-modal="true" aria-labelledby="pet-message-title"><header class="pet-message-head"><div><p class="mono sub">// ${esc(PET.name || 'Mochi')}</p><h2 id="pet-message-title" class="px">${esc(t('petMessages'))}</h2></div><button type="button" class="ib" data-a="petMessagesClose" aria-label="${esc(t('close'))}">${I.x}</button></header>${petMessageError ? `<p class="hint pet-message-error">${esc(t('petMessagesSetup'))}</p>` : ''}<div class="pet-message-thread">${messages.length ? messages.map((message) => {
+        const messages = PET.messages || [],
+          other = partner(),
+          presenceName = (other && other.name) || t('petPartner');
+        return `<div class="mod pet-message-modal" data-a="petMessagesClose"><section class="card pet-message-window" role="dialog" aria-modal="true" aria-labelledby="pet-message-title"><header class="pet-message-head"><div><p class="mono sub">// ${esc(PET.name || 'Mochi')}</p><h2 id="pet-message-title" class="px">${esc(t('petMessages'))}</h2><p class="pet-message-presence${partnerOnline ? ' is-online' : ''}" data-pet-presence>${esc(presenceName)} · ${esc(t(partnerOnline ? 'petOnline' : 'petOffline'))}</p></div><button type="button" class="ib" data-a="petMessagesClose" aria-label="${esc(t('close'))}">${I.x}</button></header>${petMessageError ? `<p class="hint pet-message-error">${esc(t('petMessagesSetup'))}</p>` : ''}<div class="pet-message-thread">${messages.length ? messages.map((message) => {
           const own = S.user && message.by == S.user.id,
             person = P[message.by] || (own ? S.user : {}),
             name = own ? t('you') : person.name || t('petPartner'),
             gender = person.gender || (own ? me() : pr());
           return `<article class="pet-message-row${own ? ' is-own' : ''}"><span class="pet-message-avatar" aria-hidden="true"><img src="./img/pet/mini_${gender == 'm' ? 'boy' : 'girl'}.png" alt=""></span><div class="pet-message-bubble"><p>${esc(message.text)}</p><small>${esc(name)} · ${new Date(message.at).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' })}</small></div></article>`;
-        }).join('') : `<div class="empty">${esc(t('petMessagesEmpty'))}</div>`}</div><form class="pet-message-compose" data-f="petMessage"><input class="in" name="text" maxlength="120" autocomplete="off" required placeholder="${esc(t('petTextPlaceholder'))}" aria-label="${esc(t('petTextPlaceholder'))}"><button class="btn b1">${esc(t('petTextSend'))}</button></form></section></div>`;
+        }).join('') : `<div class="empty">${esc(t('petMessagesEmpty'))}</div>`}<div class="pet-message-typing" data-pet-typing ${partnerPetTyping ? '' : 'hidden'}><span class="pet-typing-dots" aria-hidden="true"><i></i><i></i><i></i></span><span data-pet-typing-text>${esc(t('petTyping').replace('{name}', presenceName))}</span></div></div><form class="pet-message-compose" data-f="petMessage"><input class="in" name="text" data-pet-message-input maxlength="120" autocomplete="off" required placeholder="${esc(t('petTextPlaceholder'))}" aria-label="${esc(t('petTextPlaceholder'))}"><button class="btn b1">${esc(t('petTextSend'))}</button></form></section></div>`;
       }
 
       function petCardHtml() {
@@ -313,7 +315,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           <div class="pet-stage">${people.map(character).join('')}</div>
           <div class="pet-chat">
             <form class="pet-text-form" data-f="petText">
-              <input class="in" type="text" name="text" maxlength="120" autocomplete="off" placeholder="${esc(t('petTextPlaceholder'))}" aria-label="${esc(t('petTextPlaceholder'))}" required>
+              <input class="in" type="text" name="text" data-pet-message-input maxlength="120" autocomplete="off" placeholder="${esc(t('petTextPlaceholder'))}" aria-label="${esc(t('petTextPlaceholder'))}" required>
               <button class="pet-reactions-toggle" type="button" data-a="petReactionsToggle" aria-label="${esc(t('petReactionsToggle'))}" aria-expanded="${petReactionsOpen}">+</button>
               <button class="btn b2" type="submit">${esc(t('petTextSend'))}</button>
               <button class="btn b2 pet-messages-open" type="button" data-a="petMessagesOpen">${esc(t('petMessages'))}</button>

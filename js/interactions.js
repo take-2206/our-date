@@ -272,9 +272,14 @@
       });
       document.addEventListener('input', (e) => {
         if (e.target.matches('[data-note-body], [data-note-editor]')) startLocalNoteTyping(e.target.dataset.id);
+        if (e.target.matches('[data-pet-message-input]')) {
+          if (e.target.value.trim()) startLocalPetTyping();
+          else stopLocalPetTyping();
+        }
       });
       document.addEventListener('focusout', (e) => {
         if (e.target.matches('[data-note-body], [data-note-editor]')) stopLocalNoteTyping(e.target.dataset.id);
+        if (e.target.matches('[data-pet-message-input]')) stopLocalPetTyping();
       });
       document.addEventListener('click', (e) => {
         if (pickerInput(e.target)) return;
@@ -350,10 +355,12 @@
           v = Object.fromEntries(formData);
         if (k == 'petText') {
           const text = String(v.text || '').trim();
+          stopLocalPetTyping();
           if (text) sendPetMessage(text);
           return;
         } else if (k == 'petMessage') {
           const text = String(v.text || '').trim();
+          stopLocalPetTyping();
           if (text) sendPetMessage(text);
           return;
         } else if (k == 'reset') {
