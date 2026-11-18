@@ -60,6 +60,8 @@ function act(a, d, el) {
   } else if (a == "petMessagesOpen") {
     petMessagesOpen = true;
     petReactionsOpen = false;
+    bell = false;
+    dcmod = false;
   } else if (a == "petMessagesClose") {
     petMessagesOpen = false;
   } else if (a == "petClear") {
@@ -75,7 +77,10 @@ function act(a, d, el) {
     open = Number(d.id);
     todoEdit = null;
     view = "det";
-  } else if (a == "bell") bell = !bell;
+  } else if (a == "bell") {
+    bell = !bell;
+    if (bell) dcmod = false;
+  }
   else if (a == "nt") {
     const n = C.nt.find((x) => x.id == d.id);
     bell = false;
@@ -105,7 +110,10 @@ function act(a, d, el) {
     mine().forEach((n) => markRead(n));
   } else if (a == "sedit") smod = true;
   else if (a == "sclose") smod = false;
-  else if (a == "dcOpen") dcmod = !dcmod;
+  else if (a == "dcOpen") {
+    dcmod = !dcmod;
+    if (dcmod) bell = false;
+  }
   else if (a == "dcClose") dcmod = false;
   else if (a == "dcEdit") {
     dcmod = false;

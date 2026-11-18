@@ -260,17 +260,33 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
         if (typeof sendPetTouch == 'function') sendPetTouch();
       });
 
+      function petMessageRowHtml(message) {
+        const own = S.user && message.by == S.user.id,
+          person = P[message.by] || (own ? S.user : {}),
+          name = own ? t('you') : person.name || t('petPartner'),
+          gender = person.gender || (own ? me() : pr());
+        return `<article class="pet-message-row${own ? ' is-own' : ''}"><span class="pet-message-avatar" aria-hidden="true"><img src="./img/pet/mini_${gender == 'm' ? 'boy' : 'girl'}.png" alt=""></span><div class="pet-message-bubble"><p>${esc(message.text)}</p><small>${esc(name)} · ${new Date(message.at).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' })}</small></div></article>`;
+      }
+
+      function petMessageListHtml() {
+        const messages = (PET && PET.messages) || [];
+        return messages.length
+          ? messages.map(petMessageRowHtml).join('')
+          : `<div class="empty">${esc(t('petMessagesEmpty'))}</div>`;
+      }
+
+      function paintPetMessages() {
+        document.querySelectorAll('[data-pet-message-list]').forEach((list) => {
+          list.innerHTML = petMessageListHtml();
+          const thread = list.closest('.pet-message-thread');
+          if (thread) requestAnimationFrame(() => (thread.scrollTop = thread.scrollHeight));
+        });
+      }
+
       function petMessagesHtml() {
-        const messages = PET.messages || [],
-          other = partner(),
+        const other = partner(),
           presenceName = (other && other.name) || t('petPartner');
-        return `<div class="mod pet-message-modal" data-a="petMessagesClose"><section class="card pet-message-window" role="dialog" aria-modal="true" aria-labelledby="pet-message-title"><header class="pet-message-head"><div><p class="mono sub">// ${esc(PET.name || 'Mochi')}</p><h2 id="pet-message-title" class="px">${esc(t('petMessages'))}</h2><p class="pet-message-presence${partnerOnline ? ' is-online' : ''}" data-pet-presence>${esc(presenceName)} · ${esc(t(partnerOnline ? 'petOnline' : 'petOffline'))}</p></div><button type="button" class="ib" data-a="petMessagesClose" aria-label="${esc(t('close'))}">${I.x}</button></header>${petMessageError ? `<p class="hint pet-message-error">${esc(t('petMessagesSetup'))}</p>` : ''}<div class="pet-message-thread">${messages.length ? messages.map((message) => {
-          const own = S.user && message.by == S.user.id,
-            person = P[message.by] || (own ? S.user : {}),
-            name = own ? t('you') : person.name || t('petPartner'),
-            gender = person.gender || (own ? me() : pr());
-          return `<article class="pet-message-row${own ? ' is-own' : ''}"><span class="pet-message-avatar" aria-hidden="true"><img src="./img/pet/mini_${gender == 'm' ? 'boy' : 'girl'}.png" alt=""></span><div class="pet-message-bubble"><p>${esc(message.text)}</p><small>${esc(name)} · ${new Date(message.at).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' })}</small></div></article>`;
-        }).join('') : `<div class="empty">${esc(t('petMessagesEmpty'))}</div>`}<div class="pet-message-typing" data-pet-typing ${partnerPetTyping ? '' : 'hidden'}><span class="pet-typing-dots" aria-hidden="true"><i></i><i></i><i></i></span><span data-pet-typing-text>${esc(t('petTyping').replace('{name}', presenceName))}</span></div></div><form class="pet-message-compose" data-f="petMessage"><input class="in" name="text" data-pet-message-input maxlength="120" autocomplete="off" required placeholder="${esc(t('petTextPlaceholder'))}" aria-label="${esc(t('petTextPlaceholder'))}"><button class="btn b1">${esc(t('petTextSend'))}</button></form></section></div>`;
+        return `<div class="mod pet-message-modal" data-a="petMessagesClose"><section class="card pet-message-window" role="dialog" aria-modal="true" aria-labelledby="pet-message-title"><header class="pet-message-head"><div><p class="mono sub">// ${esc(PET.name || 'Mochi')}</p><h2 id="pet-message-title" class="px">${esc(t('petMessages'))}</h2><p class="pet-message-presence${partnerOnline ? ' is-online' : ''}" data-pet-presence>${esc(presenceName)} · ${esc(t(partnerOnline ? 'petOnline' : 'petOffline'))}</p></div><button type="button" class="ib" data-a="petMessagesClose" aria-label="${esc(t('close'))}">${I.x}</button></header>${petMessageError ? `<p class="hint pet-message-error">${esc(t('petMessagesSetup'))}</p>` : ''}<div class="pet-message-thread"><div class="pet-message-list" data-pet-message-list>${petMessageListHtml()}</div><div class="pet-message-typing" data-pet-typing ${partnerPetTyping ? '' : 'hidden'}><span class="pet-typing-dots" aria-hidden="true"><i></i><i></i><i></i></span><span data-pet-typing-text>${esc(t('petTyping').replace('{name}', presenceName))}</span></div></div><form class="pet-message-compose" data-f="petMessage"><input class="in" name="text" data-pet-message-input maxlength="120" autocomplete="off" required placeholder="${esc(t('petTextPlaceholder'))}" aria-label="${esc(t('petTextPlaceholder'))}"><button class="btn b1">${esc(t('petTextSend'))}</button></form></section></div>`;
       }
 
       function petCardHtml() {
@@ -295,9 +311,12 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           const image = acting ? petFrames[gender].act : petFrames[gender][direction][state.frame % 3];
           const reaction = (pet.reactions || []).find((r) => r.by == person.id && reactions.includes(r.emoji));
           const latestMessage = latestMessageByUser[person.id];
-          const bubble = latestMessage
-            ? { emoji: latestMessage.text, by: latestMessage.by, isMessage: true }
-            : reaction;
+          const reactionIsNewer = reaction && (!latestMessage || Number(reaction.at || 0) > Number(latestMessage.at || 0));
+          const bubble = reactionIsNewer
+            ? reaction
+            : latestMessage
+              ? { emoji: latestMessage.text, by: latestMessage.by, isMessage: true }
+              : reaction;
           const genderLabel = t(gender == 'm' ? 'petMale' : 'petFemale');
           const ownBubble = person.id == user.id;
           const isTextBubble = bubble && !reactions.includes(bubble.emoji);

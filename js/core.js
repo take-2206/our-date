@@ -1,6 +1,6 @@
 // LoveSync core module. Classic scripts share state declared in js/core.js.
 /* ===== 1. NGÔN NGỮ (vi / en). Thêm chữ mới = thêm cùng một khoá ở cả hai bên ===== */
-const APP_VERSION = '1.50.38';
+const APP_VERSION = '1.50.44';
 let PET = { name: "MINI CHIBI", reactions: [], messages: [] };
 let petReactionsOpen = false;
 let petMessagesOpen = false;
@@ -132,6 +132,7 @@ let TTT = {
           noteUpdated: '{name} vừa cập nhật một ghi chú.',
           resizeNote: 'Đổi kích thước ghi chú',
           updateAvailable: 'Có phiên bản mới của LoveSync.',
+          updateNotificationTitle: 'LoveSync có bản cập nhật mới',
           updateAction: 'Cập nhật ngay',
           updateApplying: 'Đang cập nhật…',
           dragNote: 'Kéo một tờ giấy màu bạn thích xuống bảng',
@@ -356,6 +357,7 @@ let TTT = {
           noteUpdated: '{name} updated a sticky note.',
           resizeNote: 'Resize note',
           updateAvailable: 'A new version of LoveSync is available.',
+          updateNotificationTitle: 'LoveSync update available',
           updateAction: 'Update now',
           updateApplying: 'Updating…',
           dragNote: 'Drag a sheet from your favorite color pile',
