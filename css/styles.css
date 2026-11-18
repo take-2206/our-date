@@ -2762,6 +2762,32 @@ body.note-resizing * {
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 8px 4px;
+  scrollbar-color: var(--pk) rgba(255, 105, 180, 0.08);
+  scrollbar-width: thin;
+  scrollbar-gutter: stable;
+}
+.pet-message-thread::-webkit-scrollbar {
+  width: 8px;
+}
+.pet-message-thread::-webkit-scrollbar-track {
+  border: 1px solid rgba(255, 105, 180, 0.12);
+  background: rgba(8, 6, 9, 0.68);
+}
+.pet-message-thread::-webkit-scrollbar-thumb {
+  min-height: 34px;
+  border: 2px solid #151116;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--pk2), var(--pk));
+  box-shadow: 0 0 8px rgba(255, 105, 180, 0.65);
+}
+.pet-message-thread::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ffc0df, var(--pk));
+}
+.pet-message-thread::-webkit-scrollbar-button {
+  display: none;
+}
+.pet-message-thread::-webkit-scrollbar-corner {
+  background: transparent;
 }
 .pet-message-row {
   display: flex;
@@ -2839,6 +2865,9 @@ body.note-resizing * {
   }
   .pet-message-thread {
     min-height: 220px;
+  }
+  .pet-message-thread::-webkit-scrollbar {
+    width: 6px;
   }
 }
 .pet-snow {
