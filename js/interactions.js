@@ -1,6 +1,12 @@
 // LoveSync interactions module. Classic scripts share state declared in js/core.js.
 /* ===== 6. SỰ KIỆN: dùng "uỷ quyền" — chỉ cần một bộ lắng nghe cho cả trang ===== */
       const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+      function fitPetMessageInput(input) {
+        input.style.height = '48px';
+        const height = Math.min(84, Math.max(48, input.scrollHeight));
+        input.style.height = height + 'px';
+        input.style.overflowY = input.scrollHeight > 84 ? 'auto' : 'hidden';
+      }
       function noteGhost(color, body = '', width = 220, height = 190, scale = 1, fontSize = 16) {
         const ghost = document.createElement('div');
         ghost.className = `sticky drag-ghost ${color}`;
@@ -273,6 +279,7 @@
       document.addEventListener('input', (e) => {
         if (e.target.matches('[data-note-body], [data-note-editor]')) startLocalNoteTyping(e.target.dataset.id);
         if (e.target.matches('[data-pet-message-input]')) {
+          fitPetMessageInput(e.target);
           if (e.target.value.trim()) startLocalPetTyping();
           else stopLocalPetTyping();
         }
@@ -575,6 +582,13 @@
       );
       // Phím Esc đóng mọi bảng đang mở
       document.addEventListener('keydown', (e) => {
+        if (e.key == 'Enter' && e.shiftKey && !e.isComposing && e.target.matches('[data-pet-message-input]')) {
+          e.preventDefault();
+          const form = e.target.closest('form'),
+            submit = form?.querySelector('button[type="submit"]');
+          if (form && submit) form.requestSubmit(submit);
+          return;
+        }
         if (pv != null && !e.target.matches('input,textarea')) {
           if (e.key == 'ArrowLeft') return act('pvGo', { d: -1 }, document.body);
           if (e.key == 'ArrowRight') return act('pvGo', { d: 1 }, document.body);

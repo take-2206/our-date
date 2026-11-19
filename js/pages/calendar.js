@@ -71,6 +71,14 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
         return `<img src="./img/pet/mini_${g}.png" alt="" draggable="false">`;
       }
 
+      function visibleFreeDays(entries) {
+        const plans = entries.filter((e) => !isFreeDay(e)),
+          freeDays = entries.filter(isFreeDay),
+          bothAreFree = new Set(freeDays.map((e) => e.by).filter(Boolean)).size > 1,
+          hasConfirmedDate = plans.some((e) => !e.st || e.st == 'ok');
+        return bothAreFree && hasConfirmedDate ? [] : freeDays;
+      }
+
       function heartLightHtml(dateKey) {
         const now = performance.now() / 1000,
           datePhase = Number(String(dateKey).slice(-2) || 0) * 0.037,
@@ -95,10 +103,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           const k = key(d),
             entries = EV().filter((e) => e.date == k),
             es = entries.filter((e) => !isFreeDay(e)),
-            freeDaysForCell = entries.filter(isFreeDay),
-            matchedFreeDay = new Set(freeDaysForCell.map((e) => e.by).filter(Boolean)).size > 1,
-            hasConfirmedDate = es.some((e) => !e.st || e.st == 'ok'),
-            free = matchedFreeDay && hasConfirmedDate ? [] : freeDaysForCell,
+            free = visibleFreeDays(entries),
             np = photosOn(k).length;
           cells.push(
             `<button class="cl${d.getMonth() != m ? ' o' : ''}${k == tk ? ' td' : ''}${k == sel ? ' sl' : ''}${es.length ? ' has-plan' : ''}${free.length ? ' has-free' : ''}${np ? ' has-ph' : ''}" data-a="day" data-k="${k}" aria-label="${fmt(k, { dateStyle: 'full' })}${es.length ? `, ${es.length} ${t('det')}` : ''}${free.length ? `, ${free.length} ${t('freeDay')}` : ''}${np ? `, ${np} ${t('phMore')}` : ''}"><span>${d.getDate()}</span>${es.length ? heartLightHtml(k) : ''}${free.length ? `<span class="free-day-markers" aria-hidden="true">${free.slice(0, 2).map((e) => `<i class="${typeof freeDayOwnerClass == 'function' ? freeDayOwnerClass(e.by) : ''}">${freeIcon(e)}</i>`).join('')}</span>` : ''}${np ? '<i class="ph-dot" aria-hidden="true"></i>' : ''}</button>`,
@@ -112,7 +117,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           .join('');
         const selectedEntries = EV().filter((e) => e.date == sel),
           day = selectedEntries.filter((e) => !isFreeDay(e)),
-          freeDays = selectedEntries.filter(isFreeDay),
+          freeDays = visibleFreeDays(selectedEntries),
           freeSection = freeDays.map(freeDayCard).join(''),
           upcoming = up()
             .filter((e) => e.date != sel)
@@ -304,7 +309,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
       function petMessagesHtml() {
         const other = partner(),
           presenceName = (other && other.name) || t('petPartner');
-        return `<div class="mod pet-message-modal" data-a="petMessagesClose"><section class="card pet-message-window" role="dialog" aria-modal="true" aria-labelledby="pet-message-title"><header class="pet-message-head"><div><p class="mono sub">// ${esc(PET.name || 'Mochi')}</p><h2 id="pet-message-title" class="px">${esc(t('petMessages'))}</h2><p class="pet-message-presence${partnerOnline ? ' is-online' : ''}" data-pet-presence>${esc(presenceName)} · ${esc(t(partnerOnline ? 'petOnline' : 'petOffline'))}</p></div><button type="button" class="ib" data-a="petMessagesClose" aria-label="${esc(t('close'))}">${I.x}</button></header>${petMessageError ? `<p class="hint pet-message-error">${esc(t('petMessagesSetup'))}</p>` : ''}<div class="pet-message-thread"><div class="pet-message-list" data-pet-message-list>${petMessageListHtml()}</div><div class="pet-message-typing" data-pet-typing ${partnerPetTyping ? '' : 'hidden'}><span class="pet-typing-dots" aria-hidden="true"><i></i><i></i><i></i></span><span data-pet-typing-text>${esc(t('petTyping').replace('{name}', presenceName))}</span></div></div><form class="pet-message-compose" data-f="petMessage"><textarea class="in" name="text" data-pet-message-input rows="2" enterkeyhint="enter" maxlength="120" autocomplete="off" required placeholder="${esc(t('petTextPlaceholder'))}" aria-label="${esc(t('petTextPlaceholder'))}"></textarea><button class="btn b1" type="submit">${esc(t('petTextSend'))}</button></form></section></div>`;
+        return `<div class="mod pet-message-modal" data-a="petMessagesClose"><section class="card pet-message-window" role="dialog" aria-modal="true" aria-labelledby="pet-message-title"><header class="pet-message-head"><div><p class="mono sub">// ${esc(PET.name || 'Mochi')}</p><h2 id="pet-message-title" class="px">${esc(t('petMessages'))}</h2><p class="pet-message-presence${partnerOnline ? ' is-online' : ''}" data-pet-presence>${esc(presenceName)} · ${esc(t(partnerOnline ? 'petOnline' : 'petOffline'))}</p></div><button type="button" class="ib" data-a="petMessagesClose" aria-label="${esc(t('close'))}">${I.x}</button></header>${petMessageError ? `<p class="hint pet-message-error">${esc(t('petMessagesSetup'))}</p>` : ''}<div class="pet-message-thread"><div class="pet-message-list" data-pet-message-list>${petMessageListHtml()}</div><div class="pet-message-typing" data-pet-typing ${partnerPetTyping ? '' : 'hidden'}><span class="pet-typing-dots" aria-hidden="true"><i></i><i></i><i></i></span><span data-pet-typing-text>${esc(t('petTyping').replace('{name}', presenceName))}</span></div></div><form class="pet-message-compose" data-f="petMessage"><textarea class="in" name="text" data-pet-message-input rows="1" enterkeyhint="enter" maxlength="120" autocomplete="off" required placeholder="${esc(t('petTextPlaceholder'))}" aria-label="${esc(t('petTextPlaceholder'))}"></textarea><button class="btn b1" type="submit">${esc(t('petTextSend'))}</button></form></section></div>`;
       }
 
       function petCardHtml() {
@@ -504,7 +509,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           ${petCardView == 'jar' ? feelingsJar() : `<div class="pet-stage">${people.map(character).join('')}</div>
           <div class="pet-chat">
             <form class="pet-text-form" data-f="petText">
-              <textarea class="in" name="text" data-pet-message-input rows="2" enterkeyhint="enter" maxlength="120" autocomplete="off" placeholder="${esc(t('petTextPlaceholder'))}" aria-label="${esc(t('petTextPlaceholder'))}" required></textarea>
+              <textarea class="in" name="text" data-pet-message-input rows="1" enterkeyhint="enter" maxlength="120" autocomplete="off" placeholder="${esc(t('petTextPlaceholder'))}" aria-label="${esc(t('petTextPlaceholder'))}" required></textarea>
               <button class="pet-reactions-toggle" type="button" data-a="petReactionsToggle" aria-label="${esc(t('petReactionsToggle'))}" aria-expanded="${petReactionsOpen}">+</button>
               <button class="btn b2" type="submit">${esc(t('petTextSend'))}</button>
               <button class="btn b2 pet-messages-open" type="button" data-a="petMessagesOpen">${esc(t('petMessages'))}</button>

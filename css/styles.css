@@ -6430,14 +6430,45 @@ body.note-resizing * {
   line-height: 1.45;
 }
 
+.free-day-card > .free-day-remove {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  min-height: 38px;
+  padding: 0;
+  place-items: center;
+  justify-self: end;
+  border-radius: 50%;
+}
+.free-day-remove svg {
+  width: 18px;
+  height: 18px;
+}
+@media (max-width: 480px) {
+  .free-day-card {
+    grid-template-columns: 50px minmax(0, 1fr) 38px;
+  }
+  .free-day-card > .free-day-remove {
+    grid-column: auto;
+    width: 38px;
+  }
+}
+
 .pet-text-form textarea.in,
 .pet-message-compose textarea.in {
   display: block;
   min-width: 0;
-  padding: 4px 12px;
+  height: 48px;
+  min-height: 48px;
+  max-height: 84px;
+  padding: 12px;
   font-size: 16px;
-  line-height: 18px;
+  line-height: 20px;
+  overflow-y: hidden;
   resize: none;
+}
+.pet-message-compose {
+  align-items: center;
 }
 .pet-chat-bubble.is-text span {
   max-height: 3.9em;
