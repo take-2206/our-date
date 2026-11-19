@@ -143,10 +143,42 @@ create index if not exists pet_messages_couple_created_idx
 
 alter table public.pet_messages
   add column if not exists received_at timestamptz,
-  add column if not exists read_at timestamptz;
+  add column if not exists read_at timestamptz,
+  add column if not exists reply_to bigint,
+  add column if not exists edited_at timestamptz;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'pet_messages_reply_to_fkey'
+      and conrelid = 'public.pet_messages'::regclass
+  ) then
+    alter table public.pet_messages
+      add constraint pet_messages_reply_to_fkey
+      foreign key (reply_to) references public.pet_messages(id) on delete set null;
+  end if;
+end $$;
+
+create or replace function public.pet_message_belongs_to_couple(p_message_id bigint, p_couple_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1 from public.pet_messages m
+    where m.id = p_message_id and m.couple_id = p_couple_id
+  );
+$$;
+
+revoke execute on function public.pet_message_belongs_to_couple(bigint, uuid) from public, anon;
+grant execute on function public.pet_message_belongs_to_couple(bigint, uuid) to authenticated;
 
 alter table public.pet_messages enable row level security;
 grant select, insert on public.pet_messages to authenticated;
+grant update (body, edited_at) on public.pet_messages to authenticated;
 grant usage, select on sequence public.pet_messages_id_seq to authenticated;
 
 drop policy if exists "Couple members can read pet messages" on public.pet_messages;
@@ -160,7 +192,24 @@ create policy "Couple members can read pet messages"
 drop policy if exists "Couple members can send pet messages" on public.pet_messages;
 create policy "Couple members can send pet messages"
   on public.pet_messages for insert to authenticated
-  with check (sender_id = auth.uid() and received_at is null and read_at is null and exists (
+  with check (sender_id = auth.uid()
+    and received_at is null
+    and read_at is null
+    and edited_at is null
+    and (reply_to is null or public.pet_message_belongs_to_couple(reply_to, couple_id))
+    and exists (
+    select 1 from public.profiles p
+    where p.id = auth.uid() and p.couple_id = pet_messages.couple_id
+  ));
+
+drop policy if exists "Members can edit their own pet messages" on public.pet_messages;
+create policy "Members can edit their own pet messages"
+  on public.pet_messages for update to authenticated
+  using (sender_id = auth.uid() and exists (
+    select 1 from public.profiles p
+    where p.id = auth.uid() and p.couple_id = pet_messages.couple_id
+  ))
+  with check (sender_id = auth.uid() and exists (
     select 1 from public.profiles p
     where p.id = auth.uid() and p.couple_id = pet_messages.couple_id
   ));
@@ -214,7 +263,7 @@ begin
     and (expires_at <= now() or (not p_active and session_id = p_session_id));
   if p_active then
     insert into public.pet_chat_sessions (user_id, session_id, expires_at)
-    values (caller_id, p_session_id, now() + interval '15 seconds')
+    values (caller_id, p_session_id, now() + interval '30 seconds')
     on conflict (user_id, session_id) do update set expires_at = excluded.expires_at;
   end if;
 end;
@@ -222,6 +271,29 @@ $$;
 
 revoke execute on function public.set_pet_chat_active(uuid, boolean) from public, anon;
 grant execute on function public.set_pet_chat_active(uuid, boolean) to authenticated;
+
+create or replace function public.is_partner_pet_chat_active()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1
+    from public.profiles me
+    join public.profiles partner
+      on partner.couple_id = me.couple_id
+     and partner.id <> me.id
+    join public.pet_chat_sessions session
+      on session.user_id = partner.id
+     and session.expires_at > now()
+    where me.id = auth.uid()
+  );
+$$;
+
+revoke execute on function public.is_partner_pet_chat_active() from public, anon;
+grant execute on function public.is_partner_pet_chat_active() to authenticated;
 
 do $$
 begin

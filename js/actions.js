@@ -83,8 +83,33 @@ function act(a, d, el) {
     bell = false;
     dcmod = false;
     syncPetMessagesLive();
+    if (typeof syncPartnerChatActivity == "function") void syncPartnerChatActivity();
   } else if (a == "petMessagesClose") {
     petMessagesOpen = false;
+    petMessageReplyId = null;
+    petMessageEditId = null;
+  } else if (a == "petMessageReply") {
+    const message = (PET.messages || []).find((item) => String(item.id) == String(d.id));
+    if (!message || !/^[0-9]+$/.test(String(message.id))) return;
+    petMessageReplyId = message.id;
+    petMessageEditId = null;
+    requestAnimationFrame(() => document.querySelector('[data-pet-message-input]')?.focus());
+  } else if (a == "petMessageEdit") {
+    const message = (PET.messages || []).find((item) => String(item.id) == String(d.id));
+    if (!message || message.by != S.user.id || !/^[0-9]+$/.test(String(message.id))) return;
+    petMessageEditId = message.id;
+    petMessageReplyId = null;
+    requestAnimationFrame(() => {
+      const input = document.querySelector('[data-pet-message-input]');
+      if (!input) return;
+      input.focus();
+      input.selectionStart = input.selectionEnd = input.value.length;
+      if (typeof fitPetMessageInput == "function") fitPetMessageInput(input);
+    });
+  } else if (a == "petMessageContextCancel") {
+    petMessageReplyId = null;
+    petMessageEditId = null;
+    requestAnimationFrame(() => document.querySelector('[data-pet-message-input]')?.focus());
   } else if (a == "petClear") {
     clearPetReaction();
     return;
@@ -364,6 +389,8 @@ function act(a, d, el) {
     pv = null;
     pvDay = null;
     albumSel = null;
+    petMessageReplyId = null;
+    petMessageEditId = null;
     closeUp();
     view = "auth";
     msg = "";
