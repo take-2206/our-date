@@ -317,11 +317,16 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
         const pet = PET || fallback;
         const reactions = ['❤️', '🥰', '😘', '😍', '🤗', '😂', '🥺', '😭', '😡', '😴', '😎', '💔', '✨', '🎉', '🔥'];
         const feelingChoices = [
-          ['love', 'feelingLove'], ['excited', 'feelingExcited'], ['heartbroken', 'feelingHeartbroken'], ['calm', 'feelingCalm'],
-          ['angry', 'feelingAngry'], ['sleepy', 'feelingSleepy'], ['confused', 'feelingConfused'], ['shy', 'feelingShy'],
-          ['worried', 'feelingWorried'], ['loved', 'feelingLoved'], ['sick', 'feelingSick'], ['overwhelmed', 'feelingOverwhelmed'],
+          ['loved', 'feelingLoved'], ['heartbroken', 'feelingHeartbroken'], ['angry', 'feelingAngry'], ['sick', 'feelingSick'],
         ];
-        const feelingSprite = (index, gender) => `<span class="feeling-sprite ${gender == 'm' ? 'is-male' : 'is-female'}" style="--sheet-x:${(index % 4) * 100 / 3}%;--sheet-y:${Math.floor(index / 4) * 50}%"></span>`;
+        const feelingImage = (index, gender, feeling = feelingChoices[index]?.[0]) => {
+          const image = ({
+            love: 'happy', excited: 'happy', loved: 'happy', calm: 'happy', shy: 'happy',
+            heartbroken: 'sad', confused: 'sad', worried: 'sad', overwhelmed: 'sad',
+            angry: 'angry', sick: 'sick', sleepy: 'sick',
+          })[feeling] || 'happy';
+          return `<img class="feeling-sprite" src="./img/pet/feeling/${gender == 'm' ? 'b' : 'g'}-${image}.png" alt="" draggable="false">`;
+        };
         const user = S.user || {};
         const other = partner();
         const people = [
@@ -471,7 +476,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
                         index = feelingChoices.findIndex(([key]) => key == feeling.feeling),
                         name = t(feelingChoices[index]?.[1] || 'feelingsJar'),
                         style = `--d:${layout.d}cqw;left:${(pos.x - r).toFixed(2)}cqw;bottom:${(pos.y - r).toFixed(2)}cqw;--rot:${pos.rot.toFixed(1)}deg;--fall:${(JAR_H - (pos.y - r) + 45).toFixed(1)}cqw`;
-                      return `<button type="button" class="feelings-jar-marble${jarFeelingDropId != null && feeling.dropKey == jarFeelingDropId ? ' is-dropping' : ''}" style="${style}" data-a="petFeelingView" data-id="${esc(String(feeling.id))}" aria-label="${esc(name + '. ' + (feeling.reason || t('feelingNoReason')))}" title="${esc(name + ': ' + (feeling.reason || t('feelingNoReason')))}">${feelingSprite(Math.max(index, 0), feeling.gender || feelingSheetGender)}</button>`;
+                      return `<button type="button" class="feelings-jar-marble${jarFeelingDropId != null && feeling.dropKey == jarFeelingDropId ? ' is-dropping' : ''}" style="${style}" data-a="petFeelingView" data-id="${esc(String(feeling.id))}" aria-label="${esc(name + '. ' + (feeling.reason || t('feelingNoReason')))}" title="${esc(name + ': ' + (feeling.reason || t('feelingNoReason')))}">${feelingImage(Math.max(index, 0), feeling.gender || feelingSheetGender, feeling.feeling)}</button>`;
                     }).join('');
                   })()}</div>
                   ${jarFrontSvg(feelingSheetGender)}
@@ -479,7 +484,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
               </article>`;
             }).join('')}</div>
             <p class="feelings-jar-hint">${esc(t('feelingsJarHint'))}</p>
-            <div class="feelings-jar-options">${feelingChoices.map(([key, label], index) => `<button type="button" data-a="petReact" data-feeling="${key}" data-index="${index}" aria-label="${esc(t(label))}" title="${esc(t(label))}">${feelingSprite(index, me())}</button>`).join('')}</div>
+            <div class="feelings-jar-options">${feelingChoices.map(([key, label], index) => `<button type="button" data-a="petReact" data-feeling="${key}" data-index="${index}" aria-label="${esc(t(label))}" title="${esc(t(label))}">${feelingImage(index, me())}</button>`).join('')}</div>
           </div>`;
         };
         const feelingPrompt = () => {
@@ -487,7 +492,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           const selected = feelingChoices[feelingDraft.index] || feelingChoices[0],
             sheetGender = me() == 'm' ? 'm' : 'f';
           return `<div class="mod feeling-reason-modal" data-a="petFeelingClose"><form class="card" data-f="petFeeling" role="dialog" aria-modal="true" aria-label="${esc(t('feelingReasonTitle'))}">
-            <div class="feeling-reason-heading">${feelingSprite(feelingDraft.index, sheetGender)}<div><h2>${esc(t('feelingReasonTitle'))}</h2><p>${esc(t(selected[1]))}</p></div></div>
+            <div class="feeling-reason-heading">${feelingImage(feelingDraft.index, sheetGender)}<div><h2>${esc(t('feelingReasonTitle'))}</h2><p>${esc(t(selected[1]))}</p></div></div>
             <div class="fl"><label class="lb" for="feelingReason">${esc(t('feelingReasonLabel'))}</label><textarea class="in" id="feelingReason" name="reason" maxlength="240" rows="3" autofocus placeholder="${esc(t('feelingReasonPlaceholder'))}"></textarea></div>
             <div class="row2"><button type="button" class="btn b2" data-a="petFeelingClose">${esc(t('feelingReasonCancel'))}</button><button class="btn b1">${esc(t('feelingReasonSave'))}</button></div>
           </form></div>`;
@@ -498,7 +503,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
             name = t(feelingChoices[index]?.[1] || 'feelingsJar'),
             gender = feelingViewing.gender || me();
           return `<div class="mod feeling-reason-modal" data-a="petFeelingClose"><section class="card feeling-details" role="dialog" aria-modal="true" aria-label="${esc(name)}">
-            <div class="feeling-reason-heading">${feelingSprite(Math.max(index, 0), gender)}<div><h2>${esc(name)}</h2><p>${esc(feelingViewing.byName || '')}</p></div></div>
+            <div class="feeling-reason-heading">${feelingImage(Math.max(index, 0), gender, feelingViewing.feeling)}<div><h2>${esc(name)}</h2><p>${esc(feelingViewing.byName || '')}</p></div></div>
             <p class="feeling-view-reason">${esc(feelingViewing.reason || t('feelingNoReason'))}</p>
             <div class="row2"><button type="button" class="btn b1" data-a="petFeelingClose">${esc(t('feelingClose'))}</button></div>
           </section></div>`;
