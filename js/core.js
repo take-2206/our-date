@@ -1,7 +1,7 @@
 // LoveSync core module. Classic scripts share state declared in js/core.js.
 /* ===== 1. NGÔN NGỮ (vi / en). Thêm chữ mới = thêm cùng một khoá ở cả hai bên ===== */
-const APP_VERSION = '1.50.66';
-let PET = { name: "MINI CHIBI", reactions: [], feelings: [], messages: [] };
+const APP_VERSION = '1.50.67';
+let PET = { name: "MINI CHIBI", reactions: [], feelings: [], messages: [], messageReactions: [] };
 let petReactionsOpen = false;
 let petMessagesOpen = false;
 let petCardView = 'pet';
@@ -10,9 +10,11 @@ let feelingViewing = null;
 let jarFeelingDropId = null;
 let jarFeelingDropTimer = null;
 let petMessageError = '';
+let petMessageReactionError = '';
 let petMessageSyncBusy = false;
 let petMessageReplyId = null;
 let petMessageEditId = null;
+let petMessageReactionId = null;
 let uiPointerActive = false;
 let TTT = {
   board: Array(9).fill(''),
@@ -288,6 +290,8 @@ let TTT = {
           petMessageEdited: 'Đã sửa',
           petMessageOriginalMissing: 'Tin nhắn gốc không còn hiển thị',
           petMessageEditFailed: 'Không sửa được tin nhắn. Hãy chạy lại supabase-pet.sql.',
+          petMessageReact: 'Cảm xúc',
+          petMessageReactionSetup: 'Chưa thiết lập cảm xúc tin nhắn. Hãy chạy lại supabase-pet.sql.',
           petReceiptSending: 'Đang gửi',
           petReceiptSent: 'Đã gửi',
           petReceiptReceived: 'Đã nhận',
@@ -559,6 +563,8 @@ let TTT = {
           petMessageEdited: 'Edited',
           petMessageOriginalMissing: 'Original message is no longer shown',
           petMessageEditFailed: 'Could not edit the message. Run supabase-pet.sql again.',
+          petMessageReact: 'React',
+          petMessageReactionSetup: 'Message reactions are not set up. Run supabase-pet.sql again.',
           petReceiptSending: 'Sending',
           petReceiptSent: 'Sent',
           petReceiptReceived: 'Received',

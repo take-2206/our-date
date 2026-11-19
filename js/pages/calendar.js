@@ -274,6 +274,8 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           name = own ? t('you') : person.name || t('petPartner'),
           gender = person.gender || (own ? me() : pr()),
           confirmed = /^[0-9]+$/.test(String(message.id)),
+          messageReactions = (PET.messageReactions || []).filter((reaction) => String(reaction.messageId) == String(message.id)),
+          myReaction = messageReactions.find((reaction) => S.user && reaction.by == S.user.id),
           original = message.replyTo == null
             ? null
             : (PET.messages || []).find((item) => String(item.id) == String(message.replyTo));
@@ -292,10 +294,24 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           replyPreview = message.replyTo == null
             ? ''
             : `<div class="pet-message-reply-preview"><b>${esc(original ? originalName : t('petMessageReply'))}</b><span>${esc(original ? original.text : t('petMessageOriginalMissing'))}</span></div>`,
+          reactionPicker = confirmed && String(petMessageReactionId) == String(message.id)
+            ? `<div class="pet-message-reaction-picker" role="group" aria-label="${esc(t('petMessageReact'))}">${['❤️', '👍', '😂', '😮', '😢', '😡'].map((emoji) => `<button type="button" class="${myReaction && myReaction.emoji == emoji ? 'is-selected' : ''}" data-a="petMessageReact" data-id="${message.id}" data-emoji="${emoji}" aria-label="${esc(t('petMessageReact') + ' ' + emoji)}">${emoji}</button>`).join('')}</div>`
+            : '',
+          reactionGroups = messageReactions.reduce((groups, reaction) => {
+            (groups[reaction.emoji] ||= []).push(reaction);
+            return groups;
+          }, {}),
+          reactionBar = Object.entries(reactionGroups).length
+            ? `<div class="pet-message-reaction-bar">${Object.entries(reactionGroups).map(([emoji, reactions]) => {
+                const mine = reactions.some((reaction) => S.user && reaction.by == S.user.id),
+                  names = reactions.map((reaction) => reaction.by == S.user?.id ? t('you') : (P[reaction.by] || {}).name || t('petPartner')).join(', ');
+                return `<button type="button" class="${mine ? 'is-mine' : ''}" data-a="petMessageReact" data-id="${message.id}" data-emoji="${emoji}" title="${esc(names)}">${emoji}${reactions.length > 1 ? `<span>${reactions.length}</span>` : ''}</button>`;
+              }).join('')}</div>`
+            : '',
           actions = confirmed
-            ? `<div class="pet-message-actions"><button type="button" data-a="petMessageReply" data-id="${message.id}">${esc(t('petMessageReply'))}</button>${own ? `<button type="button" data-a="petMessageEdit" data-id="${message.id}">${esc(t('petMessageEdit'))}</button>` : ''}</div>`
+            ? `<div class="pet-message-actions"><button type="button" data-a="petMessageReactionToggle" data-id="${message.id}">${esc(t('petMessageReact'))}</button><button type="button" data-a="petMessageReply" data-id="${message.id}">${esc(t('petMessageReply'))}</button>${own ? `<button type="button" data-a="petMessageEdit" data-id="${message.id}">${esc(t('petMessageEdit'))}</button>` : ''}</div>`
             : '';
-        return `<article class="pet-message-row${own ? ' is-own' : ''}" data-pet-message-id="${esc(message.id)}"><span class="pet-message-avatar" aria-hidden="true"><img src="./img/pet/mini_${gender == 'm' ? 'boy' : 'girl'}.png" alt=""></span><div class="pet-message-bubble">${replyPreview}<p>${esc(message.text)}</p><div class="pet-message-meta"><small>${esc(name)} · ${new Date(message.at).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' })}${edited}${receipt}</small>${actions}</div></div></article>`;
+        return `<article class="pet-message-row${own ? ' is-own' : ''}" data-pet-message-id="${esc(message.id)}"><span class="pet-message-avatar" aria-hidden="true"><img src="./img/pet/mini_${gender == 'm' ? 'boy' : 'girl'}.png" alt=""></span><div class="pet-message-bubble">${replyPreview}<p>${esc(message.text)}</p>${reactionPicker}<div class="pet-message-meta"><small>${esc(name)} · ${new Date(message.at).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' })}${edited}${receipt}</small>${actions}</div>${reactionBar}</div></article>`;
       }
 
       function petMessageListHtml() {
