@@ -78,6 +78,22 @@ function act(a, d, el) {
     open = Number(d.id);
     todoEdit = null;
     view = "det";
+  } else if (a == "calendarAdd") {
+    const calendarEvent = C.ev.find((item) => String(item.id) == String(d.id));
+    if (calendarEvent) openCalendarAdd(calendarEvent);
+    return;
+  } else if (a == "calendarAddClose") {
+    if (el.classList.contains("mod") && event.target !== el) return;
+    closeCalendarAdd();
+    return;
+  } else if (a == "calendarAddGoogle") {
+    const calendarEvent = C.ev.find((item) => String(item.id) == String(d.id));
+    if (calendarEvent) addEventToGoogleCalendar(calendarEvent);
+    return;
+  } else if (a == "calendarAddDevice") {
+    const calendarEvent = C.ev.find((item) => String(item.id) == String(d.id));
+    if (calendarEvent) addEventToDeviceCalendar(calendarEvent);
+    return;
   } else if (a == "bell") {
     bell = !bell;
     if (bell) dcmod = false;

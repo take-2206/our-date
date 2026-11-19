@@ -6119,6 +6119,51 @@ body.note-resizing * {
   z-index: 100;
 }
 
+.calendar-add-trigger {
+  width: 100%;
+  margin-top: 12px;
+  gap: 9px;
+}
+.calendar-add-trigger svg {
+  flex: 0 0 auto;
+}
+.calendar-add-card {
+  position: relative;
+  width: min(430px, calc(100vw - 28px));
+  padding: 26px;
+  text-align: center;
+}
+.calendar-add-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+.calendar-add-icon {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
+  place-items: center;
+  border-radius: 16px;
+  color: var(--pk);
+  background: color-mix(in srgb, var(--pk), transparent 86%);
+}
+.calendar-add-event {
+  margin: 8px 0 18px;
+}
+.calendar-add-actions {
+  display: grid;
+  gap: 10px;
+}
+.calendar-add-actions .btn {
+  width: 100%;
+}
+.calendar-add-hint {
+  margin-top: 16px;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
 .pet-text-form textarea.in,
 .pet-message-compose textarea.in {
   display: block;
