@@ -306,21 +306,104 @@
         by: row.sender_id,
         byName: (P[row.sender_id] || {}).name || '',
         at: Date.parse(row.created_at) || Date.now(),
+        receivedAt: row.received_at || null,
+        readAt: row.read_at || null,
       });
+      function mergePetReceipt(message, receipt) {
+        if (receipt.received_at) message.receivedAt ||= receipt.received_at;
+        if (receipt.read_at) message.readAt ||= receipt.read_at;
+      }
+      let petReceiptRequest = null,
+        petReceiptRetryAt = 0;
+      async function acknowledgePetMessages() {
+        if (!S.user || !PET.messages || petReceiptRequest || Date.now() < petReceiptRetryAt) return;
+        const user = S.user;
+        const thread = document.visibilityState == 'visible' && document.querySelector('.pet-message-thread');
+        const visibleIds = new Set();
+        if (thread) {
+          const viewport = thread.getBoundingClientRect();
+          for (const row of thread.querySelectorAll('[data-pet-message-id]')) {
+            const rect = row.getBoundingClientRect();
+            if (rect.height > 0 && rect.bottom > Math.max(0, viewport.top) &&
+                rect.top < Math.min(window.innerHeight, viewport.bottom))
+              visibleIds.add(row.dataset.petMessageId);
+          }
+        }
+        const received = [], read = [];
+        for (const message of PET.messages) {
+          const id = String(message.id);
+          if (message.by == user.id || !/^[0-9]+$/.test(id)) continue;
+          if (!message.receivedAt) received.push(id);
+          if (!message.readAt && visibleIds.has(id)) read.push(id);
+        }
+        if (!received.length && !read.length) return;
+        const request = sb.rpc('ack_pet_messages', { p_received: received, p_read: read });
+        petReceiptRequest = request;
+        let updated = false;
+        try {
+          const { data, error } = await request;
+          if (error) throw error;
+          if (S.user !== user) return;
+          const receipts = new Map((data || []).map((receipt) => [String(receipt.id), receipt]));
+          for (const message of PET.messages) {
+            const receipt = receipts.get(String(message.id));
+            if (receipt) mergePetReceipt(message, receipt);
+          }
+          updated = receipts.size > 0;
+          if (updated) saveLocalPet();
+        } catch (error) {
+          petReceiptRetryAt = Date.now() + 15000;
+        } finally {
+          petReceiptRequest = null;
+          if (updated) requestAnimationFrame(acknowledgePetMessages);
+        }
+      }
+      function onPetMessageReceipt(change) {
+        const receipt = change.new;
+        if (!S.user || receipt.couple_id != S.user.couple_id) return;
+        const message = (PET.messages || []).find((item) => String(item.id) == String(receipt.id));
+        if (!message) return;
+        mergePetReceipt(message, receipt);
+        saveLocalPet();
+        paintPetMessages();
+      }
       async function loadPetMessages() {
+        const user = S.user;
+        if (!user) return;
         try {
           const { data, error } = await sb
             .from('pet_messages')
-            .select('id, body, sender_id, created_at')
-            .eq('couple_id', S.user.couple_id)
+            .select('*')
+            .eq('couple_id', user.couple_id)
             .order('created_at', { ascending: false })
             .limit(100);
+          if (S.user !== user) return;
           if (error) throw error;
-          PET.messages = (data || []).reverse().map(toPetMessage);
+          const previous = new Map((PET.messages || []).map((message) => [String(message.id), message]));
+          PET.messages = (data || []).reverse().map((row) => {
+            const message = toPetMessage(row);
+            const cached = previous.get(String(row.id));
+            if (cached) mergePetReceipt(message, { received_at: cached.receivedAt, read_at: cached.readAt });
+            return message;
+          });
           petMessageError = '';
           saveLocalPet();
+          void acknowledgePetMessages();
         } catch (x) {
-          petMessageError = x.message || String(x);
+          if (S.user === user) petMessageError = x.message || String(x);
+        }
+      }
+      async function syncPetMessagesLive() {
+        if (!S.user || petMessageSyncBusy) return;
+        petMessageSyncBusy = true;
+        try {
+          const before = (PET.messages || []).map((message) => message.id).join(',');
+          await loadPetMessages();
+          if (typeof paintPetMessages == 'function') paintPetMessages();
+          if (before !== (PET.messages || []).map((message) => message.id).join(','))
+            requestDeferredRefresh();
+        } finally {
+          petMessageSyncBusy = false;
         }
       }
       const toPetFeeling = (row) => ({
@@ -426,12 +509,16 @@
             .select('id, body, sender_id, created_at')
             .single();
           if (error) throw error;
-          PET.messages = (PET.messages || []).map((item) => item.id == localId ? toPetMessage(data) : item);
+          const confirmed = (PET.messages || []).find((item) => String(item.id) == String(data.id));
+          PET.messages = (PET.messages || []).filter((item) => item.id != localId);
+          if (!confirmed) PET.messages = PET.messages.concat(toPetMessage(data)).slice(-100);
           petMessageError = '';
           saveLocalPet();
           render();
+          sendPetMessageBroadcast(data);
           if (typeof pushPetMessage == 'function') await pushPetMessage(data.id);
         } catch (x) {
+          local.failed = true;
           petMessageError = x.message || String(x);
           saveLocalPet();
           say(t('petMessagesSetup'));
@@ -440,13 +527,30 @@
       }
       async function onPetMessageInsert(change) {
         const incoming = change && change.new;
-        await refresh();
-        if (!incoming || !S.user || incoming.sender_id == S.user.id) return;
+        if (!incoming || !S.user) return;
+        const messageRow = toPetMessage(incoming),
+          existed = (PET.messages || []).some((item) => String(item.id) == String(messageRow.id));
+        if (!existed) PET.messages = (PET.messages || []).concat(messageRow).slice(-100);
+        saveLocalPet();
+        if (typeof paintPetMessages == 'function') paintPetMessages();
+        void acknowledgePetMessages();
+        requestDeferredRefresh();
+        if (incoming.sender_id == S.user.id || existed) return;
         const name = (P[incoming.sender_id] || {}).name || t('pt'),
           preview = String(incoming.body || '').replace(/\s+/g, ' ').trim().slice(0, 80),
           message = t('petMessageReceived').replace('{name}', name).replace('{message}', preview);
         if (pushOn) say(message);
         else notifyApp(message, 'pet-message-' + incoming.id, 'open-pet-messages');
+      }
+      function sendPetMessageBroadcast(row) {
+        if (!CH || !S.user || !realtimeReady || !row) return;
+        Promise.resolve(
+          CH.send({ type: 'broadcast', event: 'pet_message', payload: { row } }),
+        ).catch(() => {});
+      }
+      function onPetMessageBroadcast(payload) {
+        if (payload && payload.row)
+          onPetMessageInsert({ new: { ...payload.row, received_at: null, read_at: null } });
       }
       function sendPetTouch() {
   if (!CH || !S.user || !realtimeReady) return;
@@ -583,6 +687,34 @@ function onPetTouch(p) {
       function sendNoteTyping(noteId, typing) {
         sendLocalPresence(noteId, typing);
       }
+      function sendRealtimeOnlineState(online = true) {
+        if (!CH || !S.user || !realtimeReady) return;
+        if (online) sendLocalPresence(localTypingNote, !!localTypingNote, localPetTyping);
+        Promise.resolve(
+          CH.send({
+            type: 'broadcast',
+            event: 'partner_status',
+            payload: { from: S.user.id, online: !!online, at: Date.now() },
+          }),
+        ).catch(() => {});
+        if (!online) Promise.resolve(CH.untrack()).catch(() => {});
+      }
+      function onRealtimeOnlineState(payload) {
+        if (!payload || !S.user || payload.from == S.user.id) return;
+        partnerOnline = !!payload.online;
+        partnerOnlineLastSeen = partnerOnline ? Date.now() : 0;
+        if (!partnerOnline) partnerPetTyping = false;
+        paintPetMessagePresence();
+        paintPetMessageTyping();
+      }
+      function expireRealtimeOnlineState() {
+        if (!partnerOnline || !partnerOnlineLastSeen || Date.now() - partnerOnlineLastSeen <= 12000) return;
+        partnerOnline = false;
+        partnerPetTyping = false;
+        partnerOnlineLastSeen = 0;
+        paintPetMessagePresence();
+        paintPetMessageTyping();
+      }
       function startLocalPetTyping() {
         const now = Date.now();
         localPetTyping = true;
@@ -642,6 +774,7 @@ function onPetTouch(p) {
           });
         noteTypers = next;
         partnerOnline = nextPartnerOnline;
+        partnerOnlineLastSeen = nextPartnerOnline ? Date.now() : 0;
         partnerPetTyping = nextPartnerPetTyping;
         new Set(previous.concat(Object.keys(next))).forEach(paintNoteTyping);
         paintPetMessagePresence();
@@ -673,6 +806,7 @@ function onPetTouch(p) {
         clearTimeout(localTypingTimer);
         noteTypers = {};
         partnerOnline = false;
+        partnerOnlineLastSeen = 0;
         partnerPetTyping = false;
         realtimeReady = false;
         localTypingNote = null;
@@ -688,6 +822,8 @@ function onPetTouch(p) {
           .channel('c-' + S.user.couple_id, { config: { presence: { key: notePresenceKey } } })
           .on('presence', { event: 'sync' }, syncNoteTypingPresence)
           .on('broadcast', { event: 'pet_touch' }, (m) => onPetTouch(m.payload))
+          .on('broadcast', { event: 'pet_message' }, (m) => onPetMessageBroadcast(m.payload))
+          .on('broadcast', { event: 'partner_status' }, (m) => onRealtimeOnlineState(m.payload))
           .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'pet_reactions' }, refresh)
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tic_tac_toe_games', filter: f }, (change) => {
             applyTttGame(change.new, true);
@@ -703,7 +839,7 @@ function onPetTouch(p) {
         if (!petMessageError) {
           channel = channel
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pet_messages', filter: f }, onPetMessageInsert)
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pet_messages', filter: f }, refresh)
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pet_messages', filter: f }, onPetMessageReceipt)
             .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'pet_messages' }, refresh);
         }
         CH = channel
@@ -720,9 +856,13 @@ function onPetTouch(p) {
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notifs', filter: f }, refresh)
           .subscribe((status) => {
             realtimeReady = status == 'SUBSCRIBED';
-            if (realtimeReady) sendLocalPresence(localTypingNote, !!localTypingNote, localPetTyping);
+            if (realtimeReady) {
+              sendRealtimeOnlineState(document.visibilityState == 'visible');
+              syncPetMessagesLive();
+            }
             else {
               partnerOnline = false;
+              partnerOnlineLastSeen = 0;
               partnerPetTyping = false;
               paintPetMessagePresence();
               paintPetMessageTyping();

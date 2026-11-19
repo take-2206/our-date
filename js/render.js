@@ -15,8 +15,13 @@ function render() {
                 (pv != null ? vPv() : '') +
                 toastPrompt();
         $('#app').innerHTML = content + appUpdatePrompt();
+        void publishPetChatActivity();
         const petThread = document.querySelector('.pet-message-thread');
-        if (petThread) requestAnimationFrame(() => (petThread.scrollTop = petThread.scrollHeight));
+        if (petThread) requestAnimationFrame(() => {
+          if (!petThread.isConnected) return;
+          petThread.scrollTop = petThread.scrollHeight;
+          acknowledgePetMessages();
+        });
         // Từ lịch bấm "Mở trong album" (hoặc vừa thêm ảnh): cuộn tới đúng ngày trong album
         if (albumFocus && view == 'album') {
           const el = document.getElementById('ad-' + albumFocus);

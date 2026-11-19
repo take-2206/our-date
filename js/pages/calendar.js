@@ -95,7 +95,10 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           const k = key(d),
             entries = EV().filter((e) => e.date == k),
             es = entries.filter((e) => !isFreeDay(e)),
-            free = entries.filter(isFreeDay),
+            freeDaysForCell = entries.filter(isFreeDay),
+            matchedFreeDay = new Set(freeDaysForCell.map((e) => e.by).filter(Boolean)).size > 1,
+            hasConfirmedDate = es.some((e) => !e.st || e.st == 'ok'),
+            free = matchedFreeDay && hasConfirmedDate ? [] : freeDaysForCell,
             np = photosOn(k).length;
           cells.push(
             `<button class="cl${d.getMonth() != m ? ' o' : ''}${k == tk ? ' td' : ''}${k == sel ? ' sl' : ''}${es.length ? ' has-plan' : ''}${free.length ? ' has-free' : ''}${np ? ' has-ph' : ''}" data-a="day" data-k="${k}" aria-label="${fmt(k, { dateStyle: 'full' })}${es.length ? `, ${es.length} ${t('det')}` : ''}${free.length ? `, ${free.length} ${t('freeDay')}` : ''}${np ? `, ${np} ${t('phMore')}` : ''}"><span>${d.getDate()}</span>${es.length ? heartLightHtml(k) : ''}${free.length ? `<span class="free-day-markers" aria-hidden="true">${free.slice(0, 2).map((e) => `<i class="${typeof freeDayOwnerClass == 'function' ? freeDayOwnerClass(e.by) : ''}">${freeIcon(e)}</i>`).join('')}</span>` : ''}${np ? '<i class="ph-dot" aria-hidden="true"></i>' : ''}</button>`,
@@ -260,17 +263,48 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
         if (typeof sendPetTouch == 'function') sendPetTouch();
       });
 
+      function petMessageRowHtml(message) {
+        const own = S.user && message.by == S.user.id,
+          person = P[message.by] || (own ? S.user : {}),
+          name = own ? t('you') : person.name || t('petPartner'),
+          gender = person.gender || (own ? me() : pr());
+        let status = '';
+        if (own) {
+          if (message.readAt) status = 'petReceiptRead';
+          else if (message.receivedAt) status = 'petReceiptReceived';
+          else if (message.failed) status = 'petReceiptLocal';
+          else if (String(message.id).startsWith('local-')) status = 'petReceiptSending';
+          else status = 'petReceiptSent';
+        }
+        const receipt = status ? ` · <span class="pet-message-receipt${message.readAt ? ' is-read' : ''}">${esc(t(status))}</span>` : '';
+        return `<article class="pet-message-row${own ? ' is-own' : ''}" data-pet-message-id="${esc(message.id)}"><span class="pet-message-avatar" aria-hidden="true"><img src="./img/pet/mini_${gender == 'm' ? 'boy' : 'girl'}.png" alt=""></span><div class="pet-message-bubble"><p>${esc(message.text)}</p><small>${esc(name)} · ${new Date(message.at).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' })}${receipt}</small></div></article>`;
+      }
+
+      function petMessageListHtml() {
+        const messages = (PET && PET.messages) || [];
+        return messages.length
+          ? messages.map(petMessageRowHtml).join('')
+          : `<div class="empty">${esc(t('petMessagesEmpty'))}</div>`;
+      }
+
+      function paintPetMessages() {
+        document.querySelectorAll('[data-pet-message-list]').forEach((list) => {
+          const thread = list.closest('.pet-message-thread');
+          const atBottom = thread && thread.scrollHeight - thread.scrollTop - thread.clientHeight < 32;
+          const html = petMessageListHtml();
+          if (list.petMessageHtml !== html) {
+            list.innerHTML = html;
+            list.petMessageHtml = html;
+            if (atBottom) thread.scrollTop = thread.scrollHeight;
+          }
+          requestAnimationFrame(acknowledgePetMessages);
+        });
+      }
+
       function petMessagesHtml() {
-        const messages = PET.messages || [],
-          other = partner(),
+        const other = partner(),
           presenceName = (other && other.name) || t('petPartner');
-        return `<div class="mod pet-message-modal" data-a="petMessagesClose"><section class="card pet-message-window" role="dialog" aria-modal="true" aria-labelledby="pet-message-title"><header class="pet-message-head"><div><p class="mono sub">// ${esc(PET.name || 'Mochi')}</p><h2 id="pet-message-title" class="px">${esc(t('petMessages'))}</h2><p class="pet-message-presence${partnerOnline ? ' is-online' : ''}" data-pet-presence>${esc(presenceName)} · ${esc(t(partnerOnline ? 'petOnline' : 'petOffline'))}</p></div><button type="button" class="ib" data-a="petMessagesClose" aria-label="${esc(t('close'))}">${I.x}</button></header>${petMessageError ? `<p class="hint pet-message-error">${esc(t('petMessagesSetup'))}</p>` : ''}<div class="pet-message-thread">${messages.length ? messages.map((message) => {
-          const own = S.user && message.by == S.user.id,
-            person = P[message.by] || (own ? S.user : {}),
-            name = own ? t('you') : person.name || t('petPartner'),
-            gender = person.gender || (own ? me() : pr());
-          return `<article class="pet-message-row${own ? ' is-own' : ''}"><span class="pet-message-avatar" aria-hidden="true"><img src="./img/pet/mini_${gender == 'm' ? 'boy' : 'girl'}.png" alt=""></span><div class="pet-message-bubble"><p>${esc(message.text)}</p><small>${esc(name)} · ${new Date(message.at).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' })}</small></div></article>`;
-        }).join('') : `<div class="empty">${esc(t('petMessagesEmpty'))}</div>`}<div class="pet-message-typing" data-pet-typing ${partnerPetTyping ? '' : 'hidden'}><span class="pet-typing-dots" aria-hidden="true"><i></i><i></i><i></i></span><span data-pet-typing-text>${esc(t('petTyping').replace('{name}', presenceName))}</span></div></div><form class="pet-message-compose" data-f="petMessage"><input class="in" name="text" data-pet-message-input maxlength="120" autocomplete="off" required placeholder="${esc(t('petTextPlaceholder'))}" aria-label="${esc(t('petTextPlaceholder'))}"><button class="btn b1">${esc(t('petTextSend'))}</button></form></section></div>`;
+        return `<div class="mod pet-message-modal" data-a="petMessagesClose"><section class="card pet-message-window" role="dialog" aria-modal="true" aria-labelledby="pet-message-title"><header class="pet-message-head"><div><p class="mono sub">// ${esc(PET.name || 'Mochi')}</p><h2 id="pet-message-title" class="px">${esc(t('petMessages'))}</h2><p class="pet-message-presence${partnerOnline ? ' is-online' : ''}" data-pet-presence>${esc(presenceName)} · ${esc(t(partnerOnline ? 'petOnline' : 'petOffline'))}</p></div><button type="button" class="ib" data-a="petMessagesClose" aria-label="${esc(t('close'))}">${I.x}</button></header>${petMessageError ? `<p class="hint pet-message-error">${esc(t('petMessagesSetup'))}</p>` : ''}<div class="pet-message-thread"><div class="pet-message-list" data-pet-message-list>${petMessageListHtml()}</div><div class="pet-message-typing" data-pet-typing ${partnerPetTyping ? '' : 'hidden'}><span class="pet-typing-dots" aria-hidden="true"><i></i><i></i><i></i></span><span data-pet-typing-text>${esc(t('petTyping').replace('{name}', presenceName))}</span></div></div><form class="pet-message-compose" data-f="petMessage"><textarea class="in" name="text" data-pet-message-input rows="2" enterkeyhint="enter" maxlength="120" autocomplete="off" required placeholder="${esc(t('petTextPlaceholder'))}" aria-label="${esc(t('petTextPlaceholder'))}"></textarea><button class="btn b1" type="submit">${esc(t('petTextSend'))}</button></form></section></div>`;
       }
 
       function petCardHtml() {
@@ -301,9 +335,12 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           const image = acting ? petFrames[gender].act : petFrames[gender][direction][state.frame % 3];
           const reaction = (pet.reactions || []).find((r) => r.by == person.id && reactions.includes(r.emoji));
           const latestMessage = latestMessageByUser[person.id];
-          const bubble = latestMessage
-            ? { emoji: latestMessage.text, by: latestMessage.by, isMessage: true }
-            : reaction;
+          const reactionIsNewer = reaction && (!latestMessage || Number(reaction.at || 0) > Number(latestMessage.at || 0));
+          const bubble = reactionIsNewer
+            ? reaction
+            : latestMessage
+              ? { emoji: latestMessage.text, by: latestMessage.by, isMessage: true }
+              : reaction;
           const genderLabel = t(gender == 'm' ? 'petMale' : 'petFemale');
           const ownBubble = person.id == user.id;
           const isTextBubble = bubble && !reactions.includes(bubble.emoji);
@@ -467,7 +504,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           ${petCardView == 'jar' ? feelingsJar() : `<div class="pet-stage">${people.map(character).join('')}</div>
           <div class="pet-chat">
             <form class="pet-text-form" data-f="petText">
-              <input class="in" type="text" name="text" data-pet-message-input maxlength="120" autocomplete="off" placeholder="${esc(t('petTextPlaceholder'))}" aria-label="${esc(t('petTextPlaceholder'))}" required>
+              <textarea class="in" name="text" data-pet-message-input rows="2" enterkeyhint="enter" maxlength="120" autocomplete="off" placeholder="${esc(t('petTextPlaceholder'))}" aria-label="${esc(t('petTextPlaceholder'))}" required></textarea>
               <button class="pet-reactions-toggle" type="button" data-a="petReactionsToggle" aria-label="${esc(t('petReactionsToggle'))}" aria-expanded="${petReactionsOpen}">+</button>
               <button class="btn b2" type="submit">${esc(t('petTextSend'))}</button>
               <button class="btn b2 pet-messages-open" type="button" data-a="petMessagesOpen">${esc(t('petMessages'))}</button>

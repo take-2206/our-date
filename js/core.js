@@ -1,6 +1,6 @@
 // LoveSync core module. Classic scripts share state declared in js/core.js.
 /* ===== 1. NGÔN NGỮ (vi / en). Thêm chữ mới = thêm cùng một khoá ở cả hai bên ===== */
-const APP_VERSION = '1.50.38';
+const APP_VERSION = '1.50.58';
 let PET = { name: "MINI CHIBI", reactions: [], feelings: [], messages: [] };
 let petReactionsOpen = false;
 let petMessagesOpen = false;
@@ -10,6 +10,7 @@ let feelingViewing = null;
 let jarFeelingDropId = null;
 let jarFeelingDropTimer = null;
 let petMessageError = '';
+let petMessageSyncBusy = false;
 let uiPointerActive = false;
 let TTT = {
   board: Array(9).fill(''),
@@ -80,6 +81,12 @@ let TTT = {
           edit: 'Chỉnh sửa',
           saveChanges: 'Lưu thay đổi',
           cancel: 'Hủy',
+          calendarAdd: 'Thêm vào lịch điện thoại',
+          calendarAddTitle: 'Thêm buổi hẹn vào lịch',
+          calendarGoogle: 'Google Calendar',
+          calendarDevice: 'iPhone / lịch trên máy',
+          calendarHint: 'Google Calendar phù hợp với Android. Trên iPhone, tệp lịch sẽ mở bằng Apple Calendar hoặc ứng dụng lịch bạn chọn.',
+          calendarDownloaded: 'Đã tạo tệp lịch. Hãy mở tệp để thêm buổi hẹn.',
           prep: 'cần chuẩn bị',
           prepEmpty: 'Chưa có mục nào cần chuẩn bị.',
           todo: 'Thêm việc cần làm…',
@@ -137,6 +144,7 @@ let TTT = {
           noteUpdated: '{name} vừa cập nhật một ghi chú.',
           resizeNote: 'Đổi kích thước ghi chú',
           updateAvailable: 'Có phiên bản mới của LoveSync.',
+          updateNotificationTitle: 'LoveSync có bản cập nhật mới',
           updateAction: 'Cập nhật ngay',
           updateApplying: 'Đang cập nhật…',
           dragNote: 'Kéo một tờ giấy màu bạn thích xuống bảng',
@@ -271,6 +279,11 @@ let TTT = {
           petMessagesEmpty: 'Chưa có tin nhắn nào. Hãy gửi lời đầu tiên nhé!',
           petMessagesSetup: 'Lịch sử tin nhắn chưa được thiết lập. Hãy chạy lại supabase-pet.sql trong Supabase.',
           petMessageReceived: '{name} vừa gửi: {message}',
+          petReceiptSending: 'Đang gửi',
+          petReceiptSent: 'Đã gửi',
+          petReceiptReceived: 'Đã nhận',
+          petReceiptRead: 'Đã đọc',
+          petReceiptLocal: 'Đã lưu trên thiết bị',
           petOnline: 'Đang online',
           petOffline: 'Ngoại tuyến',
           petTyping: '{name} đang nhập…',
@@ -331,6 +344,12 @@ let TTT = {
           edit: 'Edit',
           saveChanges: 'Save changes',
           cancel: 'Cancel',
+          calendarAdd: 'Add to phone calendar',
+          calendarAddTitle: 'Add this date to your calendar',
+          calendarGoogle: 'Google Calendar',
+          calendarDevice: 'iPhone / device calendar',
+          calendarHint: 'Use Google Calendar on Android. On iPhone, the calendar file opens in Apple Calendar or another calendar app you choose.',
+          calendarDownloaded: 'Calendar file created. Open it to add the date.',
           prep: 'to prepare',
           prepEmpty: 'Nothing to prepare yet.',
           todo: 'Add a to-do…',
@@ -388,6 +407,7 @@ let TTT = {
           noteUpdated: '{name} updated a sticky note.',
           resizeNote: 'Resize note',
           updateAvailable: 'A new version of LoveSync is available.',
+          updateNotificationTitle: 'LoveSync update available',
           updateAction: 'Update now',
           updateApplying: 'Updating…',
           dragNote: 'Drag a sheet from your favorite color pile',
@@ -523,6 +543,11 @@ let TTT = {
           petMessagesEmpty: 'No messages yet. Send the first one!',
           petMessagesSetup: 'Message history is not set up. Run supabase-pet.sql in Supabase again.',
           petMessageReceived: '{name} sent: {message}',
+          petReceiptSending: 'Sending',
+          petReceiptSent: 'Sent',
+          petReceiptReceived: 'Received',
+          petReceiptRead: 'Read',
+          petReceiptLocal: 'Saved on this device',
           petOnline: 'Online',
           petOffline: 'Offline',
           petTyping: '{name} is typing…',
@@ -618,6 +643,7 @@ let TTT = {
         noteTypers = {},
         notePresenceKey = Math.random().toString(36).slice(2),
         partnerOnline = false,
+        partnerOnlineLastSeen = 0,
         partnerPetTyping = false,
         realtimeReady = false,
         localTypingNote = null,

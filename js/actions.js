@@ -80,6 +80,9 @@ function act(a, d, el) {
   } else if (a == "petMessagesOpen") {
     petMessagesOpen = true;
     petReactionsOpen = false;
+    bell = false;
+    dcmod = false;
+    syncPetMessagesLive();
   } else if (a == "petMessagesClose") {
     petMessagesOpen = false;
   } else if (a == "petClear") {
@@ -95,7 +98,26 @@ function act(a, d, el) {
     open = Number(d.id);
     todoEdit = null;
     view = "det";
-  } else if (a == "bell") bell = !bell;
+  } else if (a == "calendarAdd") {
+    const calendarEvent = C.ev.find((item) => String(item.id) == String(d.id));
+    if (calendarEvent) openCalendarAdd(calendarEvent);
+    return;
+  } else if (a == "calendarAddClose") {
+    if (el.classList.contains("mod") && event.target !== el) return;
+    closeCalendarAdd();
+    return;
+  } else if (a == "calendarAddGoogle") {
+    const calendarEvent = C.ev.find((item) => String(item.id) == String(d.id));
+    if (calendarEvent) addEventToGoogleCalendar(calendarEvent);
+    return;
+  } else if (a == "calendarAddDevice") {
+    const calendarEvent = C.ev.find((item) => String(item.id) == String(d.id));
+    if (calendarEvent) addEventToDeviceCalendar(calendarEvent);
+    return;
+  } else if (a == "bell") {
+    bell = !bell;
+    if (bell) dcmod = false;
+  }
   else if (a == "nt") {
     const n = C.nt.find((x) => x.id == d.id);
     bell = false;
@@ -125,7 +147,10 @@ function act(a, d, el) {
     mine().forEach((n) => markRead(n));
   } else if (a == "sedit") smod = true;
   else if (a == "sclose") smod = false;
-  else if (a == "dcOpen") dcmod = !dcmod;
+  else if (a == "dcOpen") {
+    dcmod = !dcmod;
+    if (dcmod) bell = false;
+  }
   else if (a == "dcClose") dcmod = false;
   else if (a == "dcEdit") {
     dcmod = false;
@@ -321,6 +346,7 @@ function act(a, d, el) {
       .then(() => {});
   } else if (a == "close") modal = false;
   else if (a == "out") {
+    void publishPetChatActivity(false);
     if (sb) {
       pushDetach().then(() => sb.auth.signOut());
       if (CH) sb.removeChannel(CH);

@@ -1,4 +1,10 @@
 // LoveSync app module. Classic scripts share state declared in js/core.js.
+const petChatSessionId = globalThis.crypto?.randomUUID?.();
+let petChatPublishedFor = null,
+    petChatPublishedAt = 0,
+    petChatPublishBusy = false,
+    petChatDesiredState = false;
+
 (async () => {
         const params = new URLSearchParams(location.search);
         if (CFG) {
@@ -21,7 +27,32 @@
         }
       })();
 
-function notifyApp(body, tag, type) {
+function petChatIsActive() {
+        return !!(S.user && view == 'cal' && petMessagesOpen && document.visibilityState == 'visible');
+      }
+
+async function publishPetChatActivity(active = petChatIsActive()) {
+        petChatDesiredState = active;
+        const user = S.user;
+        if (!user || !petChatSessionId || petChatPublishBusy) return;
+        if (active && petChatPublishedFor === user.id && Date.now() - petChatPublishedAt < 5000) return;
+        if (!active && petChatPublishedFor !== user.id) return;
+        petChatPublishBusy = true;
+        petChatPublishedFor = active ? user.id : null;
+        petChatPublishedAt = Date.now();
+        try {
+          await sb.rpc('set_pet_chat_active', { p_session_id: petChatSessionId, p_active: active });
+        } catch (error) {
+          // The server expires the record if a disconnect prevents clearing it.
+        } finally {
+          petChatPublishBusy = false;
+          if (S.user === user && petChatDesiredState !== active)
+            void publishPetChatActivity(petChatDesiredState);
+        }
+      }
+
+function notifyApp(body, tag, type, title = 'LoveSync') {
+        if (type == 'open-pet-messages' && petChatIsActive()) return;
         say(body);
         if (
           !('Notification' in window) ||
@@ -30,18 +61,22 @@ function notifyApp(body, tag, type) {
         )
           return;
         navigator.serviceWorker.ready
-          .then((registration) =>
-            registration.showNotification('LoveSync', {
+          .then((registration) => {
+            if (type == 'open-pet-messages' && petChatIsActive()) return;
+            return registration.showNotification(title, {
               body,
               icon: './img/icons/app-icon-192.png',
               badge: './img/icons/app-icon-192.png',
               tag,
+              renotify: !!tag,
+              requireInteraction: type == 'app-update',
+              vibrate: type == 'app-update' ? [180, 80, 180] : undefined,
               data: {
                 url: type == 'open-notes' ? './?view=notes' : type == 'open-pet-messages' ? './?view=pet-messages' : './',
                 type: type || '',
               },
-            }),
-          )
+            });
+          })
           .catch(() => {});
       }
 
@@ -51,7 +86,8 @@ function offerAppUpdate(registration) {
         appUpdateRegistration = registration;
         appUpdateReady = true;
         paintAppUpdatePrompt();
-        if (firstNotice) notifyApp(t('updateAvailable'), 'app-update', 'app-update');
+        if (firstNotice)
+          notifyApp(t('updateAvailable'), 'app-update', 'app-update', t('updateNotificationTitle'));
       }
 
 async function applyAppUpdate() {
@@ -87,13 +123,54 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
                 if (worker.state == 'installed') offerAppUpdate(registration);
               });
             });
-            const checkForUpdate = () => {
-              if (document.visibilityState != 'visible' || Date.now() - lastUpdateCheck < 300000) return;
+            const checkForUpdate = (force = false) => {
+              if (!force && Date.now() - lastUpdateCheck < 30000) return;
               lastUpdateCheck = Date.now();
-              registration.update().catch(() => {});
+              registration.update().then(() => offerAppUpdate(registration)).catch(() => {});
             };
-            document.addEventListener('visibilitychange', checkForUpdate);
-            setInterval(checkForUpdate, 3600000);
+            document.addEventListener('visibilitychange', () => {
+              if (document.visibilityState == 'visible') checkForUpdate(true);
+            });
+            addEventListener('focus', () => checkForUpdate(true));
+            addEventListener('online', () => checkForUpdate(true));
+            checkForUpdate(true);
+            setInterval(checkForUpdate, 30000);
           } catch (x) {}
         });
       }
+
+document.addEventListener('scroll', (event) => {
+        if (event.target.matches?.('.pet-message-thread')) acknowledgePetMessages();
+      }, true);
+
+document.addEventListener('visibilitychange', () => {
+        if (!S.user) return;
+        void publishPetChatActivity();
+        if (typeof sendRealtimeOnlineState == 'function')
+          sendRealtimeOnlineState(document.visibilityState == 'visible');
+        if (document.visibilityState != 'visible' || typeof refresh != 'function') return;
+        refresh().then(() => {
+          if (typeof paintPetMessages == 'function') paintPetMessages();
+        }).catch(() => {});
+      });
+
+addEventListener('pagehide', () => {
+        void publishPetChatActivity(false);
+        if (S.user && typeof sendRealtimeOnlineState == 'function') sendRealtimeOnlineState(false);
+      });
+addEventListener('pageshow', () => {
+        void publishPetChatActivity();
+        if (S.user && typeof sendRealtimeOnlineState == 'function') sendRealtimeOnlineState(true);
+      });
+
+setInterval(() => {
+        if (petChatIsActive()) void publishPetChatActivity();
+        if (document.visibilityState == 'visible' && S.user && typeof sendRealtimeOnlineState == 'function')
+          sendRealtimeOnlineState(true);
+        if (typeof expireRealtimeOnlineState == 'function') expireRealtimeOnlineState();
+      }, 5000);
+
+setInterval(() => {
+        if (document.visibilityState == 'visible' && S.user && petMessagesOpen)
+          syncPetMessagesLive();
+      }, 2500);

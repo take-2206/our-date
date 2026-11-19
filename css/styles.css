@@ -2765,6 +2765,37 @@ body.note-resizing * {
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 8px 4px;
+  scrollbar-color: var(--pk) rgba(255, 105, 180, 0.08);
+  scrollbar-width: thin;
+  scrollbar-gutter: stable;
+}
+.pet-message-thread::-webkit-scrollbar {
+  width: 8px;
+}
+.pet-message-thread::-webkit-scrollbar-track {
+  border: 1px solid rgba(255, 105, 180, 0.12);
+  background: rgba(8, 6, 9, 0.68);
+}
+.pet-message-thread::-webkit-scrollbar-thumb {
+  min-height: 34px;
+  border: 2px solid #151116;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--pk2), var(--pk));
+  box-shadow: 0 0 8px rgba(255, 105, 180, 0.65);
+}
+.pet-message-thread::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ffc0df, var(--pk));
+}
+.pet-message-thread::-webkit-scrollbar-button {
+  display: none;
+}
+.pet-message-thread::-webkit-scrollbar-corner {
+  background: transparent;
+}
+.pet-message-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 .pet-message-row {
   display: flex;
@@ -2809,12 +2840,16 @@ body.note-resizing * {
 }
 .pet-message-bubble p {
   overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 .pet-message-bubble small {
   display: block;
   margin-top: 3px;
   color: var(--mut);
   font-size: 9px;
+}
+.pet-message-receipt.is-read {
+  color: var(--pk2);
 }
 .pet-message-compose {
   display: grid;
@@ -2842,6 +2877,9 @@ body.note-resizing * {
   }
   .pet-message-thread {
     min-height: 220px;
+  }
+  .pet-message-thread::-webkit-scrollbar {
+    width: 6px;
   }
 }
 .pet-snow {
@@ -6222,6 +6260,13 @@ body.note-resizing * {
 }
 
 /* Keep the pet messenger above the pet scene and centered in the viewport. */
+.top {
+  position: relative;
+  z-index: 30;
+}
+.top .pop {
+  z-index: 50;
+}
 .mod {
   z-index: 50;
 }
@@ -6338,4 +6383,64 @@ body.note-resizing * {
 /* Keep dialogs and the calendar add sheet above the pet chat composer. */
 .mod {
   z-index: 100;
+}
+
+.calendar-add-trigger {
+  width: 100%;
+  margin-top: 12px;
+  gap: 9px;
+}
+.calendar-add-trigger svg {
+  flex: 0 0 auto;
+}
+.calendar-add-card {
+  position: relative;
+  width: min(430px, calc(100vw - 28px));
+  padding: 26px;
+  text-align: center;
+}
+.calendar-add-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+.calendar-add-icon {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
+  place-items: center;
+  border-radius: 16px;
+  color: var(--pk);
+  background: color-mix(in srgb, var(--pk), transparent 86%);
+}
+.calendar-add-event {
+  margin: 8px 0 18px;
+}
+.calendar-add-actions {
+  display: grid;
+  gap: 10px;
+}
+.calendar-add-actions .btn {
+  width: 100%;
+}
+.calendar-add-hint {
+  margin-top: 16px;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.pet-text-form textarea.in,
+.pet-message-compose textarea.in {
+  display: block;
+  min-width: 0;
+  padding: 4px 12px;
+  font-size: 16px;
+  line-height: 18px;
+  resize: none;
+}
+.pet-chat-bubble.is-text span {
+  max-height: 3.9em;
+  overflow-y: auto;
+  white-space: pre;
 }

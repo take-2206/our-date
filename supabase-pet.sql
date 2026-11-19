@@ -141,6 +141,10 @@ create table if not exists public.pet_messages (
 create index if not exists pet_messages_couple_created_idx
   on public.pet_messages (couple_id, created_at desc);
 
+alter table public.pet_messages
+  add column if not exists received_at timestamptz,
+  add column if not exists read_at timestamptz;
+
 alter table public.pet_messages enable row level security;
 grant select, insert on public.pet_messages to authenticated;
 grant usage, select on sequence public.pet_messages_id_seq to authenticated;
@@ -156,10 +160,68 @@ create policy "Couple members can read pet messages"
 drop policy if exists "Couple members can send pet messages" on public.pet_messages;
 create policy "Couple members can send pet messages"
   on public.pet_messages for insert to authenticated
-  with check (sender_id = auth.uid() and exists (
+  with check (sender_id = auth.uid() and received_at is null and read_at is null and exists (
     select 1 from public.profiles p
     where p.id = auth.uid() and p.couple_id = pet_messages.couple_id
   ));
+
+-- Only the recipient can acknowledge messages in their own couple.
+create or replace function public.ack_pet_messages(p_received bigint[], p_read bigint[])
+returns table (id bigint, received_at timestamptz, read_at timestamptz)
+language sql
+security definer
+set search_path = ''
+as $$
+  update public.pet_messages as m
+  set received_at = coalesce(m.received_at, now()),
+      read_at = case when m.id = any(p_read) then coalesce(m.read_at, now()) else m.read_at end
+  where m.sender_id <> auth.uid()
+    and exists (
+      select 1 from public.profiles p
+      where p.id = auth.uid() and p.couple_id = m.couple_id
+    )
+    and ((m.received_at is null and m.id = any(p_received))
+      or (m.read_at is null and m.id = any(p_read)))
+  returning m.id, m.received_at, m.read_at;
+$$;
+
+revoke execute on function public.ack_pet_messages(bigint[], bigint[]) from public, anon;
+grant execute on function public.ack_pet_messages(bigint[], bigint[]) to authenticated;
+
+-- Short-lived foreground chat sessions used to decide whether to send a push.
+create table if not exists public.pet_chat_sessions (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  session_id uuid not null,
+  expires_at timestamptz not null,
+  primary key (user_id, session_id)
+);
+alter table public.pet_chat_sessions enable row level security;
+revoke all on public.pet_chat_sessions from public, anon, authenticated;
+grant select on public.pet_chat_sessions to service_role;
+
+create or replace function public.set_pet_chat_active(p_session_id uuid, p_active boolean)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  caller_id uuid := auth.uid();
+begin
+  if caller_id is null then return; end if;
+  delete from public.pet_chat_sessions
+  where user_id = caller_id
+    and (expires_at <= now() or (not p_active and session_id = p_session_id));
+  if p_active then
+    insert into public.pet_chat_sessions (user_id, session_id, expires_at)
+    values (caller_id, p_session_id, now() + interval '15 seconds')
+    on conflict (user_id, session_id) do update set expires_at = excluded.expires_at;
+  end if;
+end;
+$$;
+
+revoke execute on function public.set_pet_chat_active(uuid, boolean) from public, anon;
+grant execute on function public.set_pet_chat_active(uuid, boolean) to authenticated;
 
 do $$
 begin
