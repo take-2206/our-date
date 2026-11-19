@@ -356,6 +356,37 @@ function act(a, d, el) {
   } else if (a == "tttResetScore") {
     startTttRound(true);
     return;
+  } else if (a == "tttOpen") {
+    TTT.open = true;
+    render();
+    return;
+  } else if (a == "tttClose") {
+    TTT.open = false;
+    render();
+    return;
+  } else if (a == "throwReset") {
+    THROW_GAME.open = true;
+    THROW_GAME.hp = [100, 100];
+    THROW_GAME.turn = 0;
+    THROW_GAME.angle = -35;
+    THROW_GAME.power = 0;
+    THROW_GAME.charging = false;
+    THROW_GAME.busy = false;
+    THROW_GAME.message = '';
+    if (typeof THROW != 'undefined') {
+      THROW.drag = null;
+      THROW.flight = null;
+    }
+    render();
+    return;
+  } else if (a == "throwOpen") {
+    THROW_GAME.open = true;
+    render();
+    return;
+  } else if (a == "throwClose") {
+    THROW_GAME.open = false;
+    render();
+    return;
   } else if (a == "new") modal = "new";
   else if (a == "edit") modal = "edit";
   else if (a == "todoEdit") todoEdit = Number(d.i);
