@@ -1,9 +1,14 @@
 // LoveSync core module. Classic scripts share state declared in js/core.js.
 /* ===== 1. NGÔN NGỮ (vi / en). Thêm chữ mới = thêm cùng một khoá ở cả hai bên ===== */
 const APP_VERSION = '1.50.58';
-let PET = { name: "MINI CHIBI", reactions: [], messages: [] };
+let PET = { name: "MINI CHIBI", reactions: [], feelings: [], messages: [] };
 let petReactionsOpen = false;
 let petMessagesOpen = false;
+let petCardView = 'pet';
+let feelingDraft = null;
+let feelingViewing = null;
+let jarFeelingDropId = null;
+let jarFeelingDropTimer = null;
 let petMessageError = '';
 let petMessageSyncBusy = false;
 let uiPointerActive = false;
@@ -232,6 +237,33 @@ let TTT = {
           trashSetup: 'Hãy chạy supabase-recycle-bin.sql trong Supabase trước.',
           petKicker: 'NUÔI CÙNG NHAU',
           petSub: 'Cùng chăm một bé, cùng gửi chút yêu thương.',
+          feelingsJar: 'Feelings Jar',
+          feelingsJarHint: 'Chọn cảm xúc để bỏ vào lọ chung.',
+          feelingsJarYou: 'Lọ cảm xúc của bạn',
+          feelingsJarPartner: 'Lọ cảm xúc của người ấy',
+          feelingsJarEmpty: 'Chưa có cảm xúc',
+          feelingLove: 'Yêu thương',
+          feelingExcited: 'Phấn khích',
+          feelingHeartbroken: 'Tan vỡ',
+          feelingCalm: 'Bình yên',
+          feelingAngry: 'Tức giận',
+          feelingSleepy: 'Buồn ngủ',
+          feelingConfused: 'Bối rối',
+          feelingShy: 'Ngại ngùng',
+          feelingWorried: 'Lo lắng',
+          feelingLoved: 'Hạnh phúc',
+          feelingSick: 'Mệt mỏi',
+          feelingOverwhelmed: 'Quá tải',
+          feelingReasonTitle: 'Thả một cảm xúc vào lọ',
+          feelingReasonLabel: 'Lý do (không bắt buộc)',
+          feelingReasonPlaceholder: 'Chia sẻ vì sao bạn đang cảm thấy vậy…',
+          feelingReasonSave: 'Thả vào lọ',
+          feelingReasonCancel: 'Để sau',
+          feelingClose: 'Đóng',
+          feelingNoReason: 'Không có ghi chú cho cảm xúc này.',
+          petFeelingsSetup: 'Hãy chạy lại supabase-pet.sql để tạo bảng pet_feelings.',
+          petFeelingsSaveError: 'Không đồng bộ được cảm xúc; hiện chỉ lưu trên thiết bị này.',
+          petViewToggle: 'Quay lại Pet',
           petRename: 'Đổi tên pet',
           petPartner: 'Người ấy',
           petMale: 'Nhân vật nam',
@@ -468,6 +500,33 @@ let TTT = {
           trashSetup: 'Run supabase-recycle-bin.sql in Supabase first.',
           petKicker: 'OUR SHARED PET',
           petSub: "Let's care for our little friend and share some love.",
+          feelingsJar: 'Feelings Jar',
+          feelingsJarHint: 'Choose a feeling to add to your shared jar.',
+          feelingsJarYou: 'Your feelings jar',
+          feelingsJarPartner: 'Your partner’s feelings jar',
+          feelingsJarEmpty: 'No feeling yet',
+          feelingLove: 'Loving',
+          feelingExcited: 'Excited',
+          feelingHeartbroken: 'Heartbroken',
+          feelingCalm: 'Calm',
+          feelingAngry: 'Angry',
+          feelingSleepy: 'Sleepy',
+          feelingConfused: 'Confused',
+          feelingShy: 'Shy',
+          feelingWorried: 'Worried',
+          feelingLoved: 'Happy',
+          feelingSick: 'Unwell',
+          feelingOverwhelmed: 'Overwhelmed',
+          feelingReasonTitle: 'Drop a feeling into the jar',
+          feelingReasonLabel: 'Reason (optional)',
+          feelingReasonPlaceholder: 'Share why you are feeling this way…',
+          feelingReasonSave: 'Drop into jar',
+          feelingReasonCancel: 'Cancel',
+          feelingClose: 'Close',
+          feelingNoReason: 'No note was added for this feeling.',
+          petFeelingsSetup: 'Run supabase-pet.sql again to create the pet_feelings table.',
+          petFeelingsSaveError: 'Could not sync this feeling; it is currently saved on this device only.',
+          petViewToggle: 'Back to Pet',
           petRename: 'Rename pet',
           petPartner: 'Your partner',
           petMale: 'Male character',

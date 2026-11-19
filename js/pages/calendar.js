@@ -311,6 +311,12 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
         const fallback = { name: 'MINI CHIBI', reactions: [], messages: [] };
         const pet = PET || fallback;
         const reactions = ['❤️', '🥰', '😘', '😍', '🤗', '😂', '🥺', '😭', '😡', '😴', '😎', '💔', '✨', '🎉', '🔥'];
+        const feelingChoices = [
+          ['love', 'feelingLove'], ['excited', 'feelingExcited'], ['heartbroken', 'feelingHeartbroken'], ['calm', 'feelingCalm'],
+          ['angry', 'feelingAngry'], ['sleepy', 'feelingSleepy'], ['confused', 'feelingConfused'], ['shy', 'feelingShy'],
+          ['worried', 'feelingWorried'], ['loved', 'feelingLoved'], ['sick', 'feelingSick'], ['overwhelmed', 'feelingOverwhelmed'],
+        ];
+        const feelingSprite = (index, gender) => `<span class="feeling-sprite ${gender == 'm' ? 'is-male' : 'is-female'}" style="--sheet-x:${(index % 4) * 100 / 3}%;--sheet-y:${Math.floor(index / 4) * 50}%"></span>`;
         const user = S.user || {};
         const other = partner();
         const people = [
@@ -346,10 +352,156 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           <button class="pet-character-action" type="button" ${action} data-base="./img/pet/${image}" data-act="./img/pet/${gender == 'm' ? 'boy_act.png' : 'girl_act.png'}" aria-label="${esc(t('petSend'))}">
           <img class="pet-character-image" src="./img/pet/${image}" alt="${esc(genderLabel)}"></button>${bubble ? `<div class="pet-chat-bubble${isTextBubble ? ' is-text' : ''}" title="${esc(person.name || '')}"><span>${esc(bubble.emoji)}</span>${ownBubble && !bubble.isMessage ? `<button type="button" data-a="petClear" aria-label="${esc(t('petDeleteBubble'))}">×</button>` : ''}</div>` : ''}</div>`;
         };
-        return `<section class="pet-card" aria-label="${esc(t('petKicker'))}">
+        // Xếp bi như bi thật: mỗi viên rơi từ trên xuống, lăn vào chỗ trũng rồi nằm yên.
+        // Toạ độ tính theo cqw (1% bề rộng vùng lọ) nên khớp mọi kích thước màn hình.
+        const JAR_W = 100, JAR_H = 82, JAR_CR = 15; // JAR_H khớp aspect-ratio: 100 / 82 của .feelings-jar-fill; JAR_CR = độ bo góc đáy lọ
+        const jarHash = (value) => {
+          let h = 2166136261;
+          for (const ch of String(value)) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); }
+          return ((h >>> 0) % 10000) / 10000;
+        };
+        const jarLayout = (list) => {
+          let result = { d: 24, placed: [] };
+          for (let d = 24; d >= 8; d -= 1) { // nhiều bi -> bi nhỏ dần để vẫn nằm trong lọ
+            const r = d / 2, placed = [];
+            const floorAt = (x) => { // đáy lọ bo tròn: bi không chui ra khỏi góc cong
+              if (r >= JAR_CR) return r;
+              const dx = x < JAR_CR ? JAR_CR - x : x > JAR_W - JAR_CR ? x - (JAR_W - JAR_CR) : 0;
+              return dx ? JAR_CR - Math.sqrt(Math.max((JAR_CR - r) ** 2 - dx * dx, 0)) : r;
+            };
+            const rest = (x) => {
+              let y = floorAt(x);
+              for (const q of placed) {
+                const dx = Math.abs(x - q.x);
+                if (dx < d) y = Math.max(y, q.y + Math.sqrt(d * d - dx * dx));
+              }
+              return y;
+            };
+            let fits = true;
+            list.forEach((f, i) => {
+              const key = f.id ?? i;
+              let x = r + jarHash(key) * (JAR_W - d), y = rest(x);
+              for (let n = 0; n < 400; n++) { // lăn xuống chỗ thấp hơn cho tới khi được đỡ
+                const xl = Math.max(r, x - 0.5), xr = Math.min(JAR_W - r, x + 0.5);
+                const yl = rest(xl), yr = rest(xr);
+                if (Math.min(yl, yr) < y - 1e-6) { if (yl <= yr) { x = xl; y = yl; } else { x = xr; y = yr; } } else break;
+              }
+              placed.push({ x, y, rot: (jarHash('r' + key) - 0.5) * 50 });
+              if (y + r > JAR_H) fits = false;
+            });
+            result = { d, placed };
+            if (fits) break;
+          }
+          return result;
+        };
+        // Lọ thuỷ tinh vẽ bằng SVG (viewBox 300x330): nữ = hồng, nam = xanh.
+        // Lớp sau nằm dưới bi, lớp trước (phản chiếu) nằm trên bi. Nắp (.feelings-jar-lid) mở ra khi thả bi.
+        const jarOuter = 'M90 42H210V58C210 80 266 92 266 140V258C266 284 246 298 220 298H80C54 298 34 284 34 258V140C34 92 90 80 90 58Z';
+        const jarInner = 'M98 50H202V58C202 86 258 98 258 142V256C258 276 244 290 222 290H78C56 290 42 276 42 256V142C42 98 98 86 98 58Z';
+        const jarPalette = {
+          f: { glass: '#ffc6e0', deep: '#ff9cc8', lid: ['#c9588f', '#ffd6e8', '#ec86b8', '#fff0f7', '#b94a80'], band: ['#a83d73', '#f6a9cc', '#cf6a9c', '#a03a6e'] },
+          m: { glass: '#c2deff', deep: '#8dbcff', lid: ['#4a78cf', '#d4e6ff', '#78a4ee', '#eef5ff', '#3f68b8'], band: ['#3558a3', '#a9c8f7', '#5f88d6', '#314f94'] },
+        };
+        const jarBackSvg = (g) => {
+          const c = jarPalette[g == 'm' ? 'm' : 'f'], k = g == 'm' ? 'm' : 'f';
+          return `<svg class="feelings-jar-svg" viewBox="0 0 300 330" aria-hidden="true" focusable="false">
+          <defs>
+            <radialGradient id="fjShadow-${k}" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="${c.deep}" stop-opacity=".55"/><stop offset="1" stop-color="${c.deep}" stop-opacity="0"/></radialGradient>
+            <linearGradient id="fjGlass-${k}" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="${c.glass}" stop-opacity=".6"/><stop offset=".2" stop-color="${c.glass}" stop-opacity=".16"/><stop offset=".8" stop-color="${c.glass}" stop-opacity=".14"/><stop offset="1" stop-color="${c.glass}" stop-opacity=".58"/></linearGradient>
+            <linearGradient id="fjInner-${k}" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".05"/><stop offset="1" stop-color="${c.deep}" stop-opacity=".32"/></linearGradient>
+            <linearGradient id="fjLid-${k}" x1="0" x2="1" y1="0" y2="0">${c.lid.map((col, i) => `<stop offset="${[0, .22, .5, .78, 1][i]}" stop-color="${col}"/>`).join('')}</linearGradient>
+            <linearGradient id="fjBand-${k}" x1="0" x2="1" y1="0" y2="0">${c.band.map((col, i) => `<stop offset="${[0, .3, .6, 1][i]}" stop-color="${col}"/>`).join('')}</linearGradient>
+          </defs>
+          <ellipse cx="150" cy="306" rx="104" ry="11" fill="url(#fjShadow-${k})"/>
+          <path d="${jarOuter}" fill="url(#fjGlass-${k})"/>
+          <path d="${jarInner}" fill="url(#fjInner-${k})"/>
+          <rect x="86" y="38" width="128" height="11" rx="3" fill="url(#fjBand-${k})"/>
+          <g class="feelings-jar-lid">
+            <rect x="82" y="6" width="136" height="34" rx="7" fill="url(#fjLid-${k})"/>
+            <rect x="82" y="6" width="136" height="5" rx="2.5" fill="#fff" opacity=".55"/>
+            <path d="M96 16V34M108 16V34M120 16V34M132 16V34M144 16V34M156 16V34M168 16V34M180 16V34M192 16V34M204 16V34" stroke="#000" stroke-opacity=".08" stroke-width="2"/>
+          </g>
+        </svg>`;
+        };
+        const jarFrontSvg = (g) => {
+          const c = jarPalette[g == 'm' ? 'm' : 'f'];
+          return `<svg class="feelings-jar-svg" viewBox="0 0 300 330" aria-hidden="true" focusable="false">
+          <defs><filter id="fjSoft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.2"/></filter></defs>
+          <path d="${jarOuter}" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="2.5"/>
+          <path d="${jarInner}" fill="none" stroke="${c.deep}" stroke-opacity=".5" stroke-width="1.5"/>
+          <g fill="none" stroke-linecap="round" filter="url(#fjSoft)">
+            <path d="M52 150C50 188 50 228 57 262" stroke="#fff" stroke-opacity=".7" stroke-width="6"/>
+            <path d="M62 118C72 100 90 92 104 84" stroke="#fff" stroke-opacity=".6" stroke-width="5"/>
+            <path d="M104 66V56" stroke="#fff" stroke-opacity=".6" stroke-width="4"/>
+            <path d="M250 160V236" stroke="#fff" stroke-opacity=".3" stroke-width="4"/>
+            <path d="M82 291Q150 301 218 291" stroke="#fff" stroke-opacity=".3" stroke-width="3"/>
+          </g>
+        </svg>`;
+        };
+        const feelingsJar = () => {
+          const jarPeople = people
+            .map((person) => ({
+              ...person,
+              feelings: (pet.feelings || []).filter((feeling) => feeling.by == person.id),
+            }))
+            .sort((a, b) => (a.gender == 'f' ? -1 : 1) - (b.gender == 'f' ? -1 : 1));
+          return `<div class="feelings-jar-view">
+            <div class="feelings-jar-pair">${jarPeople.map((person) => {
+              const isOwn = person.id == user.id,
+                feelingSheetGender = person.gender == 'm' ? 'm' : 'f',
+                label = isOwn ? t('feelingsJarYou') : t('feelingsJarPartner'),
+                opening = jarFeelingDropId != null && person.feelings.some((f) => f.dropKey == jarFeelingDropId);
+              return `<article class="feelings-jar-member">
+                <h3>${esc(person.name || label)}</h3>
+                <div class="feelings-jar-art is-${feelingSheetGender == 'm' ? 'male' : 'female'}${opening ? ' is-opening' : ''}">
+                  ${jarBackSvg(feelingSheetGender)}
+                  <div class="feelings-jar-fill" aria-label="${esc(label)}">${(() => {
+                    const ordered = person.feelings
+                      .map((f, i) => ({ f, i }))
+                      .sort((a, b) => (Date.parse(a.f.created_at || a.f.createdAt || '') || 0) - (Date.parse(b.f.created_at || b.f.createdAt || '') || 0) || a.i - b.i)
+                      .map((o) => o.f);
+                    const layout = jarLayout(ordered), r = layout.d / 2;
+                    return ordered.map((feeling, i) => {
+                      const pos = layout.placed[i],
+                        index = feelingChoices.findIndex(([key]) => key == feeling.feeling),
+                        name = t(feelingChoices[index]?.[1] || 'feelingsJar'),
+                        style = `--d:${layout.d}cqw;left:${(pos.x - r).toFixed(2)}cqw;bottom:${(pos.y - r).toFixed(2)}cqw;--rot:${pos.rot.toFixed(1)}deg;--fall:${(JAR_H - (pos.y - r) + 45).toFixed(1)}cqw`;
+                      return `<button type="button" class="feelings-jar-marble${jarFeelingDropId != null && feeling.dropKey == jarFeelingDropId ? ' is-dropping' : ''}" style="${style}" data-a="petFeelingView" data-id="${esc(String(feeling.id))}" aria-label="${esc(name + '. ' + (feeling.reason || t('feelingNoReason')))}" title="${esc(name + ': ' + (feeling.reason || t('feelingNoReason')))}">${feelingSprite(Math.max(index, 0), feeling.gender || feelingSheetGender)}</button>`;
+                    }).join('');
+                  })()}</div>
+                  ${jarFrontSvg(feelingSheetGender)}
+                </div>
+              </article>`;
+            }).join('')}</div>
+            <p class="feelings-jar-hint">${esc(t('feelingsJarHint'))}</p>
+            <div class="feelings-jar-options">${feelingChoices.map(([key, label], index) => `<button type="button" data-a="petReact" data-feeling="${key}" data-index="${index}" aria-label="${esc(t(label))}" title="${esc(t(label))}">${feelingSprite(index, me())}</button>`).join('')}</div>
+          </div>`;
+        };
+        const feelingPrompt = () => {
+          if (!feelingDraft) return '';
+          const selected = feelingChoices[feelingDraft.index] || feelingChoices[0],
+            sheetGender = me() == 'm' ? 'm' : 'f';
+          return `<div class="mod feeling-reason-modal" data-a="petFeelingClose"><form class="card" data-f="petFeeling" role="dialog" aria-modal="true" aria-label="${esc(t('feelingReasonTitle'))}">
+            <div class="feeling-reason-heading">${feelingSprite(feelingDraft.index, sheetGender)}<div><h2>${esc(t('feelingReasonTitle'))}</h2><p>${esc(t(selected[1]))}</p></div></div>
+            <div class="fl"><label class="lb" for="feelingReason">${esc(t('feelingReasonLabel'))}</label><textarea class="in" id="feelingReason" name="reason" maxlength="240" rows="3" autofocus placeholder="${esc(t('feelingReasonPlaceholder'))}"></textarea></div>
+            <div class="row2"><button type="button" class="btn b2" data-a="petFeelingClose">${esc(t('feelingReasonCancel'))}</button><button class="btn b1">${esc(t('feelingReasonSave'))}</button></div>
+          </form></div>`;
+        };
+        const feelingDetails = () => {
+          if (!feelingViewing) return '';
+          const index = feelingChoices.findIndex(([key]) => key == feelingViewing.feeling),
+            name = t(feelingChoices[index]?.[1] || 'feelingsJar'),
+            gender = feelingViewing.gender || me();
+          return `<div class="mod feeling-reason-modal" data-a="petFeelingClose"><section class="card feeling-details" role="dialog" aria-modal="true" aria-label="${esc(name)}">
+            <div class="feeling-reason-heading">${feelingSprite(Math.max(index, 0), gender)}<div><h2>${esc(name)}</h2><p>${esc(feelingViewing.byName || '')}</p></div></div>
+            <p class="feeling-view-reason">${esc(feelingViewing.reason || t('feelingNoReason'))}</p>
+            <div class="row2"><button type="button" class="btn b1" data-a="petFeelingClose">${esc(t('feelingClose'))}</button></div>
+          </section></div>`;
+        };
+        return `<section class="pet-card${petCardView == 'jar' ? ' is-feelings-jar' : ''}" aria-label="${esc(t('petKicker'))}">
           ${petSnowHtml()}
-          <div class="pet-top"><div><p class="pet-kicker">${esc(t('petKicker'))}</p><div class="pet-heading">${esc(pet.name || fallback.name)} <button type="button" class="pet-rename" data-a="petName" aria-label="${esc(t('petRename'))}">&#9998;</button></div><p class="pet-hint">${esc(t('petSub'))}</p></div><span class="pet-hearts">&#9825; &#9825; &#9825;</span></div>
-          <div class="pet-stage">${people.map(character).join('')}</div>
+          <div class="pet-top"><div><p class="pet-kicker">${esc(t('petKicker'))}</p><div class="pet-heading">${petCardView == 'jar' ? esc(t('feelingsJar')) : `${esc(pet.name || fallback.name)} <button type="button" class="pet-rename" data-a="petName" aria-label="${esc(t('petRename'))}">&#9998;</button>`}</div><p class="pet-hint">${esc(petCardView == 'jar' ? t('feelingsJarHint') : t('petSub'))}</p></div><div class="pet-top-actions"><button type="button" class="pet-view-toggle" data-a="petViewToggle" aria-label="${esc(petCardView == 'jar' ? t('petViewToggle') : t('feelingsJar'))}">${petCardView == 'jar' ? ' Pet' : ' Feelings Jar'}</button><span class="pet-hearts">&#9825; &#9825; &#9825;</span></div></div>
+          ${petCardView == 'jar' ? feelingsJar() : `<div class="pet-stage">${people.map(character).join('')}</div>
           <div class="pet-chat">
             <form class="pet-text-form" data-f="petText">
               <textarea class="in" name="text" data-pet-message-input rows="2" enterkeyhint="enter" maxlength="120" autocomplete="off" placeholder="${esc(t('petTextPlaceholder'))}" aria-label="${esc(t('petTextPlaceholder'))}" required></textarea>
@@ -358,6 +510,6 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
               <button class="btn b2 pet-messages-open" type="button" data-a="petMessagesOpen">${esc(t('petMessages'))}</button>
             </form>
             <div class="pet-reactions" ${petReactionsOpen ? '' : 'hidden'} aria-hidden="${!petReactionsOpen}">${reactions.map((e) => `<button type="button" data-a="petReact" data-emoji="${e}" aria-label="${esc(t('petReactOption').replace('{emoji}', e))}">${e}</button>`).join('')}</div>
-          </div>
-        </section>${petMessagesOpen ? petMessagesHtml() : ''}`;
+          </div>`}
+        </section>${petCardView == 'jar' ? feelingPrompt() : ''}${petCardView == 'jar' ? feelingDetails() : ''}${petMessagesOpen ? petMessagesHtml() : ''}`;
       }
