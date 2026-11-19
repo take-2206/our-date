@@ -358,6 +358,13 @@
           stopLocalPetTyping();
           if (text) sendPetMessage(text);
           return;
+        } else if (k == 'petFeeling') {
+          const reason = String(v.reason || '').trim(),
+            draft = feelingDraft;
+          if (!draft) return;
+          feelingDraft = null;
+          sendPetFeeling(draft.feeling, reason);
+          return;
         } else if (k == 'petMessage') {
           const text = String(v.text || '').trim();
           stopLocalPetTyping();
@@ -581,6 +588,8 @@
           pmod = false;
           smod = false;
           dcmod = false;
+          feelingDraft = null;
+          feelingViewing = null;
           petMessagesOpen = false;
           noteEdit = null;
           noteDraft = null;

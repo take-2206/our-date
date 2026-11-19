@@ -17,6 +17,8 @@ function act(a, d, el) {
     return;
   if (a == "pclose" && el.classList.contains("mod") && event.target !== el)
     return;
+  if (a == "petFeelingClose" && el.classList.contains("mod") && event.target !== el)
+    return;
   if (a == "sclose" && el.classList.contains("mod") && event.target !== el)
     return;
   if (a == "petMessagesClose" && el.classList.contains("mod") && event.target !== el)
@@ -52,11 +54,29 @@ function act(a, d, el) {
     const p = parse(d.k);
     cur = new Date(p.getFullYear(), p.getMonth(), 1);
   } else if (a == "petReact") {
+    if (petCardView == 'jar') {
+      feelingDraft = { feeling: d.feeling, index: Number(d.index) };
+      feelingViewing = null;
+      render();
+      requestAnimationFrame(() => document.querySelector('#feelingReason')?.focus());
+      return;
+    }
     petReactionsOpen = false;
     sendPetReaction(d.emoji || "❤️");
     return;
+  } else if (a == "petFeelingClose") {
+    feelingDraft = null;
+    feelingViewing = null;
+  } else if (a == "petFeelingView") {
+    feelingViewing = (PET.feelings || []).find((feeling) => String(feeling.id) == String(d.id)) || null;
+    if (!feelingViewing) return;
   } else if (a == "petReactionsToggle") {
     petReactionsOpen = !petReactionsOpen;
+  } else if (a == "petViewToggle") {
+    petCardView = petCardView == 'pet' ? 'jar' : 'pet';
+    petReactionsOpen = false;
+    feelingDraft = null;
+    feelingViewing = null;
   } else if (a == "petMessagesOpen") {
     petMessagesOpen = true;
     petReactionsOpen = false;

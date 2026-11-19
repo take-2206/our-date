@@ -2643,6 +2643,9 @@ body.note-resizing * {
 .pet-card {
   overflow: hidden;
 }
+.pet-card.is-feelings-jar {
+  background: #000;
+}
 .pet-top,
 .pet-stage,
 .pet-chat {
@@ -2960,6 +2963,25 @@ body.note-resizing * {
   justify-content: space-between;
   width: 100%;
 }
+.pet-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pet-view-toggle {
+  min-height: 36px;
+  padding: 0 11px;
+  border: 1px solid rgba(255, 105, 180, 0.38);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffe8f3;
+  font: 700 12px "Nunito", sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.pet-view-toggle:hover {
+  background: rgba(255, 105, 180, 0.2);
+}
 .pet-kicker {
   color: var(--pk);
   font:
@@ -2988,6 +3010,250 @@ body.note-resizing * {
   color: #ff8cbd;
   letter-spacing: 3px;
   font-size: 15px;
+}
+.feelings-jar-view {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 4px 0;
+}
+.feelings-jar-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: min(800px, 100%);
+}
+.feelings-jar-member {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 8px 4px;
+  background: rgba(30, 24, 75, 0.25);
+  text-align: center;
+}
+.feelings-jar-member h3 {
+  max-width: 100%;
+  overflow: hidden;
+  color: #fff5ff;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.feelings-jar-art {
+  position: relative;
+  width: min(300px, 100%);
+  aspect-ratio: 300 / 330; /* khớp viewBox của SVG lọ */
+}
+.feelings-jar-svg {
+  overflow: visible; /* để nắp bay lên khỏi khung SVG */
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.feelings-jar-fill {
+  position: absolute;
+  left: 14%;   /* thành trong lọ: x 42..258 trên 300 */
+  right: 14%;
+  bottom: 12.12%; /* đáy trong lọ: y 290 trên 330 */
+  aspect-ratio: 100 / 82; /* khớp JAR_H trong calendar.js */
+  container-type: size;
+  pointer-events: none;
+}
+.feelings-jar-marble {
+  position: absolute;
+  width: var(--d, 20cqw);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 0;
+  outline: 0;
+  padding: 0;
+  /* thân bi thuỷ tinh */
+  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.12) 55%, rgba(110, 130, 210, 0.38) 100%);
+  /* bóng đổ xuống các viên bên dưới + viền kính */
+  box-shadow: 0 0.8cqw 1.4cqw rgba(0, 0, 0, 0.4), inset 0 0 0 0.35cqw rgba(255, 255, 255, 0.3);
+  transform: rotate(var(--rot, 0deg));
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform 0.16s ease, filter 0.16s ease;
+}
+.feelings-jar-marble::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 22% 14% at 32% 24%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 100%),
+    radial-gradient(circle at 70% 78%, rgba(255, 255, 255, 0.22), transparent 28%),
+    radial-gradient(circle at 50% 50%, transparent 58%, rgba(10, 10, 40, 0.38) 100%);
+}
+.feelings-jar-marble:hover {
+  transform: rotate(var(--rot, 0deg)) scale(1.1);
+  filter: brightness(1.08);
+  z-index: 5;
+}
+.feelings-jar-marble:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.9);
+  outline-offset: 2px;
+}
+.feelings-jar-marble .feeling-sprite {
+  clip-path: circle(46% at 50% 50%);
+}
+.feeling-sprite {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-position: var(--sheet-x, 0%) var(--sheet-y, 0%);
+  background-size: 400% 300%;
+}
+.feeling-sprite.is-female {
+  background-image: url("../img/pet/f-feeling.png");
+}
+.feeling-sprite.is-male {
+  background-image: url("../img/pet/m-feeling.png");
+}
+/* bi rơi từ miệng lọ xuống, nảy vài lần rồi nằm yên */
+.feelings-jar-marble.is-dropping {
+  z-index: 4;
+  animation: feelingsJarMarbleDrop 1.2s 0.4s both; /* đợi nắp mở xong mới rơi */
+}
+/* mở nắp: nhấc lên, xoay nghiêng sang một bên, giữ lại lúc bi rơi, rồi đóng lại */
+.feelings-jar-lid {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+.feelings-jar-art.is-opening .feelings-jar-lid {
+  animation: feelingsJarLid 2s ease-in-out both;
+}
+@keyframes feelingsJarLid {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  16%,
+  78% {
+    transform: translate(-46px, -22px) rotate(-32deg);
+  }
+  92% {
+    transform: translate(0, -5px) rotate(0deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+@keyframes feelingsJarMarbleDrop {
+  0% {
+    opacity: 0;
+    transform: translateY(calc(var(--fall, 100cqw) * -1)) rotate(-220deg);
+    animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.6);
+  }
+  8% {
+    opacity: 1;
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(0) rotate(var(--rot, 0deg));
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1);
+  }
+  70% {
+    transform: translateY(-6cqw) rotate(var(--rot, 0deg));
+    animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.6);
+  }
+  82% {
+    transform: translateY(0) rotate(var(--rot, 0deg));
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1);
+  }
+  91% {
+    transform: translateY(-2cqw) rotate(var(--rot, 0deg));
+    animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.6);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotate(var(--rot, 0deg));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .feelings-jar-marble.is-dropping,
+  .feelings-jar-art.is-opening .feelings-jar-lid {
+    animation: none;
+  }
+}
+.feelings-jar-hint {
+  color: var(--mut);
+  font-size: 12px;
+  text-align: center;
+}
+.feelings-jar-options {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  width: min(360px, 100%);
+}
+.feelings-jar-options button {
+  min-width: 0;
+  height: 38px;
+  border: transparent;
+  border-radius: 12px;
+  background:transparent;
+  font-size: 19px;
+  cursor: pointer;
+}
+.feelings-jar-options .feeling-sprite {
+  width: 100%;
+  height: 100%;
+}
+.feelings-jar-options button:hover {
+  background: rgba(255, 105, 180, 0.18);
+}
+.feeling-view-reason {
+  min-height: 48px;
+  margin: 8px 0 18px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--txt);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.feeling-reason-modal {
+  z-index: 70;
+}
+.feeling-details {
+  width: min(420px, 100%);
+  margin: auto;
+  padding: 20px;
+  border-color: var(--pk);
+  box-shadow: 0 0 30px rgba(255, 105, 180, 0.4);
+}
+.feeling-reason-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.feeling-reason-heading > .feeling-sprite {
+  width: 68px;
+  height: 68px;
+  flex: none;
+}
+.feeling-reason-heading h2 {
+  color: var(--pk);
+  font-size: 17px;
+}
+.feeling-reason-heading p {
+  color: var(--mut);
+  font-size: 12px;
+}
+.feeling-reason-modal textarea.in {
+  min-height: 88px;
+  padding: 10px 12px;
+  resize: vertical;
 }
 .pet-stage {
   position: relative;
