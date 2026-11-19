@@ -372,6 +372,7 @@ function act(a, d, el) {
   } else if (a == "close") modal = false;
   else if (a == "out") {
     void publishPetChatActivity(false);
+    void publishPetPresenceActivity(false);
     if (sb) {
       pushDetach().then(() => sb.auth.signOut());
       if (CH) sb.removeChannel(CH);
