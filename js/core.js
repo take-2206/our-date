@@ -1,6 +1,6 @@
 // LoveSync core module. Classic scripts share state declared in js/core.js.
 /* ===== 1. NGÔN NGỮ (vi / en). Thêm chữ mới = thêm cùng một khoá ở cả hai bên ===== */
-const APP_VERSION = '1.50.63';
+const APP_VERSION = '1.50.66';
 let PET = { name: "MINI CHIBI", reactions: [], feelings: [], messages: [] };
 let petReactionsOpen = false;
 let petMessagesOpen = false;
@@ -11,6 +11,8 @@ let jarFeelingDropId = null;
 let jarFeelingDropTimer = null;
 let petMessageError = '';
 let petMessageSyncBusy = false;
+let petMessageReplyId = null;
+let petMessageEditId = null;
 let uiPointerActive = false;
 let TTT = {
   board: Array(9).fill(''),
@@ -279,6 +281,13 @@ let TTT = {
           petMessagesEmpty: 'Chưa có tin nhắn nào. Hãy gửi lời đầu tiên nhé!',
           petMessagesSetup: 'Lịch sử tin nhắn chưa được thiết lập. Hãy chạy lại supabase-pet.sql trong Supabase.',
           petMessageReceived: '{name} vừa gửi: {message}',
+          petMessageReply: 'Trả lời',
+          petMessageEdit: 'Sửa',
+          petMessageReplyingTo: 'Đang trả lời {name}',
+          petMessageEditing: 'Đang sửa tin nhắn',
+          petMessageEdited: 'Đã sửa',
+          petMessageOriginalMissing: 'Tin nhắn gốc không còn hiển thị',
+          petMessageEditFailed: 'Không sửa được tin nhắn. Hãy chạy lại supabase-pet.sql.',
           petReceiptSending: 'Đang gửi',
           petReceiptSent: 'Đã gửi',
           petReceiptReceived: 'Đã nhận',
@@ -543,6 +552,13 @@ let TTT = {
           petMessagesEmpty: 'No messages yet. Send the first one!',
           petMessagesSetup: 'Message history is not set up. Run supabase-pet.sql in Supabase again.',
           petMessageReceived: '{name} sent: {message}',
+          petMessageReply: 'Reply',
+          petMessageEdit: 'Edit',
+          petMessageReplyingTo: 'Replying to {name}',
+          petMessageEditing: 'Editing message',
+          petMessageEdited: 'Edited',
+          petMessageOriginalMissing: 'Original message is no longer shown',
+          petMessageEditFailed: 'Could not edit the message. Run supabase-pet.sql again.',
           petReceiptSending: 'Sending',
           petReceiptSent: 'Sent',
           petReceiptReceived: 'Received',

@@ -6449,6 +6449,83 @@ body.note-resizing * {
 .pet-message-compose {
   align-items: center;
 }
+.pet-message-reply-preview {
+  display: grid;
+  gap: 2px;
+  margin-bottom: 7px;
+  padding: 6px 8px;
+  overflow: hidden;
+  border-left: 3px solid var(--pk);
+  border-radius: 7px;
+  background: rgba(0, 0, 0, 0.22);
+  font-size: 11px;
+}
+.pet-message-reply-preview b {
+  color: var(--pk2);
+  font-size: 10px;
+}
+.pet-message-reply-preview span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pet-message-meta {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+.pet-message-meta small {
+  flex: 1;
+  min-width: 0;
+}
+.pet-message-actions {
+  display: flex;
+  flex: none;
+  gap: 7px;
+}
+.pet-message-actions button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--pk2);
+  font: 700 10px "Nunito", sans-serif;
+  cursor: pointer;
+}
+.pet-message-actions button:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+.pet-message-context {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  padding: 8px 10px;
+  border-left: 3px solid var(--pk);
+  border-radius: 9px;
+  background: rgba(255, 105, 180, 0.1);
+}
+.pet-message-context > div {
+  display: grid;
+  min-width: 0;
+}
+.pet-message-context b {
+  color: var(--pk2);
+  font-size: 11px;
+}
+.pet-message-context span {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pet-message-context .ib {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+}
 .pet-chat-bubble.is-text span {
   max-height: 3.9em;
   overflow-y: auto;
