@@ -1,11 +1,16 @@
 // LoveSync app module. Classic scripts share state declared in js/core.js.
 const petChatSessionId = globalThis.crypto?.randomUUID?.();
+const petPresenceSessionId = globalThis.crypto?.randomUUID?.();
 let petChatPublishedFor = null,
     petChatPublishedAt = 0,
     petChatPublishBusy = false,
     petChatDesiredState = false,
     partnerChatCheckBusy = false,
     partnerChatCheckRetryAt = 0;
+let petPresencePublishedFor = null,
+    petPresencePublishedAt = 0,
+    petPresencePublishBusy = false,
+    petPresenceDesiredState = false;
 
 (async () => {
         const params = new URLSearchParams(location.search);
@@ -30,6 +35,10 @@ let petChatPublishedFor = null,
       })();
 
 function petChatIsActive() {
+        return !!(S.user && view == 'cal' && petMessagesOpen && document.visibilityState == 'visible');
+      }
+
+function petPresenceIsActive() {
         return !!(S.user && view == 'cal' && document.visibilityState == 'visible');
       }
 
@@ -51,6 +60,27 @@ async function publishPetChatActivity(active = petChatIsActive()) {
           petChatPublishBusy = false;
           if (S.user === user && petChatDesiredState !== active)
             void publishPetChatActivity(petChatDesiredState);
+        }
+      }
+
+async function publishPetPresenceActivity(active = petPresenceIsActive()) {
+        petPresenceDesiredState = active;
+        const user = S.user;
+        if (!user || !petPresenceSessionId || petPresencePublishBusy) return;
+        if (active && petPresencePublishedFor === user.id && Date.now() - petPresencePublishedAt < 5000) return;
+        if (!active && petPresencePublishedFor !== user.id) return;
+        petPresencePublishBusy = true;
+        petPresencePublishedFor = active ? user.id : null;
+        petPresencePublishedAt = Date.now();
+        try {
+          const { error } = await sb.rpc('set_pet_presence_active', { p_session_id: petPresenceSessionId, p_active: active });
+          if (error) throw error;
+        } catch (error) {
+          // Realtime presence remains available when the server migration is not installed yet.
+        } finally {
+          petPresencePublishBusy = false;
+          if (S.user === user && petPresenceDesiredState !== active)
+            void publishPetPresenceActivity(petPresenceDesiredState);
         }
       }
 
@@ -172,6 +202,7 @@ document.addEventListener('scroll', (event) => {
 document.addEventListener('visibilitychange', () => {
         if (!S.user) return;
         void publishPetChatActivity();
+        void publishPetPresenceActivity();
         if (typeof sendRealtimeOnlineState == 'function')
           sendRealtimeOnlineState(document.visibilityState == 'visible');
         if (document.visibilityState != 'visible' || typeof refresh != 'function') return;
@@ -182,15 +213,18 @@ document.addEventListener('visibilitychange', () => {
 
 addEventListener('pagehide', () => {
         void publishPetChatActivity(false);
+        void publishPetPresenceActivity(false);
         if (S.user && typeof sendRealtimeOnlineState == 'function') sendRealtimeOnlineState(false);
       });
 addEventListener('pageshow', () => {
         void publishPetChatActivity();
+        void publishPetPresenceActivity();
         if (S.user && typeof sendRealtimeOnlineState == 'function') sendRealtimeOnlineState(true);
       });
 
 setInterval(() => {
         if (petChatIsActive()) void publishPetChatActivity();
+        if (petPresenceIsActive()) void publishPetPresenceActivity();
         if (document.visibilityState == 'visible' && S.user && typeof sendRealtimeOnlineState == 'function')
           sendRealtimeOnlineState(true);
         if (typeof expireRealtimeOnlineState == 'function') expireRealtimeOnlineState();

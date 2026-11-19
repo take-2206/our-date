@@ -16,6 +16,7 @@ function render() {
                 toastPrompt();
         $('#app').innerHTML = content + appUpdatePrompt();
         void publishPetChatActivity();
+        void publishPetPresenceActivity();
         const petThread = document.querySelector('.pet-message-thread');
         if (petThread) requestAnimationFrame(() => {
           if (!petThread.isConnected) return;
