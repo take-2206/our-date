@@ -364,7 +364,8 @@
           if (!e.submitter?.matches('button[type="submit"]')) return;
           const text = String(v.text || '').trim();
           stopLocalPetTyping();
-          if (text) sendPetMessage(text);
+          if (text && petMessageEditId != null) editPetMessage(petMessageEditId, text);
+          else if (text) sendPetMessage(text, petMessageReplyId);
           return;
         } else if (k == 'petFeeling') {
           const reason = String(v.reason || '').trim(),
@@ -601,6 +602,8 @@
           feelingDraft = null;
           feelingViewing = null;
           petMessagesOpen = false;
+          petMessageReplyId = null;
+          petMessageEditId = null;
           noteEdit = null;
           noteDraft = null;
           bell = false;

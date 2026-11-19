@@ -308,10 +308,18 @@
         at: Date.parse(row.created_at) || Date.now(),
         receivedAt: row.received_at || null,
         readAt: row.read_at || null,
+        replyTo: row.reply_to == null ? null : row.reply_to,
+        editedAt: row.edited_at || null,
       });
       function mergePetReceipt(message, receipt) {
         if (receipt.received_at) message.receivedAt ||= receipt.received_at;
         if (receipt.read_at) message.readAt ||= receipt.read_at;
+      }
+      function mergePetMessageRow(message, row) {
+        if (row.body != null) message.text = row.body;
+        if (row.reply_to !== undefined) message.replyTo = row.reply_to;
+        if (row.edited_at !== undefined) message.editedAt = row.edited_at;
+        mergePetReceipt(message, row);
       }
       let petReceiptRequest = null,
         petReceiptRetryAt = 0;
@@ -363,7 +371,7 @@
         if (!S.user || receipt.couple_id != S.user.couple_id) return;
         const message = (PET.messages || []).find((item) => String(item.id) == String(receipt.id));
         if (!message) return;
-        mergePetReceipt(message, receipt);
+        mergePetMessageRow(message, receipt);
         saveLocalPet();
         paintPetMessages();
       }
@@ -494,19 +502,24 @@
          say('Bubble đã hiện trên máy này. Không đồng bộ được: ' + (x.message || x));
         }
       }
-      async function sendPetMessage(message) {
+      async function sendPetMessage(message, replyTo = petMessageReplyId) {
         const text = String(message || '').trim().slice(0, 120);
         if (!text || !S.user) return;
+        const replyId = /^[0-9]+$/.test(String(replyTo || '')) ? String(replyTo) : null;
+        petMessageReplyId = null;
+        petMessageEditId = null;
         const localId = 'local-message-' + Date.now(),
-          local = { id: localId, text, by: S.user.id, byName: S.user.name, at: Date.now() };
+          local = { id: localId, text, by: S.user.id, byName: S.user.name, at: Date.now(), replyTo: replyId, editedAt: null };
         PET.messages = (PET.messages || []).concat(local).slice(-100);
         saveLocalPet();
         render();
         try {
+          const insertRow = { couple_id: S.user.couple_id, sender_id: S.user.id, body: text };
+          if (replyId) insertRow.reply_to = replyId;
           const { data, error } = await sb
             .from('pet_messages')
-            .insert({ couple_id: S.user.couple_id, sender_id: S.user.id, body: text })
-            .select('id, body, sender_id, created_at')
+            .insert(insertRow)
+            .select('*')
             .single();
           if (error) throw error;
           const confirmed = (PET.messages || []).find((item) => String(item.id) == String(data.id));
@@ -525,13 +538,50 @@
           render();
         }
       }
+      async function editPetMessage(messageId, message) {
+        const text = String(message || '').trim().slice(0, 120),
+          target = (PET.messages || []).find((item) => String(item.id) == String(messageId));
+        if (!text || !target || target.by != S.user?.id || !/^[0-9]+$/.test(String(target.id))) return;
+        const previousText = target.text,
+          previousEditedAt = target.editedAt,
+          editedAt = new Date().toISOString();
+        petMessageEditId = null;
+        petMessageReplyId = null;
+        target.text = text;
+        target.editedAt = editedAt;
+        saveLocalPet();
+        render();
+        try {
+          const { data, error } = await sb
+            .from('pet_messages')
+            .update({ body: text, edited_at: editedAt })
+            .eq('id', target.id)
+            .eq('sender_id', S.user.id)
+            .select('*')
+            .single();
+          if (error) throw error;
+          mergePetMessageRow(target, data);
+          petMessageError = '';
+          saveLocalPet();
+          paintPetMessages();
+          sendPetMessageBroadcast(data);
+        } catch (error) {
+          target.text = previousText;
+          target.editedAt = previousEditedAt;
+          saveLocalPet();
+          render();
+          say(t('petMessageEditFailed'));
+        }
+      }
       async function onPetMessageInsert(change) {
         const incoming = change && change.new;
         if (!incoming || !S.user) return;
         if (incoming.sender_id != S.user.id) markPartnerOnline();
         const messageRow = toPetMessage(incoming),
-          existed = (PET.messages || []).some((item) => String(item.id) == String(messageRow.id));
-        if (!existed) PET.messages = (PET.messages || []).concat(messageRow).slice(-100);
+          existing = (PET.messages || []).find((item) => String(item.id) == String(messageRow.id)),
+          existed = !!existing;
+        if (existing) mergePetMessageRow(existing, incoming);
+        else PET.messages = (PET.messages || []).concat(messageRow).slice(-100);
         saveLocalPet();
         if (typeof paintPetMessages == 'function') paintPetMessages();
         void acknowledgePetMessages();

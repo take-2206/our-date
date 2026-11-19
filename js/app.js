@@ -3,7 +3,9 @@ const petChatSessionId = globalThis.crypto?.randomUUID?.();
 let petChatPublishedFor = null,
     petChatPublishedAt = 0,
     petChatPublishBusy = false,
-    petChatDesiredState = false;
+    petChatDesiredState = false,
+    partnerChatCheckBusy = false,
+    partnerChatCheckRetryAt = 0;
 
 (async () => {
         const params = new URLSearchParams(location.search);
@@ -28,7 +30,7 @@ let petChatPublishedFor = null,
       })();
 
 function petChatIsActive() {
-        return !!(S.user && view == 'cal' && petMessagesOpen && document.visibilityState == 'visible');
+        return !!(S.user && view == 'cal' && document.visibilityState == 'visible');
       }
 
 async function publishPetChatActivity(active = petChatIsActive()) {
@@ -41,13 +43,37 @@ async function publishPetChatActivity(active = petChatIsActive()) {
         petChatPublishedFor = active ? user.id : null;
         petChatPublishedAt = Date.now();
         try {
-          await sb.rpc('set_pet_chat_active', { p_session_id: petChatSessionId, p_active: active });
+          const { error } = await sb.rpc('set_pet_chat_active', { p_session_id: petChatSessionId, p_active: active });
+          if (error) throw error;
         } catch (error) {
           // The server expires the record if a disconnect prevents clearing it.
         } finally {
           petChatPublishBusy = false;
           if (S.user === user && petChatDesiredState !== active)
             void publishPetChatActivity(petChatDesiredState);
+        }
+      }
+
+async function syncPartnerChatActivity() {
+        const user = S.user;
+        if (!user || !petMessagesOpen || partnerChatCheckBusy || Date.now() < partnerChatCheckRetryAt) return;
+        partnerChatCheckBusy = true;
+        try {
+          const { data, error } = await sb.rpc('is_partner_pet_chat_active');
+          if (error) throw error;
+          if (S.user !== user) return;
+          if (data) markPartnerOnline();
+          else if (!partnerOnlineLastSeen || Date.now() - partnerOnlineLastSeen > 12000) {
+            partnerOnline = false;
+            partnerOnlineLastSeen = 0;
+            partnerPetTyping = false;
+            paintPetMessagePresence();
+            paintPetMessageTyping();
+          }
+        } catch (error) {
+          partnerChatCheckRetryAt = Date.now() + 30000;
+        } finally {
+          partnerChatCheckBusy = false;
         }
       }
 
@@ -171,6 +197,8 @@ setInterval(() => {
       }, 5000);
 
 setInterval(() => {
-        if (document.visibilityState == 'visible' && S.user && petMessagesOpen)
+        if (document.visibilityState == 'visible' && S.user && petMessagesOpen) {
           syncPetMessagesLive();
+          void syncPartnerChatActivity();
+        }
       }, 2500);
