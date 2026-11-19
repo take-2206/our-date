@@ -1,6 +1,6 @@
 // LoveSync core module. Classic scripts share state declared in js/core.js.
 /* ===== 1. NGÔN NGỮ (vi / en). Thêm chữ mới = thêm cùng một khoá ở cả hai bên ===== */
-const APP_VERSION = '1.50.58';
+const APP_VERSION = '1.50.63';
 let PET = { name: "MINI CHIBI", reactions: [], messages: [] };
 let petReactionsOpen = false;
 let petMessagesOpen = false;
@@ -699,7 +699,7 @@ let TTT = {
           saving = String(e.id).startsWith('free-');
         return `<article class="card free-day-card ${freeDayOwnerClass(e.by)}">
         <span class="free-day-icon" aria-hidden="true">${freeIcon(e)}</span>
-        <div><span class="chip">${t('freeDay')}</span><h2>${esc(customTitle || t('freeDayBy').replace('{name}', name))}</h2>${customTitle ? `<small class="sub">${esc(name)}</small>` : ''}</div>${mine && !saving ? `<button class="mini danger" data-a="freeRemove" data-id="${e.id}">${t('freeDayRemove')}</button>` : ''}</article>`;
+        <div><span class="chip">${t('freeDay')}</span><h2>${esc(customTitle || t('freeDayBy').replace('{name}', name))}</h2>${customTitle ? `<small class="sub">${esc(name)}</small>` : ''}</div>${mine && !saving ? `<button class="mini danger free-day-remove" data-a="freeRemove" data-id="${e.id}" aria-label="${esc(t('freeDayRemove'))}" title="${esc(t('freeDayRemove'))}">${I.x}</button>` : ''}</article>`;
       };
       /* Thông báo: mine() = do người ấy gửi, isR() = đã đọc chưa, unread() = các cái chưa đọc,
          ntx() = nội dung theo loại (lịch mới / đồng ý / từ chối) */

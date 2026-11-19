@@ -454,6 +454,7 @@
       async function onPetMessageInsert(change) {
         const incoming = change && change.new;
         if (!incoming || !S.user) return;
+        if (incoming.sender_id != S.user.id) markPartnerOnline();
         const messageRow = toPetMessage(incoming),
           existed = (PET.messages || []).some((item) => String(item.id) == String(messageRow.id));
         if (!existed) PET.messages = (PET.messages || []).concat(messageRow).slice(-100);
@@ -486,6 +487,7 @@
 }
 function onPetTouch(p) {
   if (!p || !S.user || p.from == S.user.id || view != 'cal') return;
+  markPartnerOnline();
   const btn = document.querySelector('.pet-walker-left .pet-character-action');
   if (btn && typeof petTouch == 'function') petTouch(btn);
 }
@@ -625,12 +627,20 @@ function onPetTouch(p) {
         ).catch(() => {});
         if (!online) Promise.resolve(CH.untrack()).catch(() => {});
       }
+      function markPartnerOnline() {
+        partnerOnline = true;
+        partnerOnlineLastSeen = Date.now();
+        paintPetMessagePresence();
+      }
       function onRealtimeOnlineState(payload) {
         if (!payload || !S.user || payload.from == S.user.id) return;
-        partnerOnline = !!payload.online;
-        partnerOnlineLastSeen = partnerOnline ? Date.now() : 0;
-        if (!partnerOnline) partnerPetTyping = false;
-        paintPetMessagePresence();
+        if (payload.online) markPartnerOnline();
+        else if (!partnerOnlineLastSeen || Date.now() - partnerOnlineLastSeen > 12000) {
+          partnerOnline = false;
+          partnerOnlineLastSeen = 0;
+          partnerPetTyping = false;
+          paintPetMessagePresence();
+        }
         paintPetMessageTyping();
       }
       function expireRealtimeOnlineState() {
@@ -699,8 +709,10 @@ function onPetTouch(p) {
             };
           });
         noteTypers = next;
-        partnerOnline = nextPartnerOnline;
-        partnerOnlineLastSeen = nextPartnerOnline ? Date.now() : 0;
+        const recentHeartbeat = partnerOnlineLastSeen && Date.now() - partnerOnlineLastSeen <= 12000;
+        partnerOnline = nextPartnerOnline || !!recentHeartbeat;
+        if (nextPartnerOnline) partnerOnlineLastSeen = Date.now();
+        else if (!partnerOnline) partnerOnlineLastSeen = 0;
         partnerPetTyping = nextPartnerPetTyping;
         new Set(previous.concat(Object.keys(next))).forEach(paintNoteTyping);
         paintPetMessagePresence();
