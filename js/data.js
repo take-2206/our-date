@@ -273,7 +273,7 @@
         photoError = ph.error ? ph.error.message : '';
         C.photos = (ph.data || []).map(toPhoto).sort((a, b) => b.date.localeCompare(a.date) || b.ts - a.ts);
         await signPhotos();
-        await Promise.all([loadPetReactions(), loadPetMessages()]);
+        await Promise.all([loadPetReactions(), loadPetMessages(), loadPetFeelings()]);
       }
       const petLocalKey = () => 'ls_pet_' + (S.user && S.user.couple_id || '');
       function saveLocalPet() {
@@ -281,6 +281,7 @@
           localStorage.setItem(petLocalKey(), JSON.stringify({
             name: PET.name,
             reactions: PET.reactions || [],
+            feelings: PET.feelings || [],
             messages: PET.messages || [],
           }));
         } catch (x) {}
@@ -288,8 +289,8 @@
       function loadLocalPet() {
         try {
           const local = JSON.parse(localStorage.getItem(petLocalKey()) || '{}');
-          PET = { name: local.name || 'Mochi', reactions: local.reactions || [], messages: local.messages || [] };
-        } catch (x) { PET = { name: 'Mochi', reactions: [], messages: [] }; }
+          PET = { name: local.name || 'Mochi', reactions: local.reactions || [], feelings: local.feelings || [], messages: local.messages || [] };
+        } catch (x) { PET = { name: 'Mochi', reactions: [], feelings: [], messages: [] }; }
       }
       async function loadPetReactions() {
         try {
@@ -404,6 +405,79 @@
         } finally {
           petMessageSyncBusy = false;
         }
+      }
+      const toPetFeeling = (row) => ({
+        id: row.id,
+        dropKey: 'db-' + row.id,
+        feeling: row.feeling,
+        reason: row.reason || '',
+        by: row.sender_id,
+        byName: (P[row.sender_id] || {}).name || '',
+        gender: (P[row.sender_id] || {}).gender || 'f',
+        at: Date.parse(row.created_at) || Date.now(),
+      });
+      async function loadPetFeelings() {
+        try {
+          const { data, error } = await sb
+            .from('pet_feelings')
+            .select('id, feeling, reason, sender_id, created_at')
+            .eq('couple_id', S.user.couple_id)
+            .order('created_at', { ascending: true });
+          if (error) throw error;
+          PET.feelings = (data || []).map(toPetFeeling);
+          saveLocalPet();
+        } catch (x) {}
+      }
+      async function sendPetFeeling(feeling, reason) {
+        reason = String(reason || '').trim().slice(0, 240);
+        if (!S.user || !S.user.couple_id || !feeling) return;
+        const localId = 'local-feeling-' + Date.now(),
+          local = {
+            id: localId,
+            dropKey: localId,
+            feeling,
+            reason: reason.slice(0, 240),
+            by: S.user.id,
+            byName: S.user.name || '',
+            gender: S.user.gender || 'f',
+            at: Date.now(),
+          };
+        PET.feelings = (PET.feelings || []).concat(local);
+        jarFeelingDropId = localId;
+        clearTimeout(jarFeelingDropTimer);
+        jarFeelingDropTimer = setTimeout(() => {
+          jarFeelingDropId = null;
+          jarFeelingDropTimer = null;
+          if (view == 'cal' && petCardView == 'jar') render();
+        }, 1500);
+        saveLocalPet();
+        render();
+        try {
+          const { data, error } = await sb
+            .from('pet_feelings')
+            .insert({ couple_id: S.user.couple_id, sender_id: S.user.id, feeling, reason: local.reason })
+            .select('id, feeling, reason, sender_id, created_at')
+            .single();
+          if (error) throw error;
+          PET.feelings = PET.feelings.map((item) => item.id == localId ? toPetFeeling(data) : item);
+          jarFeelingDropId = 'db-' + data.id;
+          saveLocalPet();
+        } catch (x) {
+          saveLocalPet();
+          say(t('petFeelingsSaveError') + ' ' + t('petFeelingsSetup') + ' ' + (x.message || x));
+        }
+      }
+      function onPetFeelingInsert(change) {
+        const row = change && change.new;
+        if (!row) return;
+        jarFeelingDropId = 'db-' + row.id;
+        clearTimeout(jarFeelingDropTimer);
+        jarFeelingDropTimer = setTimeout(() => {
+          jarFeelingDropId = null;
+          jarFeelingDropTimer = null;
+          if (view == 'cal' && petCardView == 'jar') render();
+        }, 1500);
+        refresh();
       }
       async function sendPetReaction(message) {
         const emoji = String(message || '').trim().slice(0, 120);
@@ -772,7 +846,8 @@ function onPetTouch(p) {
             if (view == 'game') render();
           })
           .on('postgres_changes', { event: '*', schema: 'public', table: 'events', filter: f }, refresh)
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'pet_reactions', filter: f }, refresh);
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'pet_reactions', filter: f }, refresh)
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pet_feelings', filter: f }, onPetFeelingInsert);
         if (!petMessageError) {
           channel = channel
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pet_messages', filter: f }, onPetMessageInsert)
