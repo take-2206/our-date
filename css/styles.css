@@ -6531,3 +6531,47 @@ body.note-resizing * {
   overflow-y: auto;
   white-space: pre;
 }
+
+.route-toggle {
+  margin-bottom: 0;
+  cursor: pointer;
+  list-style: none;
+}
+.route-toggle::-webkit-details-marker {
+  display: none;
+}
+.route-toggle:focus-visible {
+  outline: 2px solid var(--cy);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+.route-toggle-title {
+  display: grid;
+  gap: 4px;
+}
+.route-place {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+.route-toggle-icon {
+  width: 10px;
+  height: 10px;
+  margin-right: 4px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.18s ease;
+}
+.route-card[open] > .route-toggle {
+  margin-bottom: 10px;
+}
+.route-card[open] .route-toggle-icon {
+  transform: rotate(225deg);
+}
+.route-content {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+}
