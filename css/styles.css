@@ -541,6 +541,7 @@ button {
   gap: 10px;
   margin-top: 18px;
 }
+
 .throw-player {
   min-width: 0;
   display: flex;
@@ -550,29 +551,70 @@ button {
   border: 1px solid var(--line);
   border-radius: 13px;
   background: rgba(255, 255, 255, 0.035);
+  transition: opacity 0.3s, border-color 0.2s, box-shadow 0.2s;
 }
 .throw-player.active {
   border-color: var(--pk);
   box-shadow: 0 0 14px rgba(255, 105, 180, 0.16);
 }
+.throw-player.ko {
+  opacity: 0.55;
+}
+.throw-player.ko img {
+  filter: grayscale(1);
+}
 .throw-player img {
   width: 32px;
   height: 32px;
+  flex: none;
   object-fit: contain;
 }
-.throw-player span {
+.throw-hp-info {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+.throw-hp-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+}
+.throw-hp-top span {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 11px;
 }
-.throw-player b {
-  margin-left: auto;
+.throw-hp-top b {
+  flex: none;
   color: var(--pk2);
-  font:
-    700 11px "JetBrains Mono",
-    monospace;
+  font: 700 10px "JetBrains Mono", monospace;
+}
+.throw-hp {
+  height: 9px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+.throw-hp i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #4dd8e0, var(--cy));
+  box-shadow: 0 0 8px rgba(125, 249, 255, 0.5);
+  transition: width 0.45s ease, background 0.3s;
+}
+.throw-hp i.mid {
+  background: linear-gradient(90deg, #ffb347, #ffd166);
+  box-shadow: 0 0 8px rgba(255, 209, 102, 0.5);
+}
+.throw-hp i.low {
+  background: linear-gradient(90deg, #ff4d6d, #ff7a93);
+  box-shadow: 0 0 8px rgba(255, 77, 109, 0.55);
 }
 .throw-status {
   min-height: 22px;
@@ -582,17 +624,7 @@ button {
   font-size: 12px;
   font-weight: 800;
 }
-.throw-arena {
-  position: relative;
-  height: 220px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 105, 180, 0.22);
-  border-radius: 18px;
-  background: linear-gradient(180deg, #191c2b 0%, #25233c 68%, #482a48 100%);
-  cursor: crosshair;
-  touch-action: none;
-  user-select: none;
-}
+
 .throw-ground {
   position: absolute;
   right: 0;
@@ -602,31 +634,51 @@ button {
   border-top: 2px solid rgba(255, 182, 217, 0.35);
   background: linear-gradient(180deg, #432842, #201b2d);
 }
+.throw-arena {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 640 / 360; /* khớp canvas 640x360 */
+  overflow: hidden;
+  border: 1px solid rgba(255, 105, 180, 0.22);
+  border-radius: 18px;
+  background: linear-gradient(180deg, #191c2b 0%, #25233c 68%, #482a48 100%);
+  user-select: none;
+}
+.throw-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none; /* kéo trên điện thoại không cuộn trang */
+  cursor: grab;
+}
+.throw-canvas:active {
+  cursor: grabbing;
+}
+/* Nhân vật khớp vị trí va chạm trong canvas: CHAR=80, tâm x=110, đáy tại GROUND(299/360) */
 .throw-target {
   position: absolute;
-  z-index: 2;
-  bottom: 30px;
-  width: 70px;
-  height: 90px;
+  z-index: 0; /* nằm dưới canvas để chảo bay đè lên, canvas trong suốt */
+  bottom: 16.9%;
+  width: 12.5%; /* 80 / 640 */
+  height: 22.2%; /* 80 / 360 */
   object-fit: contain;
   pointer-events: none;
   transition: filter 0.2s;
 }
 .throw-target-left {
-  left: 27px;
+  left: 10.9%; /* (110 - 40) / 640 */
 }
 .throw-target-right {
-  right: 27px;
-}
-.throw-target.is-flying {
-  z-index: 3;
-  width: 48px;
-  height: 48px;
+  right: 10.9%;
 }
 .throw-target.is-hit {
   filter: drop-shadow(0 0 12px var(--pk));
   animation: throwHit 0.36s ease;
 }
+
 @keyframes throwHit {
   35% {
     transform: rotate(-22deg) scale(1.2);

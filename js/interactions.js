@@ -7,96 +7,52 @@
         input.style.height = height + 'px';
         input.style.overflowY = input.scrollHeight > 84 ? 'auto' : 'hidden';
       }
-      function paintThrowAim(e) {
-        const arena = document.querySelector('[data-throw-arena]');
-        if (!arena) return;
-        const rect = arena.getBoundingClientRect(),
-          x = clamp(e.clientX - rect.left, 12, rect.width - 12),
-          y = clamp(e.clientY - rect.top, 12, rect.height - 22),
-          originX = THROW_GAME.turn ? rect.width - 62 : 62,
-          originY = rect.height - 47,
-          dx = x - originX,
-          dy = y - originY,
-          angle = Math.atan2(dy, Math.abs(dx)) * 180 / Math.PI;
-        THROW_GAME.angle = angle;
-        const aim = arena.querySelector('[data-throw-aim]');
-        if (!aim) return;
-        aim.hidden = false;
-        aim.style.left = originX + 'px';
-        aim.style.top = originY + 'px';
-        aim.style.width = Math.hypot(dx, dy) + 'px';
-        aim.style.transform = `scaleX(${THROW_GAME.turn ? -1 : 1}) rotate(${angle}deg)`;
+      /* ===== Game ném (canvas): kết quả mỗi cú ném =====
+         initThrowGame(onThrowResult) nằm trong file game. Hàm này chạy ở CẢ HAI máy
+         vì mỗi máy tự mô phỏng cùng một cú ném, nên không cần gửi máu/lượt qua mạng. */
+      function onThrowResult({ hit, power, to }) {
+        const defender = to;
+        const damage = hit ? Math.round(12 + power * 100 * 0.34) : 0; // power canvas là 0..1, công thức cũ dùng 0..100
+        if (hit) {
+          THROW_GAME.hp[defender] = Math.max(0, THROW_GAME.hp[defender] - damage);
+          THROW_GAME.message = t('throwHit').replace('{damage}', damage);
+        } else {
+          THROW_GAME.message = t('throwMiss');
+        }
+        if (THROW_GAME.hp[defender] > 0) THROW_GAME.turn = defender;
+        THROW_GAME.power = 0;
+        THROW_GAME.busy = false;
+        render();
       }
-      function updateThrowPower() {
-        const fill = document.querySelector('[data-throw-power]'), label = document.querySelector('[data-throw-power-label]');
-        if (fill) fill.style.width = THROW_GAME.power + '%';
-        if (label) label.textContent = Math.round(THROW_GAME.power) + '%';
+      // Đặt lại ván ném. Dùng khi nhận tin "throwReset" từ máy kia (không gửi lại để tránh lặp vô hạn)
+      function throwApplyReset() {
+        THROW_GAME.hp = [100, 100];
+        THROW_GAME.turn = 0;
+        THROW_GAME.message = '';
+        THROW_GAME.power = 0;
+        THROW_GAME.busy = false;
+        if (typeof THROW !== 'undefined') {
+          THROW.flight = null;
+          THROW.drag = null;
+          THROW.pose = null;
+          THROW.hit = null;
+        }
+        render();
       }
-      function animateThrow(target, fromX, fromY, toX, toY, duration, done) {
-        const start = performance.now();
-        const frame = (now) => {
-          if (!target.isConnected) return;
-          const p = Math.min(1, (now - start) / duration), eased = 1 - (1 - p) ** 3;
-          target.style.left = (fromX + (toX - fromX) * eased) + 'px';
-          target.style.top = (fromY + (toY - fromY) * eased - Math.sin(Math.PI * p) * 95) + 'px';
-          if (p < 1) THROW_GAME.raf = requestAnimationFrame(frame);
-          else done();
-        };
-        THROW_GAME.raf = requestAnimationFrame(frame);
+      // Tự khởi tạo canvas mỗi khi trang vẽ lại, và tự kết nối kênh online khi vào màn game.
+      // (Không cần sửa render() hay act().)
+      function throwWatch() {
+        if (typeof initThrowGame !== 'function') return;
+        if (S.user && S.user.couple_id && typeof throwConnect === 'function' && document.querySelector('.throw-launch, [data-throw-arena]'))
+          throwConnect(sb, S.user.couple_id);
+        const cvs = document.querySelector('[data-throw-canvas]');
+        if (cvs && !cvs.dataset.throwInit) {
+          cvs.dataset.throwInit = '1';
+          initThrowGame(onThrowResult);
+        }
       }
-      function throwGame(e) {
-        const arena = document.querySelector('[data-throw-arena]'), ended = THROW_GAME.hp.some((hp) => hp <= 0);
-        if (!arena || THROW_GAME.busy || ended || e.button !== 0) return;
-        e.preventDefault();
-        paintThrowAim(e);
-        THROW_GAME.charging = true;
-        THROW_GAME.startedAt = performance.now();
-        const charge = () => {
-          if (!THROW_GAME.charging) return;
-          THROW_GAME.power = Math.min(100, (performance.now() - THROW_GAME.startedAt) / 18);
-          updateThrowPower();
-          THROW_GAME.raf = requestAnimationFrame(charge);
-        };
-        THROW_GAME.raf = requestAnimationFrame(charge);
-      }
-      function releaseThrow(e) {
-        if (!THROW_GAME.charging) return;
-        THROW_GAME.charging = false;
-        cancelAnimationFrame(THROW_GAME.raf);
-        updateThrowPower();
-        const arena = document.querySelector('[data-throw-arena]'), targets = arena?.querySelectorAll('[data-throw-target]');
-        if (!arena || !targets?.length) return;
-        paintThrowAim(e);
-        THROW_GAME.busy = true;
-        const attacker = THROW_GAME.turn, defender = 1 - attacker,
-          target = targets[attacker], rect = arena.getBoundingClientRect(),
-          startX = attacker ? rect.width - 62 : 62,
-          startY = rect.height - 47,
-          radians = THROW_GAME.angle * Math.PI / 180,
-          direction = attacker ? -1 : 1,
-          power = Math.max(12, THROW_GAME.power),
-          distance = Math.min(rect.width * 0.72, 70 + power * 2.1),
-          endX = clamp(startX + Math.cos(radians) * distance * direction, 24, rect.width - 24),
-          endY = clamp(startY + Math.sin(radians) * distance, 24, rect.height - 40);
-        target.classList.add('is-flying');
-        animateThrow(target, startX, startY, endX, endY, 520, () => {
-          target.style.left = '';
-          target.style.top = '';
-          target.classList.remove('is-flying');
-          const opponent = targets[defender], opRect = opponent.getBoundingClientRect(), arRect = arena.getBoundingClientRect(),
-            hit = Math.abs((opRect.left + opRect.width / 2 - arRect.left) - endX) < 86 && endY > rect.height - 130,
-            damage = hit ? Math.round(12 + power * 0.34) : 0;
-          if (hit) {
-            THROW_GAME.hp[defender] = Math.max(0, THROW_GAME.hp[defender] - damage);
-            THROW_GAME.message = t('throwHit').replace('{damage}', damage);
-            opponent.classList.add('is-hit');
-          } else THROW_GAME.message = t('throwMiss');
-          if (THROW_GAME.hp[defender] > 0) THROW_GAME.turn = defender;
-          THROW_GAME.power = 0;
-          THROW_GAME.busy = false;
-          render();
-        });
-      }
+      new MutationObserver(throwWatch).observe(document.body, { childList: true, subtree: true });
+      throwWatch();
       function noteGhost(color, body = '', width = 220, height = 190, scale = 1, fontSize = 16) {
         const ghost = document.createElement('div');
         ghost.className = `sticky drag-ghost ${color}`;
@@ -340,10 +296,7 @@
         el.matches('input[type="date"][data-calendar], input[type="time"][data-clock]');
       document.addEventListener('pointerdown', (e) => {
         uiPointerActive = true;
-        if (e.target.closest('[data-throw-arena]')) {
-          throwGame(e);
-          return;
-        }
+        if (e.target.closest('[data-throw-arena]')) return; // canvas tự xử lý kéo ném
         if (startNoteResize(e)) return;
         startNoteDrag(e);
       });
@@ -354,12 +307,6 @@
             moveNoteResize(e);
             return;
           }
-          if (THROW_GAME.charging) {
-            paintThrowAim(e);
-            THROW_GAME.power = Math.min(100, (performance.now() - THROW_GAME.startedAt) / 18);
-            updateThrowPower();
-            return;
-          }
           if (!noteDrag) return;
           e.preventDefault();
           moveNoteGhost(e);
@@ -368,22 +315,11 @@
       );
       window.addEventListener('pointerup', (e) => {
         uiPointerActive = false;
-        if (THROW_GAME.charging) {
-          releaseThrow(e);
-          return;
-        }
         finishNoteResize(e);
         finishNoteDrag(e);
       });
       window.addEventListener('pointercancel', (e) => {
         uiPointerActive = false;
-        if (THROW_GAME.charging) {
-          THROW_GAME.charging = false;
-          THROW_GAME.power = 0;
-          cancelAnimationFrame(THROW_GAME.raf);
-          updateThrowPower();
-          return;
-        }
         finishNoteResize(e);
         finishNoteDrag(e);
       });
@@ -409,6 +345,8 @@
           return;
         }
         act(el.dataset.a, el.dataset, el);
+        // Nút "Chơi lại" của game ném: act() đã reset máy này, báo thêm cho máy kia reset theo
+        if (el.dataset.a == 'throwReset' && typeof throwSend === 'function') throwSend('throwReset', {});
       });
       document.addEventListener('change', (e) => {
         if (e.target.matches('input[data-a]')) act(e.target.dataset.a, e.target.dataset, e.target);
