@@ -7,6 +7,52 @@
         input.style.height = height + 'px';
         input.style.overflowY = input.scrollHeight > 84 ? 'auto' : 'hidden';
       }
+      /* ===== Game ném (canvas): kết quả mỗi cú ném =====
+         initThrowGame(onThrowResult) nằm trong file game. Hàm này chạy ở CẢ HAI máy
+         vì mỗi máy tự mô phỏng cùng một cú ném, nên không cần gửi máu/lượt qua mạng. */
+      function onThrowResult({ hit, power, to }) {
+        const defender = to;
+        const damage = hit ? Math.round(12 + power * 100 * 0.34) : 0; // power canvas là 0..1, công thức cũ dùng 0..100
+        if (hit) {
+          THROW_GAME.hp[defender] = Math.max(0, THROW_GAME.hp[defender] - damage);
+          THROW_GAME.message = t('throwHit').replace('{damage}', damage);
+        } else {
+          THROW_GAME.message = t('throwMiss');
+        }
+        if (THROW_GAME.hp[defender] > 0) THROW_GAME.turn = defender;
+        THROW_GAME.power = 0;
+        THROW_GAME.busy = false;
+        render();
+      }
+      // Đặt lại ván ném. Dùng khi nhận tin "throwReset" từ máy kia (không gửi lại để tránh lặp vô hạn)
+      function throwApplyReset() {
+        THROW_GAME.hp = [100, 100];
+        THROW_GAME.turn = 0;
+        THROW_GAME.message = '';
+        THROW_GAME.power = 0;
+        THROW_GAME.busy = false;
+        if (typeof THROW !== 'undefined') {
+          THROW.flight = null;
+          THROW.drag = null;
+          THROW.pose = null;
+          THROW.hit = null;
+        }
+        render();
+      }
+      // Tự khởi tạo canvas mỗi khi trang vẽ lại, và tự kết nối kênh online khi vào màn game.
+      // (Không cần sửa render() hay act().)
+      function throwWatch() {
+        if (typeof initThrowGame !== 'function') return;
+        if (S.user && S.user.couple_id && typeof throwConnect === 'function' && document.querySelector('.throw-launch, [data-throw-arena]'))
+          throwConnect(sb, S.user.couple_id);
+        const cvs = document.querySelector('[data-throw-canvas]');
+        if (cvs && !cvs.dataset.throwInit) {
+          cvs.dataset.throwInit = '1';
+          initThrowGame(onThrowResult);
+        }
+      }
+      new MutationObserver(throwWatch).observe(document.body, { childList: true, subtree: true });
+      throwWatch();
       function noteGhost(color, body = '', width = 220, height = 190, scale = 1, fontSize = 16) {
         const ghost = document.createElement('div');
         ghost.className = `sticky drag-ghost ${color}`;
@@ -250,6 +296,7 @@
         el.matches('input[type="date"][data-calendar], input[type="time"][data-clock]');
       document.addEventListener('pointerdown', (e) => {
         uiPointerActive = true;
+        if (e.target.closest('[data-throw-arena]')) return; // canvas tự xử lý kéo ném
         if (startNoteResize(e)) return;
         startNoteDrag(e);
       });
@@ -298,6 +345,8 @@
           return;
         }
         act(el.dataset.a, el.dataset, el);
+        // Nút "Chơi lại" của game ném: act() đã reset máy này, báo thêm cho máy kia reset theo
+        if (el.dataset.a == 'throwReset' && typeof throwSend === 'function') throwSend('throwReset', {});
       });
       document.addEventListener('change', (e) => {
         if (e.target.matches('input[data-a]')) act(e.target.dataset.a, e.target.dataset, e.target);

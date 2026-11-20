@@ -15,6 +15,17 @@ function render() {
                 (pv != null ? vPv() : '') +
                 toastPrompt();
         $('#app').innerHTML = content + appUpdatePrompt();
+        if (view == 'game' && THROW_GAME.open && typeof initThrowGame == 'function') {
+          initThrowGame(({ hit, power, to }) => {
+            const damage = hit ? Math.round(12 + power * 34) : 0;
+            if (hit) THROW_GAME.hp[to] = Math.max(0, THROW_GAME.hp[to] - damage);
+            THROW_GAME.message = hit
+              ? t('throwHit').replace('{damage}', damage)
+              : t('throwMiss');
+            if (THROW_GAME.hp[to] > 0) THROW_GAME.turn = to;
+            render();
+          });
+        }
         void publishPetChatActivity();
         void publishPetPresenceActivity();
         const petThread = document.querySelector('.pet-message-thread');
