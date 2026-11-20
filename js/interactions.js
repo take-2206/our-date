@@ -653,6 +653,7 @@
           petMessagesOpen = false;
           petMessageReplyId = null;
           petMessageEditId = null;
+          petMessageReactionId = null;
           noteEdit = null;
           noteDraft = null;
           bell = false;

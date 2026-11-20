@@ -273,7 +273,9 @@
         photoError = ph.error ? ph.error.message : '';
         C.photos = (ph.data || []).map(toPhoto).sort((a, b) => b.date.localeCompare(a.date) || b.ts - a.ts);
         await signPhotos();
-        await Promise.all([loadPetReactions(), loadPetMessages(), loadPetFeelings()]);
+        await Promise.all([loadPetReactions(), loadPetFeelings()]);
+        await loadPetMessages();
+        await loadPetMessageReactions();
       }
       const petLocalKey = () => 'ls_pet_' + (S.user && S.user.couple_id || '');
       function saveLocalPet() {
@@ -283,14 +285,15 @@
             reactions: PET.reactions || [],
             feelings: PET.feelings || [],
             messages: PET.messages || [],
+            messageReactions: PET.messageReactions || [],
           }));
         } catch (x) {}
       }
       function loadLocalPet() {
         try {
           const local = JSON.parse(localStorage.getItem(petLocalKey()) || '{}');
-          PET = { name: local.name || 'Mochi', reactions: local.reactions || [], feelings: local.feelings || [], messages: local.messages || [] };
-        } catch (x) { PET = { name: 'Mochi', reactions: [], feelings: [], messages: [] }; }
+          PET = { name: local.name || 'Mochi', reactions: local.reactions || [], feelings: local.feelings || [], messages: local.messages || [], messageReactions: local.messageReactions || [] };
+        } catch (x) { PET = { name: 'Mochi', reactions: [], feelings: [], messages: [], messageReactions: [] }; }
       }
       async function loadPetReactions() {
         try {
@@ -299,6 +302,65 @@
           PET.reactions = (data || []).map((r) => ({ id: r.id, emoji: r.emoji, by: r.sender_id, byName: (P[r.sender_id] || {}).name || '', at: Date.parse(r.created_at) || Date.now() }));
           saveLocalPet();
         } catch (x) {}
+      }
+      async function loadPetMessageReactions() {
+        if (!S.user) return;
+        const messageIds = (PET.messages || [])
+          .map((message) => String(message.id))
+          .filter((id) => /^[0-9]+$/.test(id));
+        try {
+          let query = sb
+            .from('pet_message_reactions')
+            .select('id,message_id,user_id,emoji,created_at')
+            .eq('couple_id', S.user.couple_id);
+          query = messageIds.length ? query.in('message_id', messageIds) : query.limit(1);
+          const { data, error } = await query;
+          if (error) throw error;
+          petMessageReactionError = '';
+          PET.messageReactions = (data || []).map((reaction) => ({
+            id: reaction.id,
+            messageId: reaction.message_id,
+            by: reaction.user_id,
+            emoji: reaction.emoji,
+            at: Date.parse(reaction.created_at) || Date.now(),
+          }));
+          saveLocalPet();
+        } catch (error) {
+          petMessageReactionError = error.message || String(error);
+          PET.messageReactions ||= [];
+        }
+      }
+      async function setPetMessageReaction(messageId, emoji) {
+        const allowed = ['❤️', '👍', '😂', '😮', '😢', '😡'],
+          id = String(messageId),
+          user = S.user;
+        if (!user || !/^[0-9]+$/.test(id) || !allowed.includes(emoji)) return;
+        const previous = (PET.messageReactions || []).slice(),
+          current = previous.find((reaction) => String(reaction.messageId) == id && reaction.by == user.id),
+          removing = current && current.emoji == emoji;
+        PET.messageReactions = previous.filter((reaction) => !(String(reaction.messageId) == id && reaction.by == user.id));
+        if (!removing)
+          PET.messageReactions.push({ id: 'local-reaction-' + Date.now(), messageId: id, by: user.id, emoji, at: Date.now() });
+        petMessageReactionId = null;
+        saveLocalPet();
+        paintPetMessages();
+        try {
+          const request = removing
+            ? sb.from('pet_message_reactions').delete().eq('message_id', id).eq('user_id', user.id)
+            : sb.from('pet_message_reactions').upsert(
+                { couple_id: user.couple_id, message_id: id, user_id: user.id, emoji },
+                { onConflict: 'message_id,user_id' },
+              );
+          const { error } = await request;
+          if (error) throw error;
+          await loadPetMessageReactions();
+          paintPetMessages();
+        } catch (error) {
+          PET.messageReactions = previous;
+          saveLocalPet();
+          paintPetMessages();
+          say(t('petMessageReactionSetup'));
+        }
       }
       const toPetMessage = (row) => ({
         id: row.id,
@@ -863,6 +925,10 @@ function onPetTouch(p) {
           }
         });
       }
+      async function onPetMessageReactionChange() {
+        await loadPetMessageReactions();
+        if (typeof paintPetMessages == 'function') paintPetMessages();
+      }
       // Realtime: nghe thay đổi của events / notifs để hai máy đồng bộ ngay
       function subscribe() {
         clearTimeout(localTypingTimer);
@@ -898,6 +964,8 @@ function onPetTouch(p) {
           .on('postgres_changes', { event: '*', schema: 'public', table: 'events', filter: f }, refresh)
           .on('postgres_changes', { event: '*', schema: 'public', table: 'pet_reactions', filter: f }, refresh)
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pet_feelings', filter: f }, onPetFeelingInsert);
+        if (!petMessageReactionError)
+          channel = channel.on('postgres_changes', { event: '*', schema: 'public', table: 'pet_message_reactions', filter: f }, onPetMessageReactionChange);
         if (!petMessageError) {
           channel = channel
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pet_messages', filter: f }, onPetMessageInsert)

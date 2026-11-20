@@ -88,17 +88,27 @@ function act(a, d, el) {
     petMessagesOpen = false;
     petMessageReplyId = null;
     petMessageEditId = null;
+    petMessageReactionId = null;
+  } else if (a == "petMessageReactionToggle") {
+    const message = (PET.messages || []).find((item) => String(item.id) == String(d.id));
+    if (!message || !/^[0-9]+$/.test(String(message.id))) return;
+    petMessageReactionId = String(petMessageReactionId) == String(message.id) ? null : message.id;
+  } else if (a == "petMessageReact") {
+    void setPetMessageReaction(d.id, d.emoji);
+    return;
   } else if (a == "petMessageReply") {
     const message = (PET.messages || []).find((item) => String(item.id) == String(d.id));
     if (!message || !/^[0-9]+$/.test(String(message.id))) return;
     petMessageReplyId = message.id;
     petMessageEditId = null;
+    petMessageReactionId = null;
     requestAnimationFrame(() => document.querySelector('[data-pet-message-input]')?.focus());
   } else if (a == "petMessageEdit") {
     const message = (PET.messages || []).find((item) => String(item.id) == String(d.id));
     if (!message || message.by != S.user.id || !/^[0-9]+$/.test(String(message.id))) return;
     petMessageEditId = message.id;
     petMessageReplyId = null;
+    petMessageReactionId = null;
     requestAnimationFrame(() => {
       const input = document.querySelector('[data-pet-message-input]');
       if (!input) return;
@@ -109,6 +119,7 @@ function act(a, d, el) {
   } else if (a == "petMessageContextCancel") {
     petMessageReplyId = null;
     petMessageEditId = null;
+    petMessageReactionId = null;
     requestAnimationFrame(() => document.querySelector('[data-pet-message-input]')?.focus());
   } else if (a == "petClear") {
     clearPetReaction();
@@ -423,6 +434,7 @@ function act(a, d, el) {
     albumSel = null;
     petMessageReplyId = null;
     petMessageEditId = null;
+    petMessageReactionId = null;
     closeUp();
     view = "auth";
     msg = "";
