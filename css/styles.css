@@ -7184,3 +7184,13 @@ body.note-resizing * {
   justify-items: start;
   gap: 10px;
 }
+
+/* Today stays a solid pink tile in every calendar state. */
+.g7:not(.wk) .cl.td,
+.g7:not(.wk) .cl.td:hover,
+.g7:not(.wk) .cl.td.sl {
+  border-color: var(--pk);
+  background: var(--pk);
+  color: #0d0d0d;
+  box-shadow: 0 0 16px var(--pk);
+}
