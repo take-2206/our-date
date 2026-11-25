@@ -11,9 +11,9 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-    <meta name="theme-color" content="#0d0d0d" />
+    <meta name="theme-color" content="#fdf4e3" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="LoveSync" />
     <title>LoveSync</title>
     <link rel="manifest" href="./manifest.webmanifest" />
@@ -24,10 +24,11 @@
     <!-- Thư viện Supabase (đăng nhập, database, realtime), đặt cùng thư mục với index.html -->
     <script src="./supabase.js"></script>
     <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Nunito:wght@600;700;800&family=Silkscreen&display=swap"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Nunito:wght@600;700;800&family=Silkscreen&family=Fredoka:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./css/styles.css" />
+    <link rel="stylesheet" href="./css/theme-cozy.css" />
   </head>
   <body>
     <!-- Bộ biểu tượng SVG dùng lại bằng <use>: hr = trái tim pixel, st = ngôi sao, ch = chibi nữ, bo = chibi nam -->
@@ -78,6 +79,7 @@
     <script src="./js/core.js"></script>
     <script src="./js/pages/auth.js"></script>
     <script src="./js/pages/calendar.js"></script>
+    <script src="./js/pages/room.js"></script>
     <script src="./js/pages/details.js"></script>
     <script src="./js/pages/notes.js"></script>
     <script src="./js/pages/trash.js"></script>

@@ -137,7 +137,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
               })()}<button class="btn b2" data-a="goAlbum" data-k="${sel}" style="min-height:40px">${I.photo} ${t('phOpenAlbum')} · ${dph.length}</button></div>`
             : '',
           side = `<p class="mono sub h2">// ${fmt(sel, { day: 'numeric', month: 'long' })}</p>${freeSection}${day.map(evCard).join('')}${photoSec}<p class="mono sub h2" style="margin-top:22px">// ${t('soon')}</p>${upcoming.length ? evCard(upcoming[0]) + upcomingPrepCard(upcoming[0]) : `<div class="empty">${t('noUpcoming')}</div>`}`;
-        return `<div class="main">${head(cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' }), t('shared'), dayHeadBadge())}${petCardHtml()}<div class="cg"><div class="card cal"><div class="cn"><button class="ib" data-a="mo" data-n="-1" aria-label="prev" style="width:40px;height:40px">${I.back}</button><b>${cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' })}</b><button class="ib" data-a="mo" data-n="1" aria-label="next" style="width:40px;height:40px;transform:scaleX(-1)">${I.back}</button></div><div class="g7 wk">${wk}</div><div class="g7">${cells.join('')}</div></div><div>${side}</div></div></div><button class="fab" data-a="fabMenu" aria-label="${t('add')}">+</button>`;
+        return `<div class="main">${head(cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' }), t('shared'), dayHeadBadge())}${calTabs()}<div class="cg"><div class="card cal"><div class="cn"><button class="ib" data-a="mo" data-n="-1" aria-label="prev" style="width:40px;height:40px">${I.back}</button><b>${cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' })}</b><button class="ib" data-a="mo" data-n="1" aria-label="next" style="width:40px;height:40px;transform:scaleX(-1)">${I.back}</button></div><div class="g7 wk">${wk}</div><div class="g7">${cells.join('')}</div></div><div>${side}</div></div></div><button class="fab" data-a="fabMenu" aria-label="${t('add')}">+</button>`;
       }
 
       // Nút +: chọn "Ngày rảnh" hoặc "Tạo kế hoạch mới".
@@ -547,8 +547,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           </section></div>`;
         };
         return `<section class="pet-card${petCardView == 'jar' ? ' is-feelings-jar' : ''}" aria-label="${esc(t('petKicker'))}">
-          ${petSnowHtml()}
-          <div class="pet-top"><div><p class="pet-kicker">${esc(t('petKicker'))}</p><div class="pet-heading">${petCardView == 'jar' ? esc(t('feelingsJar')) : `${esc(pet.name || fallback.name)} <button type="button" class="pet-rename" data-a="petName" aria-label="${esc(t('petRename'))}">&#9998;</button>`}</div><p class="pet-hint">${esc(petCardView == 'jar' ? t('feelingsJarHint') : t('petSub'))}</p></div><div class="pet-top-actions"><button type="button" class="pet-view-toggle" data-a="petViewToggle" aria-label="${esc(petCardView == 'jar' ? t('petViewToggle') : t('feelingsJar'))}">${petCardView == 'jar' ? ' Pet' : ' Feelings Jar'}</button><span class="pet-hearts">&#9825; &#9825; &#9825;</span></div></div>
+
           ${petCardView == 'jar' ? feelingsJar() : `<div class="pet-stage">${people.map(character).join('')}</div>
           <div class="pet-chat">
             <form class="pet-text-form" data-f="petText">

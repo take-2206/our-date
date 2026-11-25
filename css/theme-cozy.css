@@ -1,0 +1,156 @@
+/* ===== GIAO DIỆN COZY (kem ấm + viền nâu + pastel) =====
+   File này nạp SAU styles.css nên ghi đè bảng màu tối cũ.
+   Muốn quay lại giao diện cũ: xoá dòng <link> tới theme-cozy.css trong index.html. */
+:root {
+  --bg: #fdf4e3;        /* kem nền */
+  --card: #fffaf0;      /* thẻ */
+  --line: #7a5848;      /* viền nâu */
+  --pk: #f2877c;        /* san hô (nút chính) */
+  --pk2: #8a6656;       /* chữ phụ nâu nhạt */
+  --cy: #86aed3;        /* xanh pastel */
+  --mut: #b49684;       /* chữ mờ */
+  --floor: #f6cdb0;     /* màu sàn gỗ đào */
+  --ink: #6b4a3a;       /* chữ chính nâu đậm */
+  --blue-soft: #c4daee;
+  --shadow: 0 3px 0 rgba(122, 88, 72, 0.9);
+}
+body {
+  color: var(--ink);
+  background:
+    linear-gradient(rgba(122,88,72,.05) 1px, transparent 1px) 0 0 / 100% 64px,
+    var(--floor);
+  background-attachment: fixed;
+  font-family: "Nunito", "Fredoka", sans-serif;
+}
+.px { font-family: "Fredoka", "Nunito", sans-serif !important; letter-spacing: .02em; }
+.mono { font-family: "Nunito", sans-serif; }
+.sub { color: var(--pk2); }
+:focus-visible { outline-color: var(--cy); }
+
+/* ----- Nút: pill, viền nâu dày, bóng cứng thay cho glow neon ----- */
+.btn { border: 2.5px solid var(--line); border-radius: 999px; box-shadow: var(--shadow); }
+.b1 { background: var(--pk); color: #fff; text-shadow: 0 1px 0 rgba(122,88,72,.55); }
+.b2 { background: var(--card); color: var(--ink); }
+.btn:hover, .ib:hover { box-shadow: var(--shadow); filter: brightness(1.04); transform: translateY(-1px); }
+.btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(122,88,72,.9); }
+
+/* ----- Thẻ, ô nhập ----- */
+.card { background: var(--card); border: 2.5px solid var(--line); border-radius: 22px; box-shadow: var(--shadow); color: var(--ink); }
+.card.h:hover { box-shadow: var(--shadow); border-color: var(--pk); }
+.in, .gb { background: #fff; color: var(--ink); border: 2.5px solid var(--line); border-radius: 16px; }
+.in:focus { border-color: var(--pk); box-shadow: 0 0 0 3px rgba(242,135,124,.3); }
+.in::placeholder { color: var(--mut); }
+.lb { color: var(--pk2); font-weight: 800; }
+.gb:hover, .gb:has(input:checked) { box-shadow: 0 0 0 3px rgba(242,135,124,.35); }
+.gb:has(input:checked) { border-color: var(--pk); }
+
+/* ----- Nút icon vuông bo, huy hiệu đỏ giống ảnh ----- */
+.ib { background: var(--card); border: 2.5px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
+.bd { background: #ff6b5e; color: #fff; border: 2px solid #fffaf0; box-shadow: none; }
+.chip { border: 2px solid var(--cy); color: #4f7ca3; background: var(--blue-soft); }
+.lg { background: var(--card); border: 2.5px solid var(--line); border-radius: 999px; box-shadow: var(--shadow); }
+.lg button { color: var(--ink); font-family: "Nunito", sans-serif; }
+.lg button[aria-pressed="true"] { background: var(--pk); color: #fff; }
+.lg button:hover { filter: none; }
+.seg { background: var(--blue-soft); border: 2.5px solid var(--line); border-radius: 999px; }
+.seg .btn { border-color: transparent; box-shadow: none; color: var(--ink); }
+.seg .btn.on { background: var(--pk); color: #fff; border-color: var(--line); }
+
+/* ----- Tiêu đề, avatar ----- */
+.top h1, .auth-link { color: var(--ink); text-shadow: none; }
+.av, .couple-avatar { border: 2.5px solid var(--line); background: #fff3e6; box-shadow: none; }
+.head-day-badge { background: var(--card); color: var(--ink); border: 2px solid var(--line); box-shadow: 0 2px 0 rgba(122,88,72,.9); }
+.head-day-badge span { color: var(--pk2); }
+
+/* ----- Thanh tab dưới (giống thanh dưới của ảnh) ----- */
+.tb { background: var(--bg); border-top: 3px solid var(--line); }
+.t { color: var(--pk2); }
+.t.on { color: var(--pk); filter: none; }
+.t:hover { filter: none; color: var(--pk); }
+
+/* ----- Lịch ----- */
+.cl:hover { background: var(--blue-soft); box-shadow: none; }
+.cl.o { color: var(--mut); }
+.cl.sl { border-color: var(--line); background: #fff; }
+.cl.td, .g7:not(.wk) .cl.td { background: var(--pk); color: #fff; border-color: var(--line); box-shadow: 0 2px 0 rgba(122,88,72,.9); }
+.wk span:nth-child(6), .wk span:nth-child(7),
+.g7:not(.wk) .cl:nth-child(7n + 6), .g7:not(.wk) .cl:nth-child(7n + 7) { color: #e0685c; }
+
+/* ----- Modal, nút nổi, thẻ pet, lá thư ----- */
+.mod { background: var(--bg); color: var(--ink); border: 3px solid var(--line); box-shadow: var(--shadow); }
+.fab { background: var(--pk); color: #fff; border: 3px solid var(--line); box-shadow: var(--shadow); }
+.ab-chip.on { background: var(--pk); color: #fff; }
+.pet-card { background: linear-gradient(rgba(255,244,227,.10), rgba(255,244,227,.18)), url("../img/pet/pet-bg-wide.png") center bottom / cover no-repeat; border: 3px solid var(--line); box-shadow: var(--shadow); }
+.pet-chat-bubble, .pet-reactions { background: var(--card); color: var(--ink); border: 2px solid var(--line); }
+
+/* ----- Màn đăng nhập: dùng logo bản sáng ----- */
+.auth > .box > h1:first-child { background-image: url("../img/LoveSync-Rounded/LoveSync-Rounded-Full-Light.svg"); }
+.auth > .box { background: var(--card); border: 3px solid var(--line); border-radius: 28px; box-shadow: var(--shadow); padding: 28px 22px; }
+.deco { filter: sepia(.2) saturate(.9); }
+
+/* ===== MÀN HÌNH CHÍNH = CĂN PHÒNG (js/pages/room.js) ===== */
+.shell:has(.room) { padding-bottom: 0; }
+.room { position: relative; min-height: 100dvh; max-width: 560px; margin: 0 auto; overflow: hidden; background: var(--floor); }
+.room-bg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; object-fit: cover; object-position: center bottom; image-rendering: pixelated; pointer-events: none; user-select: none; }
+/* thanh trạng thái trên cùng giống ảnh: nền trong suốt, nút bo viên thuốc */
+.room > .top { position: relative; z-index: 3; margin: 0; padding: max(14px, env(safe-area-inset-top)) 14px 0; justify-content: flex-end; }
+.room > .top > div:first-child { display: none; }
+.room > .top .r { gap: 10px; }
+.room .pet-card { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: stretch; min-height: calc(100dvh - 96px); margin: 0; padding: 10px 14px 100px; background: none; border: 0; border-radius: 0; box-shadow: none; overflow: visible; }
+.room .pet-card.is-feelings-jar { background: rgba(253, 244, 227, .96); overflow: auto; }
+.room .pet-snow { display: none; }
+.room .pet-top { align-items: center; gap: 8px; padding: 6px 14px; border: 3px solid var(--line); border-radius: 999px; background: var(--card); box-shadow: var(--shadow); width: auto; align-self: flex-start; max-width: 72%; }
+.room .pet-top > div:first-child { min-width: 0; }
+.room .pet-kicker, .room .pet-hint { display: none; }
+.room .pet-heading { margin: 0; font-size: 16px; color: var(--ink); font-family: "Fredoka", "Nunito", sans-serif; white-space: nowrap; }
+.room .pet-hearts { display: none; }
+.room .pet-view-toggle { border: 2px solid var(--line); background: var(--blue-soft); color: var(--ink); border-radius: 999px; min-height: 30px; font-size: 11px; }
+.room .pet-rename { color: var(--pk2); }
+/* sàn: hai người đi lại trong phòng */
+.room .pet-stage { position: absolute; left: 0; right: 0; top: 46vh; height: 30vh; overflow: visible; border-radius: 0; }
+.room .pet-walker { width: 104px; height: 136px; bottom: 6px; }
+.room .pet-character-image { filter: drop-shadow(0 4px 0 rgba(122, 88, 72, .25)); }
+.room .pet-chat-bubble { background: var(--card); color: var(--ink); border: 2.5px solid var(--line); border-radius: 18px; box-shadow: 0 2px 0 rgba(122, 88, 72, .9); }
+/* ô chat + cảm xúc nằm sát thanh menu dưới */
+.room .pet-chat { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(86px + env(safe-area-inset-bottom)); width: min(540px, 100%); padding: 0 12px; z-index: 4; }
+.room .pet-chat .in { border-radius: 999px; }
+.room .pet-reactions { background: var(--card); border: 2.5px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); }
+.room .pet-reactions-toggle, .room .pet-text-send, .room .pet-messages-open { border: 2.5px solid var(--line); border-radius: 50%; background: var(--card); color: var(--ink); box-shadow: var(--shadow); }
+
+/* ===== THANH MENU DƯỚI KIỂU GAME: ô vuông bo, viền nâu ===== */
+.tb { height: auto; gap: 4px; justify-content: center; padding: 8px 8px calc(8px + env(safe-area-inset-bottom)); background: var(--bg); border-top: 3px solid var(--line); }
+.t { flex: 1 1 0; max-width: 68px; min-width: 0; min-height: 56px; gap: 2px; padding: 4px 0; border: 2.5px solid var(--line); border-radius: 16px; background: var(--card); color: var(--ink); box-shadow: 0 3px 0 rgba(122, 88, 72, .9); font-size: 10px; font-weight: 800; transition: transform .1s, box-shadow .1s; }
+.t .t-icon { color: var(--pk); }
+.t.on { background: var(--blue-soft); color: var(--ink); transform: translateY(2px); box-shadow: 0 1px 0 rgba(122, 88, 72, .9); }
+.t.on .t-icon { color: #4f7ca3; }
+.t:hover { color: var(--ink); background: #fff; }
+.t:active { transform: translateY(3px); box-shadow: none; }
+@media (min-width: 900px) {
+  /* máy tính: giữ thanh menu ở đáy như điện thoại (không dùng thanh bên) */
+  .tb { left: 0; right: 0; bottom: 0; top: auto; width: auto; height: auto; flex-direction: row; justify-content: center; gap: 4px; padding: 8px 8px calc(8px + env(safe-area-inset-bottom)); border-right: 0; border-top: 3px solid var(--line); }
+  .shell { padding-left: 0 !important; padding-bottom: 84px; }
+  .shell:has(.room) { padding-bottom: 0; }
+}
+
+/* ===== NHÂN VẬT TO, ĐI KHẮP SÀN ===== */
+.room .pet-stage { top: 30%; bottom: 150px; height: auto; }
+.room .pet-walker { --depth: 1; width: 168px; height: 218px; bottom: auto; top: 70%; transform: translate(-50%, -100%) scale(var(--depth)); transform-origin: 50% 100%; transition: left .18s linear, top .18s linear; will-change: left, top; }
+.room .pet-chat-bubble { z-index: 5; }
+/* ===== TAB LỊCH / TẤT CẢ BUỔI HẸN ===== */
+.cal-tabs { max-width: 420px; margin: 0 auto 14px; }
+.cal-tabs .btn { flex: 1; min-height: 38px; font-size: 13px; }
+/* Hai nút Lịch / Tất cả buổi hẹn: tách rời, không còn khung viên thuốc bao ngoài */
+.seg.cal-tabs { background: none; border: 0; padding: 0; gap: 10px; border-radius: 0; }
+.seg.cal-tabs .btn { border: 2.5px solid var(--line); border-radius: 999px; background: var(--card); color: var(--ink); box-shadow: var(--shadow); }
+.seg.cal-tabs .btn.on { background: var(--pk); color: #fff; border-color: var(--line); }
+.seg.cal-tabs .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(122, 88, 72, .9); }
+
+/* ===== PHÒNG NGANG (máy tính / màn hình ngang) ===== */
+@media (orientation: landscape) and (min-width: 700px) {
+  .room { max-width: none; }
+  .room-bg { object-position: center bottom; }
+  .room .pet-card { padding-left: 24px; padding-right: 24px; }
+  .room .pet-stage { top: 56%; bottom: 150px; }
+  .room .pet-walker { width: 150px; height: 195px; }
+  .room .pet-chat { width: min(560px, 100%); }
+}

@@ -104,7 +104,7 @@ const todoRows = (e) =>
             .filter((item) => !isFreeDay(item))
             .slice()
             .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
-          return `<div class="main">${h}<div class="date-list">${dates
+          return `<div class="main">${h}${calTabs()}<div class="date-list">${dates
             .map(
               (item) =>
                 `<button class="card h date-list-item${parse(item.date) < today0() ? ' is-past' : ''}" data-a="ev" data-id="${item.id}"><div class="d">${fmt(item.date, { day: 'numeric' })}<small class="mono">${fmt(item.date, { month: 'short', year: 'numeric' })}</small></div><div class="i"><h2>${esc(tx(item.title))}</h2><p class="sub">${item.time} · ${esc(eventPlaceText(item.place) || '—')}</p></div><span class="date-rel mono">${rel(item.date)}</span></button>`,

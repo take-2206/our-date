@@ -518,7 +518,7 @@
         jarFeelingDropTimer = setTimeout(() => {
           jarFeelingDropId = null;
           jarFeelingDropTimer = null;
-          if (view == 'cal' && petCardView == 'jar') render();
+          if (view == 'room' && petCardView == 'jar') render();
         }, 1500);
         saveLocalPet();
         render();
@@ -545,7 +545,7 @@
         jarFeelingDropTimer = setTimeout(() => {
           jarFeelingDropId = null;
           jarFeelingDropTimer = null;
-          if (view == 'cal' && petCardView == 'jar') render();
+          if (view == 'room' && petCardView == 'jar') render();
         }, 1500);
         refresh();
       }
@@ -672,7 +672,7 @@
   ).catch(() => {});
 }
 function onPetTouch(p) {
-  if (!p || !S.user || p.from == S.user.id || view != 'cal') return;
+  if (!p || !S.user || p.from == S.user.id || view != 'room') return;
   markPartnerOnline();
   const btn = document.querySelector('.pet-walker-left .pet-character-action');
   if (btn && typeof petTouch == 'function') petTouch(btn);
@@ -1021,7 +1021,7 @@ function onPetTouch(p) {
         };
         await loadC();
         subscribe();
-        view = 'cal';
+        view = 'room';
         pushInit();
         return true;
       }

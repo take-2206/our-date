@@ -7,7 +7,7 @@ function render() {
             ? '<div class="auth"><p class="mono sub">…</p></div>'
             : view == 'auth'
               ? vAuth()
-              : `<div class="shell">${{ cal: vCal, det: vDet, notes: vNotes, game: vGame, album: vAlbum, set: vSet, trash: vTrash }[view]()}${view == 'set' ? `<p class="app-version mono sub">LoveSync · ${esc(APP_VERSION)}</p>` : ''}${nav()}</div>` +
+              : `<div class="shell">${{ room: vRoom, cal: vCal, det: vDet, notes: vNotes, game: vGame, album: vAlbum, set: vSet, trash: vTrash }[view]()}${view == 'set' ? `<p class="app-version mono sub">LoveSync · ${esc(APP_VERSION)}</p>` : ''}${nav()}</div>` +
                 (modal ? vMod() : '') +
                 (pmod ? vProf() : '') +
                 (smod ? vSince() : '') +
