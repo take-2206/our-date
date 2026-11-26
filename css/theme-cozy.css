@@ -223,12 +223,15 @@ body {
 }
 .room .pet-walker-left .pet-chat-bubble::after,
 .room .pet-walker-right .pet-chat-bubble::after {
+  content: "";
+  position: absolute;
   bottom: -9px;
   width: 16px;
   height: 14px;
   background: var(--card);
   clip-path: none;
-  border-radius: 0 100% 0 0;
+  border: 0;
+  transform: none;
 }
-.room .pet-walker-left .pet-chat-bubble::after { left: 8px; }
-.room .pet-walker-right .pet-chat-bubble::after { right: 8px; }
+.room .pet-walker-left .pet-chat-bubble::after { left: 8px; border-radius: 0 100% 0 0; }
+.room .pet-walker-right .pet-chat-bubble::after { right: 8px; border-radius: 100% 0 0 0; }
