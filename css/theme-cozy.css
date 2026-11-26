@@ -215,23 +215,24 @@ body {
 }
 
 
-/* ===== BUBBLE CHAT CỦA PET: bo tròn kiểu tin nhắn, đuôi cong; giữ màu kem và nâu ===== */
+/* ===== BUBBLE CHAT CỦA PET: thân bo tròn, đuôi cong kiểu tin nhắn; giữ màu kem ===== */
 .room .pet-chat-bubble {
   border: 0;
-  border-radius: 28px;
+  border-radius: 30px;
   box-shadow: none;
 }
 .room .pet-walker-left .pet-chat-bubble::after,
 .room .pet-walker-right .pet-chat-bubble::after {
   content: "";
   position: absolute;
-  bottom: -9px;
-  width: 16px;
-  height: 14px;
+  bottom: 0;
+  width: 26px;
+  height: 22px;
   background: var(--card);
-  clip-path: none;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 22'%3E%3Cpath d='M0 22C10 22 15 20 17 13L26 0V22Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 22'%3E%3Cpath d='M0 22C10 22 15 20 17 13L26 0V22Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
   border: 0;
   transform: none;
 }
-.room .pet-walker-left .pet-chat-bubble::after { left: 8px; border-radius: 0 100% 0 0; }
-.room .pet-walker-right .pet-chat-bubble::after { right: 8px; border-radius: 100% 0 0 0; }
+.room .pet-walker-left .pet-chat-bubble::after { left: -20px; }
+.room .pet-walker-right .pet-chat-bubble::after { right: -20px; transform: scaleX(-1); }
