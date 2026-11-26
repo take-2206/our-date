@@ -214,3 +214,21 @@ body {
   .room .pet-walker { width: 220px; height: 286px; }
 }
 
+
+/* ===== BUBBLE CHAT CỦA PET: bo tròn kiểu tin nhắn, đuôi cong; giữ màu kem và nâu ===== */
+.room .pet-chat-bubble {
+  border: 0;
+  border-radius: 28px;
+  box-shadow: none;
+}
+.room .pet-walker-left .pet-chat-bubble::after,
+.room .pet-walker-right .pet-chat-bubble::after {
+  bottom: -9px;
+  width: 16px;
+  height: 14px;
+  background: var(--card);
+  clip-path: none;
+  border-radius: 0 100% 0 0;
+}
+.room .pet-walker-left .pet-chat-bubble::after { left: 8px; }
+.room .pet-walker-right .pet-chat-bubble::after { right: 8px; }

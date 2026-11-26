@@ -280,8 +280,8 @@ function act(a, d, el) {
       i = l.findIndex((x) => x.id == p.id),
       nx = l[i + 1] || l[i - 1];
     C.photos = C.photos.filter((x) => x.id != p.id);
-    pv = nx ? nx.id : null;
-    if (!nx) pvDay = null;
+    if (pv != null) pv = nx ? nx.id : null;
+    if (!nx && pv != null) pvDay = null;
     sb.from("photos")
       .update({ deleted_at: new Date().toISOString(), deleted_by: S.user.id })
       .eq("id", p.id)
