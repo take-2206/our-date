@@ -147,6 +147,7 @@ body {
 .room > .top { position: relative; z-index: 3; margin: 0; padding: max(14px, env(safe-area-inset-top)) 14px 0; justify-content: flex-end; }
 .room > .top > div:first-child { display: none; }
 .room > .top .r { gap: 10px; }
+.room > .top .room-feelings-toggle { border-radius: 50%; }
 .room .pet-card { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: stretch; min-height: calc(100dvh - 96px); margin: 0; padding: 10px 14px 100px; background: none; border: 0; border-radius: 0; box-shadow: none; overflow: visible; }
 .room .pet-card.is-feelings-jar { background: rgba(253, 244, 227, .96); overflow: auto; }
 .room .pet-snow { display: none; }

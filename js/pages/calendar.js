@@ -493,7 +493,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
               feelings: (pet.feelings || []).filter((feeling) => feeling.by == person.id),
             }))
             .sort((a, b) => (a.gender == 'f' ? -1 : 1) - (b.gender == 'f' ? -1 : 1));
-          return `<div class="feelings-jar-view">
+          return `<div class="feelings-jar-view${petJarOpening ? ' is-opening' : ''}">
             <div class="feelings-jar-pair">${jarPeople.map((person) => {
               const isOwn = person.id == user.id,
                 feelingSheetGender = person.gender == 'm' ? 'm' : 'f',
@@ -547,7 +547,6 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
           </section></div>`;
         };
         return `<section class="pet-card${petCardView == 'jar' ? ' is-feelings-jar' : ''}" aria-label="${esc(t('petKicker'))}">
-
           ${petCardView == 'jar' ? feelingsJar() : `<div class="pet-stage">${people.map(character).join('')}</div>
           <div class="pet-chat">
             <form class="pet-text-form" data-f="petText">

@@ -21,5 +21,7 @@ function vRoom() {
   const lightsOn = roomLightsOn();
   const lightLabel = lightsOn ? 'Tắt đèn' : 'Bật đèn';
   const lightSwitch = `<button class="room-lamp-toggle" type="button" data-a="toggleRoomLight" aria-label="${lightLabel}" aria-pressed="${lightsOn}" title="${lightLabel}"><span class="room-lamp-chain" aria-hidden="true"></span><span class="room-lamp-pull" aria-hidden="true"></span></button>`;
-  return `<div class="room${lightsOn ? '' : ' lights-off'}">${roomArt(lightsOn)}${lightSwitch}<button class="room-lamp-toggle room-lamp-toggle--corner" type="button" data-a="toggleRoomLight" aria-label="${lightLabel}" aria-pressed="${lightsOn}" title="${lightLabel}"></button>${head('', t('shared'), dayHeadBadge())}${petCardHtml()}</div>`;
+  const jarLabel = t(petCardView == 'jar' ? 'petViewToggle' : 'feelingsJar');
+  const jarToggle = `<button class="ib room-feelings-toggle" type="button" data-a="petViewToggle" aria-label="${jarLabel}" title="${jarLabel}" aria-pressed="${petCardView == 'jar'}">${I.jar}</button>`;
+  return `<div class="room${lightsOn ? '' : ' lights-off'}">${roomArt(lightsOn)}${lightSwitch}<button class="room-lamp-toggle room-lamp-toggle--corner" type="button" data-a="toggleRoomLight" aria-label="${lightLabel}" aria-pressed="${lightsOn}" title="${lightLabel}"></button>${head('', t('shared'), dayHeadBadge(), jarToggle)}${petCardHtml()}</div>`;
 }

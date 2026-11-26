@@ -350,6 +350,10 @@
           if (wasBell && !bell) render();
           return;
         }
+        // A feeling modal closes only when its backdrop is clicked. Without
+        // this guard, clicks in the form bubble to the backdrop action and
+        // clear feelingDraft before the form can submit.
+        if (el.matches('.feeling-reason-modal') && e.target.closest('[role="dialog"]')) return;
         act(el.dataset.a, el.dataset, el);
         // Nút "Chơi lại" của game ném: act() đã reset máy này, báo thêm cho máy kia reset theo
         if (el.dataset.a == 'throwReset' && typeof throwSend === 'function') throwSend('throwReset', {});
