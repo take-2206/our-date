@@ -1,0 +1,23 @@
+diff --git a/css/theme-cozy.css b/css/theme-cozy.css
+index 2f130f3..220faf5 100644
+--- a/css/theme-cozy.css
++++ b/css/theme-cozy.css
+@@ -144,3 +144,5 @@ body {
+ .seg.cal-tabs .btn { border: 2.5px solid var(--line); border-radius: 999px; background: var(--card); color: var(--ink); box-shadow: var(--shadow); }
+ .seg.cal-tabs .btn.on { background: var(--pk); color: #fff; border-color: var(--line); }
+ .seg.cal-tabs .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(122, 88, 72, .9); }
++/* Hai nút nằm ngay trên đầu thẻ lịch */
++.card.cal > .seg.cal-tabs { max-width: none; margin: 2px 4px 12px; }
+diff --git a/js/pages/calendar.js b/js/pages/calendar.js
+index 67fc8d5..434af2d 100644
+--- a/js/pages/calendar.js
++++ b/js/pages/calendar.js
+@@ -137,7 +137,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
+               })()}<button class="btn b2" data-a="goAlbum" data-k="${sel}" style="min-height:40px">${I.photo} ${t('phOpenAlbum')} · ${dph.length}</button></div>`
+             : '',
+           side = `<p class="mono sub h2">// ${fmt(sel, { day: 'numeric', month: 'long' })}</p>${freeSection}${day.map(evCard).join('')}${photoSec}<p class="mono sub h2" style="margin-top:22px">// ${t('soon')}</p>${upcoming.length ? evCard(upcoming[0]) + upcomingPrepCard(upcoming[0]) : `<div class="empty">${t('noUpcoming')}</div>`}`;
+-        return `<div class="main">${head(cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' }), t('shared'), dayHeadBadge())}${calTabs()}<div class="cg"><div class="card cal"><div class="cn"><button class="ib" data-a="mo" data-n="-1" aria-label="prev" style="width:40px;height:40px">${I.back}</button><b>${cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' })}</b><button class="ib" data-a="mo" data-n="1" aria-label="next" style="width:40px;height:40px;transform:scaleX(-1)">${I.back}</button></div><div class="g7 wk">${wk}</div><div class="g7">${cells.join('')}</div></div><div>${side}</div></div></div><button class="fab" data-a="fabMenu" aria-label="${t('add')}">+</button>`;
++        return `<div class="main">${head(cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' }), t('shared'), dayHeadBadge())}<div class="cg"><div class="card cal">${calTabs()}<div class="cn"><button class="ib" data-a="mo" data-n="-1" aria-label="prev" style="width:40px;height:40px">${I.back}</button><b>${cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' })}</b><button class="ib" data-a="mo" data-n="1" aria-label="next" style="width:40px;height:40px;transform:scaleX(-1)">${I.back}</button></div><div class="g7 wk">${wk}</div><div class="g7">${cells.join('')}</div></div><div>${side}</div></div></div><button class="fab" data-a="fabMenu" aria-label="${t('add')}">+</button>`;
+       }
+ 
+       // Nút +: chọn "Ngày rảnh" hoặc "Tạo kế hoạch mới".

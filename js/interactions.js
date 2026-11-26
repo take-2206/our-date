@@ -561,6 +561,10 @@
             place = (v.place || '').trim().slice(0, 60);
           closeUp();
           albumSel = al;
+          albumPage = 0;
+          albumFlip = null;
+          albumOpening = true;
+          requestAnimationFrame(() => { albumOpening = false; });
           albumFocus = date;
           upPhotos(files, al, cap, date, place);
         } else if (k == 'noteedit') {
