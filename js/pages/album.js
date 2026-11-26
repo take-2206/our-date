@@ -44,8 +44,7 @@
       // Album bookshelf renderer: book covers open into a two-page photo spread.
       function vAlbum() {
         const h = head(t('album'), t('albumSub')),
-          perSpread = 2,
-          perPage = perSpread / 2,
+          perSpread = 1,
           colorIndex = (value) => {
             let hash = 2166136261;
             for (const ch of String(value)) { hash ^= ch.charCodeAt(0); hash = Math.imul(hash, 16777619); }
@@ -62,23 +61,18 @@
             return `<button class="ab-book ab-book-tone-${colorIndex(book.key || book.name)}" type="button" data-a="albumSel" data-al="${esc(book.key)}" aria-label="${esc(book.name)} · ${book.photos.length} ${t('phMore')}"><span class="ab-book-face">${cover ? `<img class="ab-book-cover-image" src="${esc(cover)}" alt="" loading="lazy">` : `<span class="ab-book-cover-empty">${I.photo}</span>`}<span class="ab-book-cover-shade"></span><span class="ab-book-label">${esc(book.name)}</span><span class="ab-book-count">${book.photos.length} ${t('phMore')}</span><span class="ab-book-open-mark">${I.fwd}</span></span></button>`;
           }).join('')}</section>`;
         if (albumSel === null) return `<div class="main ab-main">${h}<div class="ab-act"><button class="btn b1" data-a="pick"${upBusy ? ' disabled' : ''}>${I.photo} ${t('phAdd')}</button></div>${prog}${shelf}${C.photos.length ? '' : `<div class="card ab-empty">${I.photo}<h2>${t('phNone')}</h2><p class="sub">${t('phNoneH')}</p></div>`}</div>`;
-        const list = phs(), pageCount = Math.ceil(list.length / perSpread), bookTitle = albumSel == '__unfiled__' ? t('phUnsorted') : albumSel || t('phAll');
-        if (pageCount && albumPage >= pageCount) albumPage = pageCount - 1;
-        const spreadPhotos = list.slice(albumPage * perSpread, albumPage * perSpread + perSpread),
-          anchors = [...new Set(spreadPhotos.map((p) => p.date).filter(Boolean))].map((date) => `<span class="ab-book-anchor" id="ad-${date}"></span>`).join(''),
-          page = (photos) => {
-            if (!photos.length) return `<div class="ab-book-page is-empty" aria-hidden="true"><span class="ab-page-watermark">${I.photo}</span></div>`;
-            return `<div class="ab-book-page"><div class="ab-page-photos">${photos.map((photo) => {
-              const url = pu(photo), caption = photo.cap || photo.place || t('album');
-              return `<article class="ab-page-memory"><button class="ab-page-photo" type="button" data-a="pv" data-id="${esc(String(photo.id))}" aria-label="${esc(caption)}">${url ? `<img src="${esc(url)}" alt="${esc(photo.cap || '')}" loading="lazy" decoding="async">` : I.photo}</button><div class="ab-page-note"><time>${fmt(photo.date, { day: 'numeric', month: 'long', year: 'numeric' })}</time>${photo.cap ? `<p>${esc(photo.cap)}</p>` : ''}${photo.place ? `<small>${I.pin} ${esc(photo.place)}</small>` : ''}</div></article>`;
-            }).join('')}</div></div>`;
-          },
-          leftPhotos = spreadPhotos.slice(0, perPage),
-          rightPhotos = spreadPhotos.slice(perPage),
-          flipFrom = albumFlip ? (albumFlip.direction == 'next' ? albumFlip.from * perSpread + perPage : albumFlip.from * perSpread) : -1,
-          turningPhotos = flipFrom < 0 ? [] : list.slice(flipFrom, flipFrom + perPage),
-          turnOverlay = albumFlip ? `<div class="ab-page-turn ab-page-turn--${albumFlip.direction}"><div class="ab-page-turn-face">${page(turningPhotos)}</div><div class="ab-page-turn-back" aria-hidden="true"></div></div>` : '',
-          openBook = `<section class="ab-book-reading"><div class="ab-book-heading"><button class="ib" type="button" data-a="albumShelf" aria-label="${t('back')}" title="${t('back')}">${I.back}</button><div><h2>${esc(bookTitle)}</h2><p>${list.length} ${t('phMore')}</p></div></div>${list.length ? `<div class="ab-open-book${albumOpening ? ' is-opening' : ''}" aria-label="${esc(bookTitle)}">${anchors}<div class="ab-book-pages">${page(leftPhotos)}<span class="ab-book-fold" aria-hidden="true"></span>${page(rightPhotos)}${turnOverlay}</div></div><div class="ab-book-controls"><button class="ib" type="button" data-a="albumPage" data-step="-1" aria-label="${t('phPrev')}"${albumPage <= 0 ? ' disabled' : ''}>${I.back}</button><span>${albumPage + 1} / ${Math.max(pageCount, 1)}</span><button class="ib" type="button" data-a="albumPage" data-step="1" aria-label="${t('phNext')}"${albumPage >= pageCount - 1 ? ' disabled' : ''}>${I.fwd}</button></div>` : `<div class="card ab-empty">${I.photo}<h2>${t('phNone')}</h2><p class="sub">${t('phNoneH')}</p></div>`}</section>`;
+        const list = phs(), total = list.length, bookTitle = albumSel == '__unfiled__' ? t('phUnsorted') : albumSel || t('phAll');
+        if (total && albumPage >= total) albumPage = total - 1;
+        const i = Math.max(0, Math.min(albumPage, total - 1)), cur = list[i];
+        const u = cur ? pu(cur) : '';
+        const backPhotos = [list[i + 2], list[i + 1]].filter(Boolean).map((photo, index) => {
+          const backUrl = pu(photo);
+          return `<div class="pv-stack-card pv-stack-card-${index + 1}" aria-hidden="true">${backUrl ? `<img src="${esc(backUrl)}" alt="" loading="lazy">` : ''}</div>`;
+        }).join('');
+        const anchors = cur && cur.date ? `<span class="ab-book-anchor" id="ad-${cur.date}"></span>` : '';
+        const stack = cur ? `<div class="al-stack"><div class="pv-stack">${backPhotos}${u ? `<button class="pv-stack-card pv-stack-current" type="button" data-a="albumPage" data-step="1" aria-label="${t('phNext')}"><img src="${esc(u)}" alt="${esc(cur.cap || '')}" onload="fitPhotoViewer(this)"></button>` : ''}</div></div>` : '';
+        const note = cur ? `<div class="al-note"><time>${fmt(cur.date, { day: 'numeric', month: 'long', year: 'numeric' })}</time>${cur.cap ? `<p>${esc(cur.cap)}</p>` : ''}${cur.place ? `<small>${I.pin} ${esc(cur.place)}</small>` : ''}</div>` : '';
+        const openBook = `<section class="ab-book-reading"><div class="ab-book-heading"><button class="ib" type="button" data-a="albumShelf" aria-label="${t('back')}" title="${t('back')}">${I.back}</button><div><h2>${esc(bookTitle)}</h2><p>${total} ${t('phMore')}</p></div></div>${total ? `${anchors}${stack}${note}<div class="ab-book-controls"><button class="ib" type="button" data-a="albumPage" data-step="-1" aria-label="${t('phPrev')}"${i <= 0 ? ' disabled' : ''}>${I.back}</button><span>${i + 1} / ${total}</span><button class="ib" type="button" data-a="albumPage" data-step="1" aria-label="${t('phNext')}"${i >= total - 1 ? ' disabled' : ''}>${I.fwd}</button></div>` : `<div class="card ab-empty">${I.photo}<h2>${t('phNone')}</h2><p class="sub">${t('phNoneH')}</p></div>`}</section>`;
         return `<div class="main ab-main">${h}<div class="ab-act"><button class="btn b1" data-a="pick"${upBusy ? ' disabled' : ''}>${I.photo} ${t('phAdd')}</button></div>${prog}${openBook}</div>`;
       }
       function vUp() {

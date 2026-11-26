@@ -276,3 +276,12 @@
 }
 .pv-stack-current img[data-fitted="true"] { object-fit: contain; }
 .pv-stack-current img:not([data-fitted="true"]) { opacity: 0; }
+
+/* ===== ALBUM: MỖI LẦN MỘT ẢNH, DẠNG XẤP ẢNH (không còn khung sách hai trang) ===== */
+.al-stack { display: flex; justify-content: center; padding: 18px 0 8px; }
+.al-stack .pv-stack { margin: 0; }
+.al-note { text-align: center; margin-top: 10px; overflow-wrap: anywhere; }
+.al-note time { color: var(--pk2); font: 700 11px "JetBrains Mono", monospace; }
+.al-note p { margin: 5px 0 0; color: var(--ink); font: italic 600 14px/1.4 "Nunito", sans-serif; }
+.al-note small { display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; color: var(--mut); font-size: 11px; }
+.al-note small svg { width: 13px; height: 13px; }
