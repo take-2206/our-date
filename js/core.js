@@ -43,6 +43,10 @@ let THROW_GAME = {
 };
       const D = {
         vi: {
+          room: 'Phòng',
+          calDet: 'Lịch hẹn',
+          calTabCal: 'Lịch',
+          calTabList: 'Tất cả buổi hẹn',
           cal: 'Lịch',
           det: 'Buổi hẹn',
           notes: 'Ghi chú',
@@ -328,6 +332,10 @@ let THROW_GAME = {
           throwMiss: 'Trượt rồi! Đến lượt đối thủ.',
         },
         en: {
+          room: 'Home',
+          calDet: 'Planner',
+          calTabCal: 'Calendar',
+          calTabList: 'All dates',
           cal: 'Calendar',
           det: 'Dates',
           notes: 'Notes',
@@ -779,6 +787,9 @@ const ic = (id, w = 18, h = 14) =>
 const sv = (p) =>
   `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 const I = {
+  home: sv(
+    '<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
+  ),
   cal: sv(
     '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 11h18"/>',
   ),
@@ -886,8 +897,8 @@ const head = (title, sub, coupleExtra = "") => {
 // Thanh tab: Lịch / Buổi hẹn / Cài đặt
 const nav = () =>
   `<nav class="tb">${[
+    ["room", I.home],
     ["cal", I.cal],
-    ["det", ic("hr")],
     ["notes", I.note],
     ["game", I.game],
     ["album", I.photo],
@@ -895,9 +906,12 @@ const nav = () =>
   ]
     .map(
       ([v, i]) =>
-        `<button class="t${view == v || (view == "trash" && v == "set") ? " on" : ""}" data-a="go" data-v="${v}"><span class="t-icon${v == "det" ? " heart" : ""}">${i}</span><span class="t-label">${t(v)}</span></button>`,
+        `<button class="t${view == v || (view == "det" && v == "cal") || (view == "trash" && v == "set") ? " on" : ""}" data-a="go" data-v="${v}"><span class="t-icon${v == "det" ? " heart" : ""}">${i}</span><span class="t-label">${t(v == "cal" ? "calDet" : v)}</span></button>`,
     )
     .join("")}</nav>`;
+// Hai tab nhỏ trên cùng của mục Lịch hẹn: Lịch (lưới tháng) <-> Tất cả buổi hẹn (danh sách)
+const calTabs = () =>
+  `<div class="seg cal-tabs" role="group">${[['cal','calTabCal'],['det','calTabList']].map(([v,k])=>`<button class="btn${view==v?' on':''}" data-a="go" data-v="${v}" aria-pressed="${view==v}">${t(k)}</button>`).join('')}</div>`;
 // Nút VI / EN
 const lang = () =>
   `<div class="lg" role="group" aria-label="${t("lang")}">${["vi", "en"].map((l) => `<button data-a="lang" data-l="${l}" aria-pressed="${S.lang == l}">${l.toUpperCase()}</button>`).join("")}</div>`;

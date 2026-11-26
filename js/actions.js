@@ -27,7 +27,11 @@ function act(a, d, el) {
     return;
   if (a == "uclose" && el.classList.contains("mod") && event.target !== el)
     return;
-  if (a == "go") {
+  if (a == "toggleRoomLight") {
+    try {
+      localStorage.setItem('ls-room-lights', roomLightsOn() ? 'off' : 'on');
+    } catch (e) {}
+  } else if (a == "go") {
     view = d.v;
     bell = false;
     if (view != "notes") {

@@ -18,10 +18,10 @@ let petPresencePublishedFor = null,
           const { data } = await sb.auth.getSession();
           if (data.session) await enter(data.session.user);
         }
-        view = S.user ? 'cal' : 'auth';
+        view = S.user ? 'room' : 'auth';
         if (S.user && params.get('view') == 'notes') view = 'notes';
         if (S.user && params.get('view') == 'pet-messages') {
-          view = 'cal';
+          view = 'room';
           petMessagesOpen = true;
         }
         render();
@@ -35,11 +35,11 @@ let petPresencePublishedFor = null,
       })();
 
 function petChatIsActive() {
-        return !!(S.user && view == 'cal' && petMessagesOpen && document.visibilityState == 'visible');
+        return !!(S.user && view == 'room' && petMessagesOpen && document.visibilityState == 'visible');
       }
 
 function petPresenceIsActive() {
-        return !!(S.user && view == 'cal' && document.visibilityState == 'visible');
+        return !!(S.user && view == 'room' && document.visibilityState == 'visible');
       }
 
 async function publishPetChatActivity(active = petChatIsActive()) {

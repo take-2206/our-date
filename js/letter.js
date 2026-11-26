@@ -90,7 +90,7 @@ function answer(ok) {
   LT.tm = [
     setTimeout(() => {
       closeLT();
-      if (ok) view = "cal";
+      if (ok) view = "room";
       render();
     }, 1600),
   ];

@@ -176,7 +176,7 @@ const VAPID_PUBLIC = 'BIol42oCVVxoqcBVueyTLai3kV8qseeVBYozCu5SiUqb_0G33VrVVec7dF
             view = 'notes';
             render();
           } else if (e.data && e.data.type == 'open-pet-messages' && S.user) {
-            view = 'cal';
+            view = 'room';
             petMessagesOpen = true;
             render();
             syncPetMessagesLive();
