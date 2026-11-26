@@ -1,0 +1,168 @@
+diff --git a/css/theme-cozy.css b/css/theme-cozy.css
+index a3a9337..d9c8f3d 100644
+--- a/css/theme-cozy.css
++++ b/css/theme-cozy.css
+@@ -131,3 +131,11 @@ body {
+   .shell { padding-left: 0 !important; padding-bottom: 84px; }
+   .shell:has(.room) { padding-bottom: 0; }
+ }
++
++/* ===== NHÂN VẬT TO, ĐI KHẮP SÀN ===== */
++.room .pet-stage { top: 30%; bottom: 150px; height: auto; }
++.room .pet-walker { --depth: 1; width: 168px; height: 218px; bottom: auto; top: 70%; transform: translate(-50%, -100%) scale(var(--depth)); transform-origin: 50% 100%; transition: left .18s linear, top .18s linear; will-change: left, top; }
++.room .pet-chat-bubble { z-index: 5; }
++/* ===== TAB LỊCH / TẤT CẢ BUỔI HẸN ===== */
++.cal-tabs { max-width: 420px; margin: 0 auto 14px; }
++.cal-tabs .btn { flex: 1; min-height: 38px; font-size: 13px; }
+diff --git a/js/core.js b/js/core.js
+index a8d9ed1..08a8370 100644
+--- a/js/core.js
++++ b/js/core.js
+@@ -44,6 +44,9 @@ let THROW_GAME = {
+       const D = {
+         vi: {
+           room: 'Phòng',
++          calDet: 'Lịch hẹn',
++          calTabCal: 'Lịch',
++          calTabList: 'Tất cả buổi hẹn',
+           cal: 'Lịch',
+           det: 'Buổi hẹn',
+           notes: 'Ghi chú',
+@@ -330,6 +333,9 @@ let THROW_GAME = {
+         },
+         en: {
+           room: 'Home',
++          calDet: 'Planner',
++          calTabCal: 'Calendar',
++          calTabList: 'All dates',
+           cal: 'Calendar',
+           det: 'Dates',
+           notes: 'Notes',
+@@ -893,7 +899,6 @@ const nav = () =>
+   `<nav class="tb">${[
+     ["room", I.home],
+     ["cal", I.cal],
+-    ["det", ic("hr")],
+     ["notes", I.note],
+     ["game", I.game],
+     ["album", I.photo],
+@@ -901,9 +906,12 @@ const nav = () =>
+   ]
+     .map(
+       ([v, i]) =>
+-        `<button class="t${view == v || (view == "trash" && v == "set") ? " on" : ""}" data-a="go" data-v="${v}"><span class="t-icon${v == "det" ? " heart" : ""}">${i}</span><span class="t-label">${t(v)}</span></button>`,
++        `<button class="t${view == v || (view == "det" && v == "cal") || (view == "trash" && v == "set") ? " on" : ""}" data-a="go" data-v="${v}"><span class="t-icon${v == "det" ? " heart" : ""}">${i}</span><span class="t-label">${t(v == "cal" ? "calDet" : v)}</span></button>`,
+     )
+     .join("")}</nav>`;
++// Hai tab nhỏ trên cùng của mục Lịch hẹn: Lịch (lưới tháng) <-> Tất cả buổi hẹn (danh sách)
++const calTabs = () =>
++  `<div class="seg cal-tabs" role="group">${[['cal','calTabCal'],['det','calTabList']].map(([v,k])=>`<button class="btn${view==v?' on':''}" data-a="go" data-v="${v}" aria-pressed="${view==v}">${t(k)}</button>`).join('')}</div>`;
+ // Nút VI / EN
+ const lang = () =>
+   `<div class="lg" role="group" aria-label="${t("lang")}">${["vi", "en"].map((l) => `<button data-a="lang" data-l="${l}" aria-pressed="${S.lang == l}">${l.toUpperCase()}</button>`).join("")}</div>`;
+diff --git a/js/pages/calendar.js b/js/pages/calendar.js
+index c7c0ecd..67fc8d5 100644
+--- a/js/pages/calendar.js
++++ b/js/pages/calendar.js
+@@ -137,7 +137,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
+               })()}<button class="btn b2" data-a="goAlbum" data-k="${sel}" style="min-height:40px">${I.photo} ${t('phOpenAlbum')} · ${dph.length}</button></div>`
+             : '',
+           side = `<p class="mono sub h2">// ${fmt(sel, { day: 'numeric', month: 'long' })}</p>${freeSection}${day.map(evCard).join('')}${photoSec}<p class="mono sub h2" style="margin-top:22px">// ${t('soon')}</p>${upcoming.length ? evCard(upcoming[0]) + upcomingPrepCard(upcoming[0]) : `<div class="empty">${t('noUpcoming')}</div>`}`;
+-        return `<div class="main">${head(cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' }), t('shared'), dayHeadBadge())}<div class="cg"><div class="card cal"><div class="cn"><button class="ib" data-a="mo" data-n="-1" aria-label="prev" style="width:40px;height:40px">${I.back}</button><b>${cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' })}</b><button class="ib" data-a="mo" data-n="1" aria-label="next" style="width:40px;height:40px;transform:scaleX(-1)">${I.back}</button></div><div class="g7 wk">${wk}</div><div class="g7">${cells.join('')}</div></div><div>${side}</div></div></div><button class="fab" data-a="fabMenu" aria-label="${t('add')}">+</button>`;
++        return `<div class="main">${head(cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' }), t('shared'), dayHeadBadge())}${calTabs()}<div class="cg"><div class="card cal"><div class="cn"><button class="ib" data-a="mo" data-n="-1" aria-label="prev" style="width:40px;height:40px">${I.back}</button><b>${cur.toLocaleDateString(loc(), { month: 'long', year: 'numeric' })}</b><button class="ib" data-a="mo" data-n="1" aria-label="next" style="width:40px;height:40px;transform:scaleX(-1)">${I.back}</button></div><div class="g7 wk">${wk}</div><div class="g7">${cells.join('')}</div></div><div>${side}</div></div></div><button class="fab" data-a="fabMenu" aria-label="${t('add')}">+</button>`;
+       }
+ 
+       // Nút +: chọn "Ngày rảnh" hoặc "Tạo kế hoạch mới".
+@@ -178,8 +178,8 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
+       // Walk the two characters across the stage using the supplied sprite frames.
+       const PET_ACT_MS = 900;
+       const petWalkerState = [
+-        { x: 31, direction: 1, frame: 0, actUntil: 0 },
+-        { x: 69, direction: -1, frame: 0, actUntil: 0 },
++        { x: 31, y: 62, tx: 60, ty: 80, wait: 0, direction: 1, frame: 0, actUntil: 0 },
++        { x: 69, y: 78, tx: 30, ty: 55, wait: 4, direction: -1, frame: 0, actUntil: 0 },
+       ];
+       const petSnowTiming = [
+         [9, 4], [15, 10], [23, 17], [12, 9.5], [18, 3.5], [27, 8],
+@@ -236,19 +236,37 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
+         if (walkers.length !== 2) return;
+         walkers.forEach((walker, index) => {
+           const state = petWalkerState[index];
+-          let x = state.x;
+-          let direction = state.direction;
+-          x += direction * 0.48;
+-          if (x <= 18 || x >= 82) {
+-            direction *= -1;
+-            x = Math.max(18, Math.min(82, x));
++          // Đi lung tung khắp sàn: chọn điểm đến ngẫu nhiên, tới nơi thì nghỉ một lúc rồi đi tiếp.
++          const room = !!stage.closest('.room');
++          let moving = false;
++          if (state.wait > 0) state.wait--;
++          else {
++            const dx = state.tx - state.x, dy = state.ty - state.y, dist = Math.hypot(dx, dy);
++            if (dist < 1.2) {
++              state.tx = 12 + Math.random() * 76;
++              state.ty = room ? 18 + Math.random() * 78 : state.y;
++              state.wait = 3 + Math.floor(Math.random() * 14);
++            } else {
++              const step = Math.min(dist, room ? 1.5 : 0.48);
++              state.x += (dx / dist) * step;
++              state.y += room ? (dy / dist) * step : 0;
++              if (Math.abs(dx) > 0.4) state.direction = dx > 0 ? 1 : -1;
++              moving = true;
++            }
+           }
+-          state.x = x;
+-          state.direction = direction;
+-          walker.dataset.x = String(x);
+-          walker.dataset.direction = String(direction);
+-          walker.style.left = x + '%';
+-          setPetFrame(walker, Math.floor(petFrameTick / 2));
++          if (!room) { // sân khấu cũ (không có phòng): đi ngang như trước
++            if (state.x <= 18 || state.x >= 82) state.direction *= -1;
++            state.x = Math.max(18, Math.min(82, state.x));
++          }
++          walker.dataset.x = String(state.x);
++          walker.dataset.direction = String(state.direction);
++          walker.style.left = state.x + '%';
++          if (room) {
++            walker.style.top = state.y + '%';
++            walker.style.setProperty('--depth', (0.78 + (state.y / 100) * 0.32).toFixed(3));
++            walker.style.zIndex = String(Math.round(state.y));
++          }
++          setPetFrame(walker, moving ? Math.floor(petFrameTick / 2) : 0);
+         });
+         // Characters walk through each other; contact alone does not trigger an act pose.
+         petFrameTick++;
+@@ -396,7 +414,7 @@ const MS = [100, 200, 300, 365, 500, 600, 700, 730, 800, 900, 1000];
+           const action = ownBubble
+             ? 'data-a="petReact" data-emoji="❤️"'
+             : 'data-a="petTouch"';
+-          return `<div class="pet-walker pet-walker-${index == 0 ? 'left' : 'right'}" style="left:${state.x}%" data-index="${index}" data-gender="${gender}" data-x="${state.x}" data-direction="${state.direction}" aria-label="${esc(person.name || genderLabel)}">
++          return `<div class="pet-walker pet-walker-${index == 0 ? 'left' : 'right'}" style="left:${state.x}%;top:${state.y}%" data-index="${index}" data-gender="${gender}" data-x="${state.x}" data-direction="${state.direction}" aria-label="${esc(person.name || genderLabel)}">
+           <button class="pet-character-action" type="button" ${action} data-base="./img/pet/${image}" data-act="./img/pet/${gender == 'm' ? 'boy_act.png' : 'girl_act.png'}" aria-label="${esc(t('petSend'))}">
+           <img class="pet-character-image" src="./img/pet/${image}" alt="${esc(genderLabel)}"></button>${bubble ? `<div class="pet-chat-bubble${isTextBubble ? ' is-text' : ''}" title="${esc(person.name || '')}"><span>${esc(bubble.emoji)}</span>${ownBubble && !bubble.isMessage ? `<button type="button" data-a="petClear" aria-label="${esc(t('petDeleteBubble'))}">×</button>` : ''}</div>` : ''}</div>`;
+         };
+diff --git a/js/pages/details.js b/js/pages/details.js
+index 03572e0..18695a6 100644
+--- a/js/pages/details.js
++++ b/js/pages/details.js
+@@ -104,7 +104,7 @@ const todoRows = (e) =>
+             .filter((item) => !isFreeDay(item))
+             .slice()
+             .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+-          return `<div class="main">${h}<div class="date-list">${dates
++          return `<div class="main">${h}${calTabs()}<div class="date-list">${dates
+             .map(
+               (item) =>
+                 `<button class="card h date-list-item${parse(item.date) < today0() ? ' is-past' : ''}" data-a="ev" data-id="${item.id}"><div class="d">${fmt(item.date, { day: 'numeric' })}<small class="mono">${fmt(item.date, { month: 'short', year: 'numeric' })}</small></div><div class="i"><h2>${esc(tx(item.title))}</h2><p class="sub">${item.time} · ${esc(eventPlaceText(item.place) || '—')}</p></div><span class="date-rel mono">${rel(item.date)}</span></button>`,
+diff --git a/sw.js b/sw.js
+index d64437c..6fbe172 100644
+--- a/sw.js
++++ b/sw.js
+@@ -1,4 +1,4 @@
+-const CACHE = 'lovesync-v1.51.2';
++const CACHE = 'lovesync-v1.52.0';
+ const APP_SHELL = [
+   "./",
+   "./index.html",

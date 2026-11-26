@@ -1,14 +1,14 @@
 // LoveSync album module. Classic scripts share state declared in js/core.js.
 /* ===== ALBUM ẢNH: danh sách, form tải ảnh, xem phóng to ===== */
       // phs() = ảnh đang hiển thị (theo album được chọn), albums() = tên các album, pu() = link ảnh đã ký
-      const phs = () => C.photos.filter((p) => !albumSel || p.album == albumSel);
+      const phs = () => C.photos.filter((p) => albumSel == '__unfiled__' ? !p.album : !albumSel || p.album == albumSel);
       const albums = () =>
         [...new Set(C.photos.map((p) => p.album).filter(Boolean))].sort((a, b) => a.localeCompare(b, loc()));
       const pu = (p) => (PU[p.path] || {}).url || '';
       // Danh sách ảnh trong khung xem: nếu mở từ lịch thì chỉ gồm ảnh của ngày đó
       const pvList = () => (pvDay ? C.photos.filter((p) => p.date == pvDay) : phs());
       const photosOn = (k) => C.photos.filter((p) => p.date == k);
-      function vAlbum() {
+      function vAlbumGridLegacy() {
         const h = head(t('album'), t('albumSub'));
         if (photoError) return `<div class="main">${h}<div class="card note-error">${t('phSetup')}</div></div>`;
         if (albumSel && !albums().includes(albumSel)) albumSel = null;
@@ -41,6 +41,46 @@
         return `<div class="main">${h}<div class="ab-act"><button class="btn b1" data-a="pick"${upBusy ? ' disabled' : ''}>${I.photo} ${t('phAdd')}</button></div>${prog}${chips}${grid}</div>`;
       }
       // Form chọn album + chú thích trước khi tải ảnh lên
+      // Album bookshelf renderer: book covers open into a two-page photo spread.
+      function vAlbum() {
+        const h = head(t('album'), t('albumSub')),
+          perSpread = 2,
+          perPage = perSpread / 2,
+          colorIndex = (value) => {
+            let hash = 2166136261;
+            for (const ch of String(value)) { hash ^= ch.charCodeAt(0); hash = Math.imul(hash, 16777619); }
+            return (hash >>> 0) % 5;
+          };
+        if (photoError) return `<div class="main">${h}<div class="card note-error">${t('phSetup')}</div></div>`;
+        if (albumSel && albumSel != '__unfiled__' && !albums().includes(albumSel)) albumSel = null;
+        const prog = upBusy
+            ? `<div class="card ab-prog" role="status"><span>${t('phBusy')}</span><div class="ab-meter"><i style="width:${Math.round((upBusy.n / upBusy.total) * 100)}%"></i></div><span class="mono">${upBusy.n}/${upBusy.total}</span></div>`
+            : '',
+          entries = [...albums().map((name) => ({ name, key: name, photos: C.photos.filter((p) => p.album == name) })), ...(C.photos.some((p) => !p.album) ? [{ name: t('phUnsorted'), key: '__unfiled__', photos: C.photos.filter((p) => !p.album) }] : [])],
+          shelf = `<section class="ab-bookshelf" aria-label="${t('album')}">${entries.map((book, index) => {
+            const cover = book.photos.length ? pu(book.photos[0]) : '';
+            return `<button class="ab-book ab-book-tone-${colorIndex(book.key || book.name)}" type="button" data-a="albumSel" data-al="${esc(book.key)}" aria-label="${esc(book.name)} · ${book.photos.length} ${t('phMore')}"><span class="ab-book-face">${cover ? `<img class="ab-book-cover-image" src="${esc(cover)}" alt="" loading="lazy">` : `<span class="ab-book-cover-empty">${I.photo}</span>`}<span class="ab-book-cover-shade"></span><span class="ab-book-label">${esc(book.name)}</span><span class="ab-book-count">${book.photos.length} ${t('phMore')}</span><span class="ab-book-open-mark">${I.fwd}</span></span></button>`;
+          }).join('')}</section>`;
+        if (albumSel === null) return `<div class="main ab-main">${h}<div class="ab-act"><button class="btn b1" data-a="pick"${upBusy ? ' disabled' : ''}>${I.photo} ${t('phAdd')}</button></div>${prog}${shelf}${C.photos.length ? '' : `<div class="card ab-empty">${I.photo}<h2>${t('phNone')}</h2><p class="sub">${t('phNoneH')}</p></div>`}</div>`;
+        const list = phs(), pageCount = Math.ceil(list.length / perSpread), bookTitle = albumSel == '__unfiled__' ? t('phUnsorted') : albumSel || t('phAll');
+        if (pageCount && albumPage >= pageCount) albumPage = pageCount - 1;
+        const spreadPhotos = list.slice(albumPage * perSpread, albumPage * perSpread + perSpread),
+          anchors = [...new Set(spreadPhotos.map((p) => p.date).filter(Boolean))].map((date) => `<span class="ab-book-anchor" id="ad-${date}"></span>`).join(''),
+          page = (photos) => {
+            if (!photos.length) return `<div class="ab-book-page is-empty" aria-hidden="true"><span class="ab-page-watermark">${I.photo}</span></div>`;
+            return `<div class="ab-book-page"><div class="ab-page-photos">${photos.map((photo) => {
+              const url = pu(photo), caption = photo.cap || photo.place || t('album');
+              return `<article class="ab-page-memory"><button class="ab-page-photo" type="button" data-a="pv" data-id="${esc(String(photo.id))}" aria-label="${esc(caption)}">${url ? `<img src="${esc(url)}" alt="${esc(photo.cap || '')}" loading="lazy" decoding="async">` : I.photo}</button><div class="ab-page-note"><time>${fmt(photo.date, { day: 'numeric', month: 'long', year: 'numeric' })}</time>${photo.cap ? `<p>${esc(photo.cap)}</p>` : ''}${photo.place ? `<small>${I.pin} ${esc(photo.place)}</small>` : ''}</div></article>`;
+            }).join('')}</div></div>`;
+          },
+          leftPhotos = spreadPhotos.slice(0, perPage),
+          rightPhotos = spreadPhotos.slice(perPage),
+          flipFrom = albumFlip ? (albumFlip.direction == 'next' ? albumFlip.from * perSpread + perPage : albumFlip.from * perSpread) : -1,
+          turningPhotos = flipFrom < 0 ? [] : list.slice(flipFrom, flipFrom + perPage),
+          turnOverlay = albumFlip ? `<div class="ab-page-turn ab-page-turn--${albumFlip.direction}"><div class="ab-page-turn-face">${page(turningPhotos)}</div><div class="ab-page-turn-back" aria-hidden="true"></div></div>` : '',
+          openBook = `<section class="ab-book-reading"><div class="ab-book-heading"><button class="ib" type="button" data-a="albumShelf" aria-label="${t('back')}" title="${t('back')}">${I.back}</button><div><h2>${esc(bookTitle)}</h2><p>${list.length} ${t('phMore')}</p></div></div>${list.length ? `<div class="ab-open-book${albumOpening ? ' is-opening' : ''}" aria-label="${esc(bookTitle)}">${anchors}<div class="ab-book-pages">${page(leftPhotos)}<span class="ab-book-fold" aria-hidden="true"></span>${page(rightPhotos)}${turnOverlay}</div></div><div class="ab-book-controls"><button class="ib" type="button" data-a="albumPage" data-step="-1" aria-label="${t('phPrev')}"${albumPage <= 0 ? ' disabled' : ''}>${I.back}</button><span>${albumPage + 1} / ${Math.max(pageCount, 1)}</span><button class="ib" type="button" data-a="albumPage" data-step="1" aria-label="${t('phNext')}"${albumPage >= pageCount - 1 ? ' disabled' : ''}>${I.fwd}</button></div>` : `<div class="card ab-empty">${I.photo}<h2>${t('phNone')}</h2><p class="sub">${t('phNoneH')}</p></div>`}</section>`;
+        return `<div class="main ab-main">${h}<div class="ab-act"><button class="btn b1" data-a="pick"${upBusy ? ' disabled' : ''}>${I.photo} ${t('phAdd')}</button></div>${prog}${openBook}</div>`;
+      }
       function vUp() {
         const n = umod.files.length;
         return `<div class="mod" data-a="uclose"><form class="card" data-f="photo" role="dialog" aria-label="${t('phAdd')}"><h2 class="px" style="font-size:16px;color:var(--pk);margin-bottom:6px">${t('phAdd')}</h2><p class="sub" style="font-size:12px;margin-bottom:14px">${t('phN').replace('{n}', n)}</p><div class="ab-prev">${umod.urls.map((u) => `<img src="${u}" alt="">`).join('')}${n > umod.urls.length ? `<b>+${n - umod.urls.length}</b>` : ''}</div><div class="fl"><label class="lb" for="pa">${t('phAlbum')}</label><input class="in" id="pa" name="album" list="ab-list" maxlength="30" autocomplete="off" value="${esc(albumSel || String())}" placeholder="${t('phAlbumPh')}"><datalist id="ab-list">${albums()

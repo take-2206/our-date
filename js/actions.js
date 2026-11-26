@@ -220,7 +220,33 @@ function act(a, d, el) {
     pin.value = "";
     pin.click();
     return;
-  } else if (a == "albumSel") albumSel = d.al || "";
+  } else if (a == "albumSel") {
+    albumSel = d.al || "";
+    albumPage = 0;
+    albumFlip = null;
+    albumOpening = true;
+    requestAnimationFrame(() => { albumOpening = false; });
+  } else if (a == "albumShelf") {
+    albumSel = null;
+    albumPage = 0;
+    albumOpening = false;
+    albumFlip = null;
+  } else if (a == "albumPage") {
+    const perSpread = 2,
+      photos = C.photos.filter((p) => albumSel == '__unfiled__' ? !p.album : !albumSel || p.album == albumSel),
+      pageCount = Math.ceil(photos.length / perSpread),
+      nextPage = Math.max(0, Math.min(Math.max(pageCount - 1, 0), albumPage + Math.sign(Number(d.step || 0))));
+    if (nextPage != albumPage) {
+      const flip = { direction: nextPage > albumPage ? 'next' : 'prev', from: albumPage };
+      albumFlip = flip;
+      albumPage = nextPage;
+      setTimeout(() => {
+        if (albumFlip != flip) return;
+        albumFlip = null;
+        if (view == 'album' && pv == null) render();
+      }, 800);
+    }
+  }
   else if (a == "pv") {
     pvDay = null;
     pv = Number(d.id);
@@ -229,6 +255,12 @@ function act(a, d, el) {
     pv = Number(d.id);
   } else if (a == "goAlbum") {
     albumSel = "";
+    const photoIndex = C.photos.findIndex((p) => p.date == d.k),
+      perSpread = 2;
+    albumPage = photoIndex < 0 ? 0 : Math.floor(photoIndex / perSpread);
+    albumFlip = null;
+    albumOpening = true;
+    requestAnimationFrame(() => { albumOpening = false; });
     albumFocus = d.k;
     bell = false;
     view = "album";

@@ -1,0 +1,13 @@
+diff --git a/css/theme-cozy.css b/css/theme-cozy.css
+index d9c8f3d..2f130f3 100644
+--- a/css/theme-cozy.css
++++ b/css/theme-cozy.css
+@@ -139,3 +139,8 @@ body {
+ /* ===== TAB LỊCH / TẤT CẢ BUỔI HẸN ===== */
+ .cal-tabs { max-width: 420px; margin: 0 auto 14px; }
+ .cal-tabs .btn { flex: 1; min-height: 38px; font-size: 13px; }
++/* Hai nút Lịch / Tất cả buổi hẹn: tách rời, không còn khung viên thuốc bao ngoài */
++.seg.cal-tabs { background: none; border: 0; padding: 0; gap: 10px; border-radius: 0; }
++.seg.cal-tabs .btn { border: 2.5px solid var(--line); border-radius: 999px; background: var(--card); color: var(--ink); box-shadow: var(--shadow); }
++.seg.cal-tabs .btn.on { background: var(--pk); color: #fff; border-color: var(--line); }
++.seg.cal-tabs .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(122, 88, 72, .9); }
