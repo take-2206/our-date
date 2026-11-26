@@ -5,6 +5,7 @@ let PET = { name: "MINI CHIBI", reactions: [], feelings: [], messages: [], messa
 let petReactionsOpen = false;
 let petMessagesOpen = false;
 let petCardView = "pet";
+let petJarOpening = false;
 let feelingDraft = null;
 let feelingViewing = null;
 let jarFeelingDropId = null;
@@ -257,7 +258,7 @@ let THROW_GAME = {
           trashSetup: 'Hãy chạy supabase-recycle-bin.sql trong Supabase trước.',
           petKicker: 'NUÔI CÙNG NHAU',
           petSub: 'Cùng chăm một bé, cùng gửi chút yêu thương.',
-          feelingsJar: 'Feelings Jar',
+          feelingsJar: 'Lọ cảm xúc',
           feelingsJarHint: 'Chọn cảm xúc để bỏ vào lọ chung.',
           feelingsJarYou: 'Lọ cảm xúc của bạn',
           feelingsJarPartner: 'Lọ cảm xúc của người ấy',
@@ -805,6 +806,9 @@ const I = {
   bell: sv(
     '<path d="M6 9a6 6 0 0112 0c0 6 2 7 2 7H4s2-1 2-7"/><path d="M10 20a2 2 0 004 0"/>',
   ),
+  jar: sv(
+    '<path d="M9 3h6M10 3v4l-3 3v9a2 2 0 002 2h6a2 2 0 002-2v-9l-3-3V3"/><path d="M8 13h8"/>',
+  ),
   back: sv('<path d="M15 5l-7 7 7 7"/>'),
   fwd: sv('<path d="M9 5l7 7-7 7"/>'),
   x: sv('<path d="M6 6l12 12M18 6L6 18"/>'),
@@ -875,13 +879,13 @@ const ago = (ts) => {
       : f.format(Math.round(m / 1440), "day");
 };
 // Phần đầu mỗi màn hình: tiêu đề + chuông (số chưa đọc) + avatar hai người
-const head = (title, sub, coupleExtra = "") => {
+const head = (title, sub, coupleExtra = "", afterBell = "") => {
   const u = unread().length,
     ups = up()
       .filter((e) => (parse(e.date) - today0()) / 864e5 <= 7)
       .slice(0, 3),
     ms = mine().slice(0, 5);
-  return `<header class="top"><div><p class="mono sub" style="font-size:11px">&gt; ${sub}</p><h1 class="px">${title}</h1></div><div class="r"><button class="ib" data-a="bell" aria-label="${t("nt")}${u ? " (" + u + ")" : ""}" aria-expanded="${bell}">${I.bell}${u ? `<i class="bd">${u}</i>` : ""}</button><div class="pair couple-pair${coupleExtra ? " head-couple" : ""}">${coupleExtra ? `<button type="button" class="couple-profile-button" data-a="dcOpen" aria-label="${esc(t("dcDetails"))}" aria-haspopup="dialog" aria-expanded="${dcmod}">${coupleAvatar()}</button>` : coupleAvatar()}${coupleExtra}</div>${
+  return `<header class="top"><div><p class="mono sub" style="font-size:11px">&gt; ${sub}</p><h1 class="px">${title}</h1></div><div class="r"><button class="ib" data-a="bell" aria-label="${t("nt")}${u ? " (" + u + ")" : ""}" aria-expanded="${bell}">${I.bell}${u ? `<i class="bd">${u}</i>` : ""}</button>${afterBell}<div class="pair couple-pair${coupleExtra ? " head-couple" : ""}">${coupleExtra ? `<button type="button" class="couple-profile-button" data-a="dcOpen" aria-label="${esc(t("dcDetails"))}" aria-haspopup="dialog" aria-expanded="${dcmod}">${coupleAvatar()}</button>` : coupleAvatar()}${coupleExtra}</div>${
     bell
       ? `<div class="card pop" role="dialog">${
           ms

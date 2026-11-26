@@ -78,6 +78,8 @@ function act(a, d, el) {
     petReactionsOpen = !petReactionsOpen;
   } else if (a == "petViewToggle") {
     petCardView = petCardView == 'pet' ? 'jar' : 'pet';
+    petJarOpening = petCardView == 'jar';
+    if (petJarOpening) requestAnimationFrame(() => { petJarOpening = false; });
     petReactionsOpen = false;
     feelingDraft = null;
     feelingViewing = null;

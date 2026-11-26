@@ -3572,6 +3572,10 @@ body.note-resizing * {
   width: 100%;
   padding: 4px 0;
 }
+.feelings-jar-view.is-opening {
+  transform-origin: top right;
+  animation: dc-pop 0.16s ease-out;
+}
 .feelings-jar-pair {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3715,7 +3719,8 @@ body.note-resizing * {
 }
 @media (prefers-reduced-motion: reduce) {
   .feelings-jar-marble.is-dropping,
-  .feelings-jar-art.is-opening .feelings-jar-lid {
+  .feelings-jar-art.is-opening .feelings-jar-lid,
+  .feelings-jar-view.is-opening {
     animation: none;
   }
 }
