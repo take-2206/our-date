@@ -335,6 +335,12 @@
         if (e.target.matches('[data-note-body], [data-note-editor]')) stopLocalNoteTyping(e.target.dataset.id);
         if (e.target.matches('[data-pet-message-input]')) stopLocalPetTyping();
       });
+      document.addEventListener('pointerup', (e) => {
+        const lamp = e.target.closest('.room-lamp-toggle[data-a="toggleRoomLight"]');
+        if (!lamp) return;
+        e.preventDefault();
+        act(lamp.dataset.a, lamp.dataset, lamp);
+      });
       document.addEventListener('click', (e) => {
         if (pickerInput(e.target)) return;
         const el = e.target.closest('[data-a]'),

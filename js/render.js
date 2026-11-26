@@ -1,5 +1,8 @@
 // LoveSync render module. Classic scripts share state declared in js/core.js.
 function render() {
+        document.documentElement.classList.toggle('dark-mode', typeof roomLightsOn == 'function' && !roomLightsOn());
+        const themeColor = document.querySelector('meta[name="theme-color"]');
+        if (themeColor) themeColor.content = roomLightsOn() ? '#fdf4e3' : '#111016';
         if (typeof consumeDeferredRefresh == 'function') consumeDeferredRefresh();
         document.documentElement.lang = S.lang;
         const content =
