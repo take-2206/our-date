@@ -285,3 +285,55 @@
 .al-note p { margin: 5px 0 0; color: var(--ink); font: italic 600 14px/1.4 "Nunito", sans-serif; }
 .al-note small { display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; color: var(--mut); font-size: 11px; }
 .al-note small svg { width: 13px; height: 13px; }
+
+/* ===== ALBUM: LẬT ẢNH THẬT (trang ảnh xoay quanh mép, mặt sau là giấy kem) ===== */
+.al-turn {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  transform-style: preserve-3d;
+}
+.al-turn--next { transform-origin: left center; animation: al-flip-next 0.6s cubic-bezier(0.35, 0.05, 0.25, 1) both; }
+.al-turn--prev { transform-origin: right center; animation: al-flip-prev 0.6s cubic-bezier(0.35, 0.05, 0.25, 1) both; }
+.al-turn-face,
+.al-turn-back {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.al-turn-face {
+  border: 14px solid #f5f1e8;
+  border-bottom-width: 22px;
+  background: #f5f1e8;
+  box-shadow: 0 6px 18px rgba(60, 40, 20, 0.28);
+}
+.al-turn-face img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.al-turn-back {
+  border: 14px solid #efe8da;
+  border-bottom-width: 22px;
+  background: linear-gradient(90deg, #e6dccd, #f5f1e8 18%, #f5f1e8 100%);
+  transform: rotateY(180deg);
+}
+@keyframes al-flip-next {
+  0% { transform: rotateY(0); box-shadow: none; }
+  45% { filter: brightness(0.96); }
+  100% { transform: rotateY(-180deg); }
+}
+@keyframes al-flip-prev {
+  0% { transform: rotateY(0); }
+  45% { filter: brightness(0.96); }
+  100% { transform: rotateY(180deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .al-turn--next, .al-turn--prev { animation: none; opacity: 0; }
+}

@@ -232,22 +232,23 @@ function act(a, d, el) {
     albumOpening = false;
     albumFlip = null;
   } else if (a == "albumPage") {
-    const perSpread = 1,
-      photos = C.photos.filter((p) => albumSel == '__unfiled__' ? !p.album : !albumSel || p.album == albumSel),
-      pageCount = Math.ceil(photos.length / perSpread),
-      nextPage = Math.max(0, Math.min(Math.max(pageCount - 1, 0), albumPage + Math.sign(Number(d.step || 0))));
-    if (nextPage != albumPage) {
-      const flip = { direction: nextPage > albumPage ? 'next' : 'prev', from: albumPage };
+    const photos = C.photos.filter((p) => albumSel == '__unfiled__' ? !p.album : !albumSel || p.album == albumSel),
+      total = photos.length,
+      step = Math.sign(Number(d.step || 0));
+    if (total > 1 && step) {
+      // Vòng tròn: qua ảnh cuối thì quay lại ảnh đầu, và ngược lại
+      const nextPage = (((albumPage + step) % total) + total) % total;
+      const flip = { direction: step > 0 ? 'next' : 'prev', from: albumPage };
       albumFlip = flip;
       albumPage = nextPage;
       setTimeout(() => {
         if (albumFlip != flip) return;
         albumFlip = null;
         if (view == 'album' && pv == null) render();
-      }, 800);
+      }, 700);
     }
   }
-  else if (a == "pv") {
+    else if (a == "pv") {
     pvDay = null;
     pv = Number(d.id);
   } else if (a == "pvDay") {
