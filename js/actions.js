@@ -245,7 +245,7 @@ function act(a, d, el) {
         if (albumFlip != flip) return;
         albumFlip = null;
         if (view == 'album' && pv == null) render();
-      }, 700);
+      }, 620);
     }
   }
     else if (a == "pv") {
